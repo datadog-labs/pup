@@ -347,7 +347,7 @@ Based on the TypeScript plugin implementation:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/DataDog/fetch.git
+   git clone https://github.com/DataDog/pup.git
    cd pup
    ```
 
@@ -450,7 +450,7 @@ Copyright 2024-present Datadog, Inc.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/DataDog/fetch/issues)
+- **Issues**: [GitHub Issues](https://github.com/DataDog/pup/issues)
 - **Documentation**: This file and inline code documentation
 - **Community**: [Datadog Community](https://community.datadoghq.com/)
 
@@ -705,7 +705,7 @@ func TestMetricsQuery(t *testing.T) {
     defer server.Close()
 
     // Test metrics query command
-    cmd := exec.Command("fetch", "metrics", "query",
+    cmd := exec.Command("pup", "metrics", "query",
         "--query=avg:system.cpu.user{*}",
         "--from=1h",
         "--to=now",
@@ -793,7 +793,7 @@ Enable verbose logging for troubleshooting:
 pup --verbose monitors list
 
 # Or set environment variable
-export FETCH_LOG_LEVEL=debug
+export PUP_LOG_LEVEL=debug
 pup monitors list
 ```
 

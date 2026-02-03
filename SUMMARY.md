@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully ported the Datadog API CLI from TypeScript to Go, creating **"fetch"** - a native, high-performance CLI wrapper for Datadog APIs with OAuth2 authentication.
+Successfully ported the Datadog API CLI from TypeScript to Go, creating **"pup"** - a native, high-performance CLI wrapper for Datadog APIs with OAuth2 authentication.
 
 ## What Was Built
 
@@ -36,7 +36,7 @@ Successfully ported the Datadog API CLI from TypeScript to Go, creating **"fetch
 ## Project Structure
 
 ```
-fetch/
+pup/
 ├── cmd/                           # Command implementations
 │   ├── root.go                    # Root command & global flags
 │   ├── auth.go                    # OAuth2 authentication ✨
