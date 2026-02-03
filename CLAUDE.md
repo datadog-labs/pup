@@ -1,8 +1,8 @@
-# Fetch - Datadog API CLI Wrapper
+# Pup - Datadog API CLI Wrapper
 
 ## Overview
 
-Fetch is a Go-based command-line wrapper that provides easy interaction with Datadog APIs. It builds upon the foundation of the [datadog-api-claude-plugin](https://github.com/DataDog/datadog-api-claude-plugin) to provide a native Go experience for developers who need to interact with Datadog's comprehensive monitoring and observability platform.
+Pup is a Go-based command-line wrapper that provides easy interaction with Datadog APIs. It builds upon the foundation of the [datadog-api-claude-plugin](https://github.com/DataDog/datadog-api-claude-plugin) to provide a native Go experience for developers who need to interact with Datadog's comprehensive monitoring and observability platform.
 
 ## Project Goals
 
@@ -16,7 +16,7 @@ Fetch is a Go-based command-line wrapper that provides easy interaction with Dat
 
 ### Authentication
 
-Fetch supports two authentication methods:
+Pup supports two authentication methods:
 
 #### 1. API Key Authentication (Traditional)
 ```bash
@@ -38,20 +38,20 @@ OAuth2 authentication with PKCE flow provides enhanced security features:
 **OAuth2 Commands:**
 ```bash
 # Login via browser-based OAuth flow
-fetch auth login
+pup auth login
 
 # Check authentication status
-fetch auth status
+pup auth status
 
 # Manually refresh access token
-fetch auth refresh
+pup auth refresh
 
 # Logout and clear stored tokens
-fetch auth logout
+pup auth logout
 ```
 
 **OAuth2 Flow:**
-1. User runs `fetch auth login`
+1. User runs `pup auth login`
 2. CLI performs Dynamic Client Registration with Datadog
 3. CLI generates PKCE code verifier and challenge
 4. Browser opens to Datadog authorization page
@@ -81,19 +81,19 @@ fetch auth logout
 ### Command Structure
 
 ```bash
-fetch <domain> <action> [options]
+pup <domain> <action> [options]
 ```
 
 Example:
 ```bash
-fetch metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
-fetch monitors list --tag="env:production"
-fetch logs search --query="status:error" --from="1h"
+pup metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
+pup monitors list --tag="env:production"
+pup logs search --query="status:error" --from="1h"
 ```
 
 ### Core Domains
 
-Based on the datadog-api-claude-plugin architecture, Fetch organizes commands into functional domains:
+Based on the datadog-api-claude-plugin architecture, Pup organizes commands into functional domains:
 
 #### Data & Observability
 Query and analyze telemetry data:
@@ -192,7 +192,7 @@ Following the pattern from the TypeScript plugin PR #84, implement secure token 
    - Linux: Secret Service / Keyring
 
 2. **Fallback Storage**: Encrypted file
-   - Location: `~/.config/fetch/tokens.enc`
+   - Location: `~/.config/pup/tokens.enc`
    - Encryption: AES-256-GCM with machine-specific key derivation
 
 3. **Token Migration**: Support migrating from API key to OAuth2 authentication
@@ -315,7 +315,7 @@ Configuration values are resolved in the following order (highest to lowest prio
 
 1. Command-line flags
 2. Environment variables
-3. Configuration file (`~/.config/fetch/config.yaml`)
+3. Configuration file (`~/.config/pup/config.yaml`)
 4. Default values
 
 ### Security Considerations
@@ -348,7 +348,7 @@ Based on the TypeScript plugin implementation:
 1. Clone the repository:
    ```bash
    git clone https://github.com/DataDog/fetch.git
-   cd fetch
+   cd pup
    ```
 
 2. Install dependencies:
@@ -358,7 +358,7 @@ Based on the TypeScript plugin implementation:
 
 3. Build the project:
    ```bash
-   go build -o fetch .
+   go build -o pup .
    ```
 
 4. Run tests:
@@ -474,7 +474,7 @@ Copyright 2024-present Datadog, Inc.
 - [ ] Encrypted file fallback storage
 - [ ] Automatic token refresh
 - [ ] Token migration utilities
-- [ ] `fetch auth` command suite
+- [ ] `pup auth` command suite
 
 ### Phase 3: Core Domains
 - [ ] Logs domain commands
@@ -546,13 +546,13 @@ Copyright 2024-present Datadog, Inc.
 
 ```bash
 # OAuth2 login (recommended)
-fetch auth login
+pup auth login
 
 # Check authentication status
-fetch auth status
+pup auth status
 
 # Logout
-fetch auth logout
+pup auth logout
 
 # API key authentication (legacy)
 export DD_API_KEY="your-api-key"
@@ -563,93 +563,93 @@ export DD_APP_KEY="your-app-key"
 
 ```bash
 # List all metrics
-fetch metrics list
+pup metrics list
 
 # Filter metrics by pattern
-fetch metrics list --filter="system.*"
+pup metrics list --filter="system.*"
 
 # Query metric data
-fetch metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
+pup metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
 
 # Query with custom aggregation
-fetch metrics query --query="sum:app.requests{env:prod} by {service}" --from="4h"
+pup metrics query --query="sum:app.requests{env:prod} by {service}" --from="4h"
 ```
 
 ### Monitors
 
 ```bash
 # List all monitors
-fetch monitors list
+pup monitors list
 
 # Filter monitors by tag
-fetch monitors list --tag="env:production"
+pup monitors list --tag="env:production"
 
 # Get specific monitor
-fetch monitors get 12345678
+pup monitors get 12345678
 
 # Search monitors by name
-fetch monitors search "CPU"
+pup monitors search "CPU"
 
 # Delete monitor (requires confirmation)
-fetch monitors delete 12345678
+pup monitors delete 12345678
 ```
 
 ### Logs
 
 ```bash
 # Search for errors
-fetch logs search --query="status:error" --from="1h" --to="now"
+pup logs search --query="status:error" --from="1h" --to="now"
 
 # Search by service
-fetch logs search --query="service:web-app status:warn"
+pup logs search --query="service:web-app status:warn"
 
 # Complex query with attributes
-fetch logs search --query="@user.id:12345 status:error" --limit=100
+pup logs search --query="@user.id:12345 status:error" --limit=100
 ```
 
 ### Dashboards
 
 ```bash
 # List all dashboards
-fetch dashboards list
+pup dashboards list
 
 # Get dashboard details
-fetch dashboards get "abc-123-def"
+pup dashboards get "abc-123-def"
 
 # Get dashboard public URL
-fetch dashboards url "abc-123-def"
+pup dashboards url "abc-123-def"
 ```
 
 ### Output Formatting
 
 ```bash
 # JSON output (default)
-fetch monitors list --output=json
+pup monitors list --output=json
 
 # Table output
-fetch monitors list --output=table
+pup monitors list --output=table
 
 # YAML output
-fetch monitors list --output=yaml
+pup monitors list --output=yaml
 
 # Custom fields
-fetch monitors list --fields="id,name,type,status"
+pup monitors list --fields="id,name,type,status"
 ```
 
 ### Advanced Usage
 
 ```bash
 # Use custom config file
-fetch --config=/path/to/config.yaml monitors list
+pup --config=/path/to/config.yaml monitors list
 
 # Specify Datadog site
-fetch --site=datadoghq.eu monitors list
+pup --site=datadoghq.eu monitors list
 
 # Verbose output for debugging
-fetch --verbose monitors list
+pup --verbose monitors list
 
 # Silent mode (no prompts)
-fetch --yes monitors delete 12345678
+pup --yes monitors delete 12345678
 ```
 
 ## Testing Strategy
@@ -772,12 +772,12 @@ func TestOAuthLogin(t *testing.T) {
 **Token Refresh Fails:**
 - Verify refresh token hasn't expired
 - Check network connectivity
-- Try `fetch auth logout` and `fetch auth login` to re-authenticate
+- Try `pup auth logout` and `pup auth login` to re-authenticate
 
 **Keychain Access Denied:**
 - Grant keychain access permissions
 - Falls back to encrypted file storage automatically
-- Check `~/.config/fetch/tokens.enc` exists
+- Check `~/.config/pup/tokens.enc` exists
 
 **API Rate Limiting:**
 - Implement exponential backoff
@@ -790,11 +790,11 @@ Enable verbose logging for troubleshooting:
 
 ```bash
 # Enable debug logging
-fetch --verbose monitors list
+pup --verbose monitors list
 
 # Or set environment variable
 export FETCH_LOG_LEVEL=debug
-fetch monitors list
+pup monitors list
 ```
 
 ### Getting Help
@@ -803,7 +803,7 @@ fetch monitors list
 2. Search existing GitHub issues
 3. Review Datadog API documentation
 4. Open new GitHub issue with:
-   - Fetch version (`fetch version`)
+   - Pup version (`pup version`)
    - Command that failed
    - Error message and stack trace (if available)
    - Steps to reproduce

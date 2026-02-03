@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/fetch/pkg/formatter"
+	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -48,19 +48,19 @@ WIDGET TYPES:
 
 EXAMPLES:
   # List all dashboards
-  fetch dashboards list
+  pup dashboards list
 
   # Get detailed dashboard configuration
-  fetch dashboards get abc-def-123
+  pup dashboards get abc-def-123
 
   # Get dashboard and save to file
-  fetch dashboards get abc-def-123 > dashboard.json
+  pup dashboards get abc-def-123 > dashboard.json
 
   # Delete a dashboard with confirmation
-  fetch dashboards delete abc-def-123
+  pup dashboards delete abc-def-123
 
   # Delete a dashboard without confirmation (automation)
-  fetch dashboards delete abc-def-123 --yes
+  pup dashboards delete abc-def-123 --yes
 
 TEMPLATE VARIABLES:
   Dashboards can include template variables for dynamic filtering:
@@ -70,7 +70,7 @@ TEMPLATE VARIABLES:
   • Custom variables based on tags
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication (fetch auth login) or API keys
+  Requires either OAuth2 authentication (pup auth login) or API keys
   (DD_API_KEY and DD_APP_KEY environment variables).`,
 }
 
@@ -84,13 +84,13 @@ IDs, titles, descriptions, and metadata.
 
 EXAMPLES:
   # List all dashboards
-  fetch dashboards list
+  pup dashboards list
 
   # List dashboards with table output
-  fetch dashboards list --output=table
+  pup dashboards list --output=table
 
   # Save dashboard list to file
-  fetch dashboards list > dashboards.json
+  pup dashboards list > dashboards.json
 
 OUTPUT FIELDS:
   • id: Dashboard ID (used for get/delete operations)
@@ -107,8 +107,8 @@ OUTPUT FIELDS:
 
 FILTERING:
   Currently no filtering is available in the list command. To search:
-  • Use jq: fetch dashboards list | jq '.dashboards[] | select(.title | contains("API"))'
-  • Use grep: fetch dashboards list | grep -i "production"
+  • Use jq: pup dashboards list | jq '.dashboards[] | select(.title | contains("API"))'
+  • Use grep: pup dashboards list | grep -i "production"
 
 SORTING:
   Dashboards are returned sorted by popularity (most viewed first).`,
@@ -129,19 +129,19 @@ ARGUMENTS:
 
 EXAMPLES:
   # Get dashboard configuration
-  fetch dashboards get abc-def-123
+  pup dashboards get abc-def-123
 
   # Save dashboard to file for backup
-  fetch dashboards get abc-def-123 > my-dashboard-backup.json
+  pup dashboards get abc-def-123 > my-dashboard-backup.json
 
   # Get dashboard with pretty JSON output
-  fetch dashboards get abc-def-123 | jq .
+  pup dashboards get abc-def-123 | jq .
 
   # Extract just the widgets
-  fetch dashboards get abc-def-123 | jq '.widgets'
+  pup dashboards get abc-def-123 | jq '.widgets'
 
   # Get dashboard title
-  fetch dashboards get abc-def-123 | jq -r '.title'
+  pup dashboards get abc-def-123 | jq -r '.title'
 
 OUTPUT STRUCTURE:
   • id: Dashboard ID

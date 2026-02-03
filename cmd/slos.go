@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/fetch/pkg/formatter"
+	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -44,19 +44,19 @@ CALCULATION METHODS:
 
 EXAMPLES:
   # List all SLOs
-  fetch slos list
+  pup slos list
 
   # Get detailed SLO information
-  fetch slos get abc-123-def
+  pup slos get abc-123-def
 
   # Get SLO history and status
-  fetch slos get abc-123-def | jq '.data'
+  pup slos get abc-123-def | jq '.data'
 
   # Delete an SLO with confirmation
-  fetch slos delete abc-123-def
+  pup slos delete abc-123-def
 
   # Delete an SLO without confirmation (automation)
-  fetch slos delete abc-123-def --yes
+  pup slos delete abc-123-def --yes
 
 ERROR BUDGET:
   Error budget represents the allowed amount of unreliability before breaching
@@ -65,7 +65,7 @@ ERROR BUDGET:
   Example: 99.9% target over 30 days = 0.1% * 30 days = 43.2 minutes allowed downtime
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication (fetch auth login) or API keys
+  Requires either OAuth2 authentication (pup auth login) or API keys
   (DD_API_KEY and DD_APP_KEY environment variables).`,
 }
 
@@ -79,19 +79,19 @@ current status, error budget, and compliance percentage.
 
 EXAMPLES:
   # List all SLOs
-  fetch slos list
+  pup slos list
 
   # List SLOs with table output
-  fetch slos list --output=table
+  pup slos list --output=table
 
   # Save SLO list to file
-  fetch slos list > slos.json
+  pup slos list > slos.json
 
   # Find SLOs by name with jq
-  fetch slos list | jq '.data[] | select(.name | contains("API"))'
+  pup slos list | jq '.data[] | select(.name | contains("API"))'
 
   # Check error budget for all SLOs
-  fetch slos list | jq '.data[] | {name: .name, error_budget: .error_budget_remaining}'
+  pup slos list | jq '.data[] | {name: .name, error_budget: .error_budget_remaining}'
 
 OUTPUT FIELDS:
   • id: SLO ID
@@ -122,9 +122,9 @@ SLO STATES:
 
 FILTERING:
   Use jq to filter results:
-  • Breaching SLOs: fetch slos list | jq '.data[] | select(.status.state == "breaching")'
-  • High error budget: fetch slos list | jq '.data[] | select(.status.error_budget_remaining > 50)'
-  • By tag: fetch slos list | jq '.data[] | select(.tags[] | contains("team:backend"))'`,
+  • Breaching SLOs: pup slos list | jq '.data[] | select(.status.state == "breaching")'
+  • High error budget: pup slos list | jq '.data[] | select(.status.error_budget_remaining > 50)'
+  • By tag: pup slos list | jq '.data[] | select(.tags[] | contains("team:backend"))'`,
 	RunE:  runSlosList,
 }
 
@@ -141,19 +141,19 @@ ARGUMENTS:
 
 EXAMPLES:
   # Get SLO details
-  fetch slos get abc-123-def
+  pup slos get abc-123-def
 
   # Get SLO and save to file
-  fetch slos get abc-123-def > slo-backup.json
+  pup slos get abc-123-def > slo-backup.json
 
   # Check error budget remaining
-  fetch slos get abc-123-def | jq '.data.error_budget_remaining'
+  pup slos get abc-123-def | jq '.data.error_budget_remaining'
 
   # Get current SLI value
-  fetch slos get abc-123-def | jq '.data.sli_value'
+  pup slos get abc-123-def | jq '.data.sli_value'
 
   # View SLO target thresholds
-  fetch slos get abc-123-def | jq '.data.thresholds'
+  pup slos get abc-123-def | jq '.data.thresholds'
 
 OUTPUT STRUCTURE:
   • id: SLO ID

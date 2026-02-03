@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DataDog/fetch/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/auth/types"
 )
 
 func TestFileStorage_TokenOperations(t *testing.T) {

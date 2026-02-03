@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/fetch/pkg/auth/storage"
-	"github.com/DataDog/fetch/pkg/config"
+	"github.com/DataDog/pup/pkg/auth/storage"
+	"github.com/DataDog/pup/pkg/config"
 )
 
 // Client wraps the Datadog API client

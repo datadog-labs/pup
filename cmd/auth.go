@@ -12,12 +12,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/DataDog/fetch/pkg/auth/callback"
-	"github.com/DataDog/fetch/pkg/auth/dcr"
-	"github.com/DataDog/fetch/pkg/auth/oauth"
-	"github.com/DataDog/fetch/pkg/auth/storage"
-	"github.com/DataDog/fetch/pkg/auth/types"
-	"github.com/DataDog/fetch/pkg/formatter"
+	"github.com/DataDog/pup/pkg/auth/callback"
+	"github.com/DataDog/pup/pkg/auth/dcr"
+	"github.com/DataDog/pup/pkg/auth/oauth"
+	"github.com/DataDog/pup/pkg/auth/storage"
+	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +51,7 @@ OAUTH2 FEATURES:
   • PKCE Protection (S256): Prevents authorization code interception
   • Dynamic Client Registration: Unique credentials per installation
   • CSRF Protection: State parameter validation
-  • Secure Storage: Tokens stored in ~/.config/fetch/ with 0600 permissions
+  • Secure Storage: Tokens stored in ~/.config/pup/ with 0600 permissions
   • Auto Refresh: Tokens refresh automatically before expiration
   • Multi-Site: Separate credentials for each Datadog site
 
@@ -81,33 +81,33 @@ OAUTH2 SCOPES:
 
 EXAMPLES:
   # Login with OAuth2
-  fetch auth login
+  pup auth login
 
   # Check authentication status
-  fetch auth status
+  pup auth status
 
   # Refresh access token
-  fetch auth refresh
+  pup auth refresh
 
   # Logout and clear credentials
-  fetch auth logout
+  pup auth logout
 
   # Login to different Datadog site
-  DD_SITE=datadoghq.eu fetch auth login
+  DD_SITE=datadoghq.eu pup auth login
 
 MULTI-SITE SUPPORT:
   Each Datadog site maintains separate credentials:
 
-  DD_SITE=datadoghq.com fetch auth login     # US1 (default)
-  DD_SITE=datadoghq.eu fetch auth login      # EU1
-  DD_SITE=us3.datadoghq.com fetch auth login # US3
-  DD_SITE=us5.datadoghq.com fetch auth login # US5
-  DD_SITE=ap1.datadoghq.com fetch auth login # AP1
+  DD_SITE=datadoghq.com pup auth login     # US1 (default)
+  DD_SITE=datadoghq.eu pup auth login      # EU1
+  DD_SITE=us3.datadoghq.com pup auth login # US3
+  DD_SITE=us5.datadoghq.com pup auth login # US5
+  DD_SITE=ap1.datadoghq.com pup auth login # AP1
 
 TOKEN STORAGE:
   Credentials are stored in:
-  • ~/.config/fetch/tokens_<site>.json - OAuth2 tokens
-  • ~/.config/fetch/client_<site>.json - DCR client credentials
+  • ~/.config/pup/tokens_<site>.json - OAuth2 tokens
+  • ~/.config/pup/client_<site>.json - DCR client credentials
 
   File permissions are set to 0600 (read/write owner only).
 
@@ -133,7 +133,7 @@ This command initiates a secure OAuth2 authentication flow:
   4. Opens browser to Datadog authorization page
   5. Waits for you to approve requested scopes
   6. Exchanges authorization code for tokens
-  7. Stores tokens securely in ~/.config/fetch/
+  7. Stores tokens securely in ~/.config/pup/
 
 OAUTH2 FLOW:
   ┌─────────────────────────────────────────────────┐
@@ -151,13 +151,13 @@ OAUTH2 FLOW:
 
 EXAMPLES:
   # Login to default site (datadoghq.com)
-  fetch auth login
+  pup auth login
 
   # Login to EU site
-  DD_SITE=datadoghq.eu fetch auth login
+  DD_SITE=datadoghq.eu pup auth login
 
   # Login to US3 site
-  DD_SITE=us3.datadoghq.com fetch auth login
+  DD_SITE=us3.datadoghq.com pup auth login
 
 WHAT HAPPENS:
   1. A local HTTP server starts on http://127.0.0.1:<random-port>/callback
@@ -165,7 +165,7 @@ WHAT HAPPENS:
   3. You review and approve the requested OAuth scopes
   4. Datadog redirects back to the local callback server
   5. Access and refresh tokens are securely stored
-  6. You're ready to use fetch commands!
+  6. You're ready to use pup commands!
 
 IF BROWSER DOESN'T OPEN:
   The command will print the authorization URL. Copy and paste it into
@@ -177,8 +177,8 @@ TIMEOUT:
 
 CREDENTIALS STORAGE:
   After successful login, credentials are stored in:
-  • ~/.config/fetch/tokens_<site>.json     (access & refresh tokens)
-  • ~/.config/fetch/client_<site>.json     (OAuth client credentials)
+  • ~/.config/pup/tokens_<site>.json     (access & refresh tokens)
+  • ~/.config/pup/client_<site>.json     (OAuth client credentials)
 
   Files have 0600 permissions (read/write owner only).
 
@@ -196,7 +196,7 @@ SCOPES REQUESTED:
   • User and team management
   • Cases and usage data
 
-  See: fetch auth --help for complete scope list`,
+  See: pup auth --help for complete scope list`,
 	RunE:  runAuthLogin,
 }
 
@@ -213,13 +213,13 @@ This command checks your current OAuth2 authentication status including:
 
 EXAMPLES:
   # Check authentication status
-  fetch auth status
+  pup auth status
 
   # Check status for specific site
-  DD_SITE=datadoghq.eu fetch auth status
+  DD_SITE=datadoghq.eu pup auth status
 
   # Check status and parse with jq
-  fetch auth status | jq '.authenticated'
+  pup auth status | jq '.authenticated'
 
 OUTPUT:
   {
@@ -241,31 +241,31 @@ OUTPUT FIELDS:
 
 STATUS VALUES:
   • valid: Access token is valid and not expired
-  • expired: Access token has expired (run 'fetch auth refresh')
-  • missing: No credentials found (run 'fetch auth login')
+  • expired: Access token has expired (run 'pup auth refresh')
+  • missing: No credentials found (run 'pup auth login')
 
 WHEN TOKEN IS EXPIRED:
   If your token is expired, you'll see:
 
     ⚠️  Token expired
-    Run 'fetch auth refresh' to refresh or 'fetch auth login' to re-authenticate
+    Run 'pup auth refresh' to refresh or 'pup auth login' to re-authenticate
 
   The access token automatically refreshes when making API calls, but you can
-  manually refresh with 'fetch auth refresh'.
+  manually refresh with 'pup auth refresh'.
 
 WHEN NOT AUTHENTICATED:
   If you're not authenticated, you'll see:
 
     ❌ Not authenticated
-    Run 'fetch auth login' to authenticate
+    Run 'pup auth login' to authenticate
 
-  This means no OAuth2 credentials were found. Run 'fetch auth login' to start
+  This means no OAuth2 credentials were found. Run 'pup auth login' to start
   the authentication flow.
 
 REFRESH TOKEN:
   The refresh token (valid for 30 days) is used to obtain new access tokens
   without requiring a new browser login. If the refresh token expires, you'll
-  need to run 'fetch auth login' again.`,
+  need to run 'pup auth login' again.`,
 	RunE:  runAuthStatus,
 }
 
@@ -423,7 +423,7 @@ func runAuthStatus(cmd *cobra.Command, args []string) error {
 
 	if tokens == nil {
 		fmt.Println("❌ Not authenticated")
-		fmt.Println("   Run 'fetch auth login' to authenticate")
+		fmt.Println("   Run 'pup auth login' to authenticate")
 		return nil
 	}
 
@@ -441,7 +441,7 @@ func runAuthStatus(cmd *cobra.Command, args []string) error {
 	if expired {
 		status["status"] = "expired"
 		fmt.Println("⚠️  Token expired")
-		fmt.Println("   Run 'fetch auth refresh' to refresh or 'fetch auth login' to re-authenticate")
+		fmt.Println("   Run 'pup auth refresh' to refresh or 'pup auth login' to re-authenticate")
 	} else {
 		status["status"] = "valid"
 		timeLeft := time.Until(tokens.ExpiresAt)
@@ -499,7 +499,7 @@ func runAuthRefresh(cmd *cobra.Command, args []string) error {
 	}
 
 	if tokens == nil || tokens.RefreshToken == "" {
-		return fmt.Errorf("no refresh token available - please run 'fetch auth login'")
+		return fmt.Errorf("no refresh token available - please run 'pup auth login'")
 	}
 
 	// Load client credentials
@@ -509,7 +509,7 @@ func runAuthRefresh(cmd *cobra.Command, args []string) error {
 	}
 
 	if creds == nil {
-		return fmt.Errorf("no client credentials found - please run 'fetch auth login'")
+		return fmt.Errorf("no client credentials found - please run 'pup auth login'")
 	}
 
 	// Refresh tokens

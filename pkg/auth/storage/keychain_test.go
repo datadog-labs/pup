@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DataDog/fetch/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/auth/types"
 )
 
 func TestKeychainStorage_GetBackendType(t *testing.T) {

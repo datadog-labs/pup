@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/fetch/pkg/formatter"
+	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -39,28 +39,28 @@ MONITOR TYPES:
 
 EXAMPLES:
   # List all monitors
-  fetch monitors list
+  pup monitors list
 
   # Filter monitors by name
-  fetch monitors list --name="CPU"
+  pup monitors list --name="CPU"
 
   # Filter monitors by tags
-  fetch monitors list --tags="env:production,team:backend"
+  pup monitors list --tags="env:production,team:backend"
 
   # Get detailed information about a specific monitor
-  fetch monitors get 12345678
+  pup monitors get 12345678
 
   # Delete a monitor with confirmation prompt
-  fetch monitors delete 12345678
+  pup monitors delete 12345678
 
   # Delete a monitor without confirmation (automation)
-  fetch monitors delete 12345678 --yes
+  pup monitors delete 12345678 --yes
 
 OUTPUT FORMAT:
   All commands output JSON by default. Use --output flag for other formats.
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication (fetch auth login) or API keys
+  Requires either OAuth2 authentication (pup auth login) or API keys
   (DD_API_KEY and DD_APP_KEY environment variables).`,
 }
 
@@ -78,19 +78,19 @@ FILTERS:
 
 EXAMPLES:
   # List all monitors
-  fetch monitors list
+  pup monitors list
 
   # Find monitors with "CPU" in the name
-  fetch monitors list --name="CPU"
+  pup monitors list --name="CPU"
 
   # Find production monitors
-  fetch monitors list --tags="env:production"
+  pup monitors list --tags="env:production"
 
   # Find monitors for a specific team
-  fetch monitors list --tags="team:backend"
+  pup monitors list --tags="team:backend"
 
   # Combine name and tag filters
-  fetch monitors list --name="Database" --tags="env:production"
+  pup monitors list --name="Database" --tags="env:production"
 
 OUTPUT FIELDS:
   • id: Monitor ID
@@ -119,13 +119,13 @@ ARGUMENTS:
 
 EXAMPLES:
   # Get monitor details
-  fetch monitors get 12345678
+  pup monitors get 12345678
 
   # Get monitor and save to file
-  fetch monitors get 12345678 > monitor.json
+  pup monitors get 12345678 > monitor.json
 
   # Get monitor with table output
-  fetch monitors get 12345678 --output=table
+  pup monitors get 12345678 --output=table
 
 OUTPUT INCLUDES:
   • id: Monitor ID
@@ -169,10 +169,10 @@ FLAGS:
 
 EXAMPLES:
   # Delete monitor with confirmation prompt
-  fetch monitors delete 12345678
+  pup monitors delete 12345678
 
   # Delete monitor without confirmation (automation)
-  fetch monitors delete 12345678 --yes
+  pup monitors delete 12345678 --yes
 
   # Delete monitor using global auto-approve
   DD_AUTO_APPROVE=true fetch monitors delete 12345678
@@ -187,8 +187,8 @@ CONFIRMATION PROMPT:
 
 AUTOMATION:
   For scripts and CI/CD pipelines, use one of:
-  • --yes flag: fetch monitors delete 12345678 --yes
-  • -y flag: fetch monitors delete 12345678 -y
+  • --yes flag: pup monitors delete 12345678 --yes
+  • -y flag: pup monitors delete 12345678 -y
   • Environment: DD_AUTO_APPROVE=true fetch monitors delete 12345678
 
 WARNING:

@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/DataDog/fetch/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/auth/types"
 )
 
 // BackendType represents the type of storage backend
@@ -62,8 +62,8 @@ func NewFileStorage() (*FileStorage, error) {
 		return nil, fmt.Errorf("failed to get config directory: %w", err)
 	}
 
-	// Create fetch config directory
-	baseDir := filepath.Join(configDir, "fetch")
+	// Create pup config directory
+	baseDir := filepath.Join(configDir, "pup")
 	if err := os.MkdirAll(baseDir, 0700); err != nil {
 		return nil, fmt.Errorf("failed to create config directory: %w", err)
 	}

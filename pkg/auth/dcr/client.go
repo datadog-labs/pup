@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DataDog/fetch/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/auth/types"
 )
 
 // Client handles Dynamic Client Registration with Datadog
@@ -37,7 +37,7 @@ func NewClient(site string) *Client {
 func (c *Client) Register(redirectURI string, scopes []string) (*types.ClientCredentials, error) {
 	// Build registration request
 	req := RegistrationRequest{
-		ClientName:    "Datadog Fetch CLI",
+		ClientName:    "Datadog Pup CLI",
 		RedirectURIs:  []string{redirectURI},
 		GrantTypes:    []string{"authorization_code", "refresh_token"},
 		ResponseTypes: []string{"code"},

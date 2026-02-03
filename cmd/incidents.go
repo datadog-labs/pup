@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/fetch/pkg/formatter"
+	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -43,16 +43,16 @@ INCIDENT STATES:
 
 EXAMPLES:
   # List all incidents
-  fetch incidents list
+  pup incidents list
 
   # Get detailed incident information
-  fetch incidents get abc-123-def
+  pup incidents get abc-123-def
 
   # Get incident and view timeline
-  fetch incidents get abc-123-def | jq '.data.timeline'
+  pup incidents get abc-123-def | jq '.data.timeline'
 
   # Check incident status
-  fetch incidents get abc-123-def | jq '{status: .data.status, severity: .data.severity}'
+  pup incidents get abc-123-def | jq '{status: .data.status, severity: .data.severity}'
 
 INCIDENT FIELDS:
   • id: Incident ID
@@ -70,7 +70,7 @@ INCIDENT FIELDS:
   • attachments: Related documents, runbooks, etc.
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication (fetch auth login) or API keys
+  Requires either OAuth2 authentication (pup auth login) or API keys
   (DD_API_KEY and DD_APP_KEY environment variables).`,
 }
 
@@ -84,22 +84,22 @@ filtered by state, severity, and other criteria.
 
 EXAMPLES:
   # List all incidents
-  fetch incidents list
+  pup incidents list
 
   # List incidents with table output
-  fetch incidents list --output=table
+  pup incidents list --output=table
 
   # Save incidents to file
-  fetch incidents list > incidents.json
+  pup incidents list > incidents.json
 
   # Filter active incidents with jq
-  fetch incidents list | jq '.data[] | select(.state == "active")'
+  pup incidents list | jq '.data[] | select(.state == "active")'
 
   # Find SEV-1 incidents
-  fetch incidents list | jq '.data[] | select(.severity == "SEV-1")'
+  pup incidents list | jq '.data[] | select(.severity == "SEV-1")'
 
   # Find customer-impacting incidents
-  fetch incidents list | jq '.data[] | select(.customer_impacted == true)'
+  pup incidents list | jq '.data[] | select(.customer_impacted == true)'
 
 OUTPUT FIELDS:
   • id: Incident ID
@@ -126,10 +126,10 @@ OUTPUT FIELDS:
 
 FILTERING:
   Use jq to filter results programmatically:
-  • Active only: fetch incidents list | jq '.data[] | select(.state == "active")'
-  • By severity: fetch incidents list | jq '.data[] | select(.severity == "SEV-1")'
-  • Customer impact: fetch incidents list | jq '.data[] | select(.customer_impacted)'
-  • Recent: fetch incidents list | jq '.data[] | select(.created_at > "2024-01-01")'
+  • Active only: pup incidents list | jq '.data[] | select(.state == "active")'
+  • By severity: pup incidents list | jq '.data[] | select(.severity == "SEV-1")'
+  • Customer impact: pup incidents list | jq '.data[] | select(.customer_impacted)'
+  • Recent: pup incidents list | jq '.data[] | select(.created_at > "2024-01-01")'
 
 SORTING:
   Incidents are returned sorted by creation time (most recent first).`,
@@ -149,22 +149,22 @@ ARGUMENTS:
 
 EXAMPLES:
   # Get incident details
-  fetch incidents get abc-123-def
+  pup incidents get abc-123-def
 
   # Get incident and save to file
-  fetch incidents get abc-123-def > incident.json
+  pup incidents get abc-123-def > incident.json
 
   # View incident timeline
-  fetch incidents get abc-123-def | jq '.data.timeline'
+  pup incidents get abc-123-def | jq '.data.timeline'
 
   # View incident tasks
-  fetch incidents get abc-123-def | jq '.data.tasks'
+  pup incidents get abc-123-def | jq '.data.tasks'
 
   # Check incident status
-  fetch incidents get abc-123-def | jq '{state: .data.state, severity: .data.severity, customer_impacted: .data.customer_impacted}'
+  pup incidents get abc-123-def | jq '{state: .data.state, severity: .data.severity, customer_impacted: .data.customer_impacted}'
 
   # Get incident duration
-  fetch incidents get abc-123-def | jq '{detected: .data.detected_at, resolved: .data.resolved_at}'
+  pup incidents get abc-123-def | jq '{detected: .data.detected_at, resolved: .data.resolved_at}'
 
 OUTPUT STRUCTURE:
   • id: Incident ID

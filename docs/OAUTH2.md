@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fetch supports OAuth2 authentication with PKCE (Proof Key for Code Exchange) for secure, browser-based authentication with Datadog. This is the recommended authentication method as it provides better security and granular access control compared to API keys.
+Pup supports OAuth2 authentication with PKCE (Proof Key for Code Exchange) for secure, browser-based authentication with Datadog. This is the recommended authentication method as it provides better security and granular access control compared to API keys.
 
 ## Features
 
@@ -11,7 +11,7 @@ Fetch supports OAuth2 authentication with PKCE (Proof Key for Code Exchange) for
 - **PKCE Protection (S256)**: Prevents authorization code interception attacks
 - **Dynamic Client Registration (DCR)**: Each CLI installation gets unique credentials
 - **CSRF Protection**: State parameter validation prevents cross-site request forgery
-- **Secure Token Storage**: Tokens stored in `~/.config/fetch/` with restricted permissions (0600)
+- **Secure Token Storage**: Tokens stored in `~/.config/pup/` with restricted permissions (0600)
 - **Automatic Token Refresh**: Seamless token refresh before expiration
 
 ### 🎯 Key Benefits
@@ -27,7 +27,7 @@ Fetch supports OAuth2 authentication with PKCE (Proof Key for Code Exchange) for
 ### 1. Login
 
 ```bash
-fetch auth login
+pup auth login
 ```
 
 This will:
@@ -37,12 +37,12 @@ This will:
 4. Start a local callback server on `http://127.0.0.1:<random-port>/callback`
 5. Wait for you to approve the requested scopes
 6. Exchange the authorization code for access/refresh tokens
-7. Store tokens securely in `~/.config/fetch/`
+7. Store tokens securely in `~/.config/pup/`
 
 ### 2. Check Status
 
 ```bash
-fetch auth status
+pup auth status
 ```
 
 Shows your current authentication status including:
@@ -53,7 +53,7 @@ Shows your current authentication status including:
 ### 3. Refresh Token
 
 ```bash
-fetch auth refresh
+pup auth refresh
 ```
 
 Manually refresh your access token using the refresh token. This happens automatically when making API calls, but you can force it with this command.
@@ -61,7 +61,7 @@ Manually refresh your access token using the refresh token. This happens automat
 ### 4. Logout
 
 ```bash
-fetch auth logout
+pup auth logout
 ```
 
 Clears all stored tokens and client credentials for the current site.
@@ -122,7 +122,7 @@ Based on RFC 7591, each CLI installation registers as a unique OAuth client:
 
 ```json
 {
-  "client_name": "Datadog Fetch CLI",
+  "client_name": "Datadog Pup CLI",
   "redirect_uris": ["http://127.0.0.1:<port>/callback"],
   "grant_types": ["authorization_code", "refresh_token"],
   "response_types": ["code"],
@@ -133,7 +133,7 @@ Based on RFC 7591, each CLI installation registers as a unique OAuth client:
 Response includes:
 - `client_id`: Unique client identifier
 - `client_secret`: Client secret for token exchange
-- Stored in `~/.config/fetch/client_<site>.json`
+- Stored in `~/.config/pup/client_<site>.json`
 
 #### PKCE (RFC 7636)
 
@@ -146,7 +146,7 @@ Proof Key for Code Exchange prevents authorization code interception:
 
 #### Token Storage
 
-Tokens are stored in `~/.config/fetch/tokens_<site>.json`:
+Tokens are stored in `~/.config/pup/tokens_<site>.json`:
 
 ```json
 {
@@ -163,7 +163,7 @@ File permissions: `0600` (read/write owner only)
 
 ## OAuth Scopes
 
-Fetch requests the following OAuth scopes based on PR #84:
+Pup requests the following OAuth scopes based on PR #84:
 
 ### Dashboards
 - `dashboards_read` - Read dashboards
@@ -239,7 +239,7 @@ The refresh happens transparently in the background.
 Force a token refresh:
 
 ```bash
-fetch auth refresh
+pup auth refresh
 ```
 
 ### Token Expiration
@@ -252,28 +252,28 @@ Access tokens typically expire after 1 hour. The CLI:
 
 ## Multi-Site Support
 
-Fetch supports all Datadog sites with separate credentials per site:
+Pup supports all Datadog sites with separate credentials per site:
 
 ```bash
 # US1 (default)
 export DD_SITE="datadoghq.com"
-fetch auth login
+pup auth login
 
 # EU1
 export DD_SITE="datadoghq.eu"
-fetch auth login
+pup auth login
 
 # US3
 export DD_SITE="us3.datadoghq.com"
-fetch auth login
+pup auth login
 
 # US5
 export DD_SITE="us5.datadoghq.com"
-fetch auth login
+pup auth login
 
 # AP1
 export DD_SITE="ap1.datadoghq.com"
-fetch auth login
+pup auth login
 ```
 
 Each site maintains separate:
@@ -301,7 +301,7 @@ If you don't complete authorization within 5 minutes:
 Error: timeout waiting for OAuth callback
 ```
 
-Run `fetch auth login` again to restart the flow.
+Run `pup auth login` again to restart the flow.
 
 ### Token Expired
 
@@ -309,10 +309,10 @@ If your access token expires and refresh fails:
 
 ```
 ⚠️  Token expired
-Run 'fetch auth refresh' to refresh or 'fetch auth login' to re-authenticate
+Run 'pup auth refresh' to refresh or 'pup auth login' to re-authenticate
 ```
 
-Try `fetch auth refresh` first. If that fails, run `fetch auth login` to start a new session.
+Try `pup auth refresh` first. If that fails, run `pup auth login` to start a new session.
 
 ### Port Already in Use
 
@@ -326,14 +326,14 @@ If you see a CSRF protection error:
 Error: state parameter mismatch (CSRF protection)
 ```
 
-This indicates a potential security issue. Run `fetch auth login` again to start a fresh flow.
+This indicates a potential security issue. Run `pup auth login` again to start a fresh flow.
 
 ## Security Considerations
 
 ### Client Credentials
 
 - Each installation gets unique `client_id` and `client_secret`
-- Stored in `~/.config/fetch/client_<site>.json` with `0600` permissions
+- Stored in `~/.config/pup/client_<site>.json` with `0600` permissions
 - Never committed to version control
 - Can be revoked individually without affecting other installations
 
@@ -376,7 +376,7 @@ This indicates a potential security issue. Run `fetch auth login` again to start
 ### File Structure
 
 ```
-~/.config/fetch/
+~/.config/pup/
 ├── client_datadoghq_com.json      # DCR client credentials
 └── tokens_datadoghq_com.json      # OAuth2 tokens
 ```

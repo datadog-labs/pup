@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DataDog/fetch/internal/version"
-	"github.com/DataDog/fetch/pkg/client"
-	"github.com/DataDog/fetch/pkg/config"
+	"github.com/DataDog/pup/internal/version"
+	"github.com/DataDog/pup/pkg/client"
+	"github.com/DataDog/pup/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -24,9 +24,9 @@ var (
 
 // rootCmd represents the base command
 var rootCmd = &cobra.Command{
-	Use:   "fetch",
-	Short: "Fetch - Datadog API CLI wrapper",
-	Long: `Fetch is a Go-based command-line wrapper that provides easy interaction
+	Use:   "pup",
+	Short: "Pup - Datadog API CLI wrapper",
+	Long: `Pup is a Go-based command-line wrapper that provides easy interaction
 with Datadog APIs. It supports both API key and OAuth2 authentication.`,
 	Version: version.Version,
 }

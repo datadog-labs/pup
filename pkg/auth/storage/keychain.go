@@ -11,12 +11,12 @@ import (
 	"runtime"
 
 	"github.com/99designs/keyring"
-	"github.com/DataDog/fetch/pkg/auth/types"
+	"github.com/DataDog/pup/pkg/auth/types"
 )
 
 const (
 	// KeychainService is the service name for keychain entries
-	KeychainService = "datadog-fetch-cli"
+	KeychainService = "datadog-pup-cli"
 
 	// TokenPrefix is the prefix for token keychain entries
 	TokenPrefix = "oauth-tokens:"

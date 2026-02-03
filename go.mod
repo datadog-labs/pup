@@ -1,15 +1,15 @@
-module github.com/DataDog/fetch
+module github.com/DataDog/pup
 
 go 1.21
 
 require (
+	github.com/99designs/keyring v1.2.2
 	github.com/DataDog/datadog-api-client-go/v2 v2.30.0
 	github.com/spf13/cobra v1.8.1
 )
 
 require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
-	github.com/99designs/keyring v1.2.2 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect

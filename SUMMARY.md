@@ -1,4 +1,4 @@
-# Fetch CLI - Implementation Summary
+# Pup CLI - Implementation Summary
 
 ## Overview
 
@@ -19,7 +19,7 @@ Successfully ported the Datadog API CLI from TypeScript to Go, creating **"fetch
 - ✅ Dynamic Client Registration (DCR) - RFC 7591
 - ✅ OAuth2 PKCE flow - RFC 7636
 - ✅ Local callback server
-- ✅ Secure token storage (~/.config/fetch/)
+- ✅ Secure token storage (~/.config/pup/)
 - ✅ Automatic token refresh
 - ✅ Multi-site support
 - ✅ 36 OAuth scopes
@@ -92,28 +92,28 @@ fetch/
 
 ### 1. OAuth2 Authentication (New!)
 ```bash
-fetch auth login      # Browser-based login with PKCE
-fetch auth status     # Check authentication status
-fetch auth refresh    # Refresh access token
-fetch auth logout     # Clear tokens
+pup auth login      # Browser-based login with PKCE
+pup auth status     # Check authentication status
+pup auth refresh    # Refresh access token
+pup auth logout     # Clear tokens
 ```
 
 ### 2. Working Commands
 ```bash
-fetch monitors list
-fetch monitors get <id>
-fetch monitors delete <id>
+pup monitors list
+pup monitors get <id>
+pup monitors delete <id>
 
-fetch dashboards list
-fetch dashboards get <id>
-fetch dashboards delete <id>
+pup dashboards list
+pup dashboards get <id>
+pup dashboards delete <id>
 
-fetch slos list
-fetch slos get <id>
-fetch slos delete <id>
+pup slos list
+pup slos get <id>
+pup slos delete <id>
 
-fetch incidents list
-fetch incidents get <id>
+pup incidents list
+pup incidents get <id>
 ```
 
 ### 3. Security Features
@@ -126,15 +126,15 @@ fetch incidents get <id>
 
 ### 4. Multi-Site Support
 ```bash
-DD_SITE=datadoghq.com fetch auth login     # US1
-DD_SITE=datadoghq.eu fetch auth login      # EU1
-DD_SITE=us3.datadoghq.com fetch auth login # US3
+DD_SITE=datadoghq.com pup auth login     # US1
+DD_SITE=datadoghq.eu pup auth login      # EU1
+DD_SITE=us3.datadoghq.com pup auth login # US3
 ```
 
 ## OAuth2 Flow
 
 ```
-1. User runs: fetch auth login
+1. User runs: pup auth login
 2. CLI registers as OAuth client (DCR)
 3. CLI generates PKCE challenge
 4. CLI starts local callback server
@@ -190,7 +190,7 @@ DD_SITE=us3.datadoghq.com fetch auth login # US3
 
 ## Comparison with TypeScript Plugin
 
-| Feature | TypeScript Plugin | Fetch (Go) |
+| Feature | TypeScript Plugin | Pup (Go) |
 |---------|------------------|------------|
 | **Language** | TypeScript/Node.js | Go |
 | **OAuth2** | ✅ (PR #84) | ✅ (Implemented) |
