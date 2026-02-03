@@ -5,9 +5,11 @@ A Go-based command-line wrapper for easy interaction with Datadog APIs.
 ## Features
 
 - **Native Go Implementation**: Fast, cross-platform binary
+- **OAuth2 Authentication**: Secure browser-based login with PKCE protection
+- **API Key Support**: Traditional API key authentication still available
 - **Simple Commands**: Intuitive CLI for common Datadog operations
-- **Multiple Authentication**: Support for API key authentication (OAuth2 coming soon)
 - **JSON Output**: Structured output for easy parsing and automation
+- **Dynamic Client Registration**: Each installation gets unique OAuth credentials
 
 ## Installation
 
@@ -25,7 +27,25 @@ go install
 
 ## Configuration
 
-Set your Datadog credentials as environment variables:
+### OAuth2 Authentication (Recommended)
+
+```bash
+# Set your Datadog site
+export DD_SITE="datadoghq.com"  # Optional, defaults to datadoghq.com
+
+# Login via browser
+fetch auth login
+
+# Check status
+fetch auth status
+
+# Logout
+fetch auth logout
+```
+
+See [docs/OAUTH2.md](docs/OAUTH2.md) for detailed OAuth2 documentation.
+
+### API Key Authentication (Legacy)
 
 ```bash
 export DD_API_KEY="your-datadog-api-key"
@@ -34,6 +54,22 @@ export DD_SITE="datadoghq.com"  # Optional, defaults to datadoghq.com
 ```
 
 ## Usage
+
+### Authentication
+
+```bash
+# OAuth2 login (recommended)
+fetch auth login
+
+# Check authentication status
+fetch auth status
+
+# Refresh access token
+fetch auth refresh
+
+# Logout
+fetch auth logout
+```
 
 ### Test Connection
 

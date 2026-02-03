@@ -46,6 +46,7 @@ func init() {
 	// Add subcommands
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(testCmd)
+	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(metricsCmd)
 	rootCmd.AddCommand(monitorsCmd)
 	rootCmd.AddCommand(dashboardsCmd)
