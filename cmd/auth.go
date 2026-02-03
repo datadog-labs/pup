@@ -24,20 +24,248 @@ import (
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "OAuth2 authentication commands",
-	Long:  `Manage OAuth2 authentication with Datadog using PKCE flow and Dynamic Client Registration.`,
+	Long: `Manage OAuth2 authentication with Datadog.
+
+OAuth2 provides secure, browser-based authentication with better security than
+API keys. It uses PKCE (Proof Key for Code Exchange) and Dynamic Client
+Registration for maximum security.
+
+AUTHENTICATION METHODS:
+  Fetch supports two authentication methods:
+
+  1. OAuth2 (RECOMMENDED):
+     - Browser-based login flow
+     - Short-lived access tokens (1 hour)
+     - Automatic token refresh
+     - Per-installation credentials
+     - Granular OAuth scopes
+     - Better audit trail
+
+  2. API Keys (LEGACY):
+     - Environment variables (DD_API_KEY, DD_APP_KEY)
+     - Long-lived credentials
+     - Organization-wide access
+     - Manual rotation required
+
+OAUTH2 FEATURES:
+  • PKCE Protection (S256): Prevents authorization code interception
+  • Dynamic Client Registration: Unique credentials per installation
+  • CSRF Protection: State parameter validation
+  • Secure Storage: Tokens stored in ~/.config/fetch/ with 0600 permissions
+  • Auto Refresh: Tokens refresh automatically before expiration
+  • Multi-Site: Separate credentials for each Datadog site
+
+COMMANDS:
+  login       Authenticate via browser with OAuth2
+  status      Check current authentication status
+  refresh     Manually refresh access token
+  logout      Clear all stored credentials
+
+OAUTH2 SCOPES:
+  The following scopes are requested during login:
+  • Dashboards: dashboards_read, dashboards_write
+  • Monitors: monitors_read, monitors_write, monitors_downtime
+  • APM: apm_read
+  • SLOs: slos_read, slos_write, slos_corrections
+  • Incidents: incident_read, incident_write
+  • Synthetics: synthetics_read, synthetics_write
+  • Security: security_monitoring_*
+  • RUM: rum_apps_read, rum_apps_write
+  • Infrastructure: hosts_read
+  • Users: user_access_read, user_self_profile_read
+  • Cases: cases_read, cases_write
+  • Events: events_read
+  • Logs: logs_read_data, logs_read_index_data
+  • Metrics: metrics_read, timeseries_query
+  • Usage: usage_read
+
+EXAMPLES:
+  # Login with OAuth2
+  fetch auth login
+
+  # Check authentication status
+  fetch auth status
+
+  # Refresh access token
+  fetch auth refresh
+
+  # Logout and clear credentials
+  fetch auth logout
+
+  # Login to different Datadog site
+  DD_SITE=datadoghq.eu fetch auth login
+
+MULTI-SITE SUPPORT:
+  Each Datadog site maintains separate credentials:
+
+  DD_SITE=datadoghq.com fetch auth login     # US1 (default)
+  DD_SITE=datadoghq.eu fetch auth login      # EU1
+  DD_SITE=us3.datadoghq.com fetch auth login # US3
+  DD_SITE=us5.datadoghq.com fetch auth login # US5
+  DD_SITE=ap1.datadoghq.com fetch auth login # AP1
+
+TOKEN STORAGE:
+  Credentials are stored in:
+  • ~/.config/fetch/tokens_<site>.json - OAuth2 tokens
+  • ~/.config/fetch/client_<site>.json - DCR client credentials
+
+  File permissions are set to 0600 (read/write owner only).
+
+SECURITY:
+  • Tokens never logged or printed
+  • PKCE prevents code interception
+  • State parameter prevents CSRF
+  • Unique client per installation
+  • Tokens auto-refresh before expiration
+
+For detailed OAuth2 documentation, see: docs/OAUTH2.md`,
 }
 
 var authLoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login via OAuth2",
-	Long:  `Authenticate with Datadog using OAuth2 browser-based login flow with PKCE protection.`,
+	Long: `Authenticate with Datadog using OAuth2 browser-based login.
+
+This command initiates a secure OAuth2 authentication flow:
+  1. Registers OAuth client with Datadog (first time only)
+  2. Generates PKCE challenge for security
+  3. Starts local callback server
+  4. Opens browser to Datadog authorization page
+  5. Waits for you to approve requested scopes
+  6. Exchanges authorization code for tokens
+  7. Stores tokens securely in ~/.config/fetch/
+
+OAUTH2 FLOW:
+  ┌─────────────────────────────────────────────────┐
+  │ 1. Check for existing client registration       │
+  │ 2. Register new client if needed (DCR)          │
+  │ 3. Generate PKCE challenge (S256)               │
+  │ 4. Generate state for CSRF protection           │
+  │ 5. Start local callback server                  │
+  │ 6. Open browser to Datadog auth page            │
+  │ 7. User approves 36 OAuth scopes                │
+  │ 8. Datadog redirects to callback with code      │
+  │ 9. Exchange code for tokens (with PKCE)         │
+  │ 10. Store tokens securely                       │
+  └─────────────────────────────────────────────────┘
+
+EXAMPLES:
+  # Login to default site (datadoghq.com)
+  fetch auth login
+
+  # Login to EU site
+  DD_SITE=datadoghq.eu fetch auth login
+
+  # Login to US3 site
+  DD_SITE=us3.datadoghq.com fetch auth login
+
+WHAT HAPPENS:
+  1. A local HTTP server starts on http://127.0.0.1:<random-port>/callback
+  2. Your browser opens to Datadog's authorization page
+  3. You review and approve the requested OAuth scopes
+  4. Datadog redirects back to the local callback server
+  5. Access and refresh tokens are securely stored
+  6. You're ready to use fetch commands!
+
+IF BROWSER DOESN'T OPEN:
+  The command will print the authorization URL. Copy and paste it into
+  your browser manually.
+
+TIMEOUT:
+  The callback server waits 5 minutes for authorization. If you don't
+  complete the flow within 5 minutes, run the command again.
+
+CREDENTIALS STORAGE:
+  After successful login, credentials are stored in:
+  • ~/.config/fetch/tokens_<site>.json     (access & refresh tokens)
+  • ~/.config/fetch/client_<site>.json     (OAuth client credentials)
+
+  Files have 0600 permissions (read/write owner only).
+
+TOKEN LIFETIME:
+  • Access Token: 1 hour (automatically refreshed)
+  • Refresh Token: 30 days (used to get new access tokens)
+
+SCOPES REQUESTED:
+  The login flow requests 36 OAuth scopes covering:
+  • Dashboards, Monitors, SLOs, Incidents
+  • APM traces, RUM, Synthetics
+  • Logs, Metrics, Events
+  • Security monitoring
+  • Infrastructure and hosts
+  • User and team management
+  • Cases and usage data
+
+  See: fetch auth --help for complete scope list`,
 	RunE:  runAuthLogin,
 }
 
 var authStatusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Check authentication status",
-	Long:  `Display current authentication status and token information.`,
+	Long: `Display current authentication status and token information.
+
+This command checks your current OAuth2 authentication status including:
+• Whether you're authenticated
+• Which Datadog site you're authenticated with
+• When your access token expires
+• Whether you have a valid refresh token
+
+EXAMPLES:
+  # Check authentication status
+  fetch auth status
+
+  # Check status for specific site
+  DD_SITE=datadoghq.eu fetch auth status
+
+  # Check status and parse with jq
+  fetch auth status | jq '.authenticated'
+
+OUTPUT:
+  {
+    "authenticated": true,
+    "site": "datadoghq.com",
+    "expires_at": "2024-02-03T14:30:00Z",
+    "token_type": "Bearer",
+    "has_refresh": true,
+    "status": "valid"
+  }
+
+OUTPUT FIELDS:
+  • authenticated: Boolean - whether you have valid credentials
+  • site: The Datadog site you're authenticated with
+  • expires_at: When the access token expires (ISO 8601)
+  • token_type: Token type (always "Bearer")
+  • has_refresh: Whether a refresh token is available
+  • status: "valid", "expired", or "missing"
+
+STATUS VALUES:
+  • valid: Access token is valid and not expired
+  • expired: Access token has expired (run 'fetch auth refresh')
+  • missing: No credentials found (run 'fetch auth login')
+
+WHEN TOKEN IS EXPIRED:
+  If your token is expired, you'll see:
+
+    ⚠️  Token expired
+    Run 'fetch auth refresh' to refresh or 'fetch auth login' to re-authenticate
+
+  The access token automatically refreshes when making API calls, but you can
+  manually refresh with 'fetch auth refresh'.
+
+WHEN NOT AUTHENTICATED:
+  If you're not authenticated, you'll see:
+
+    ❌ Not authenticated
+    Run 'fetch auth login' to authenticate
+
+  This means no OAuth2 credentials were found. Run 'fetch auth login' to start
+  the authentication flow.
+
+REFRESH TOKEN:
+  The refresh token (valid for 30 days) is used to obtain new access tokens
+  without requiring a new browser login. If the refresh token expires, you'll
+  need to run 'fetch auth login' again.`,
 	RunE:  runAuthStatus,
 }
 
