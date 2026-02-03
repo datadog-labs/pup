@@ -1,0 +1,161 @@
+# GoReleaser configuration for Pup
+# Builds multi-platform binaries with SBOMs and signatures
+
+version: 2
+
+before:
+  hooks:
+    # Run tests before building
+    - go test ./...
+    # Ensure go.mod is tidy
+    - go mod tidy
+
+builds:
+  - id: pup
+    binary: pup
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "7"
+    ignore:
+      # Windows ARM is not commonly used
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+    ldflags:
+      - -s -w
+      - -X github.com/DataDog/pup/internal/version.Version={{.Version}}
+      - -X github.com/DataDog/pup/internal/version.Commit={{.Commit}}
+      - -X github.com/DataDog/pup/internal/version.Date={{.Date}}
+      - -X github.com/DataDog/pup/internal/version.BuiltBy=goreleaser
+
+archives:
+  - id: pup
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - docs/*
+
+# Source archive
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: tar.gz
+
+# Generate checksums
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+# Generate SBOM (Software Bill of Materials)
+sboms:
+  - id: pup-sbom
+    artifacts: archive
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}.sbom.json"
+
+# Sign artifacts with cosign
+signs:
+  - cmd: cosign
+    artifacts: all
+    output: true
+    args:
+      - sign-blob
+      - "--output-signature=${signature}"
+      - "--output-certificate=${certificate}"
+      - "${artifact}"
+      - --yes
+
+# GitHub Release
+release:
+  github:
+    owner: DataDog
+    name: pup
+  draft: false
+  prerelease: auto
+  mode: append
+  name_template: "Release {{ .Version }}"
+  header: |
+    ## Pup {{ .Version }}
+
+    ### Installation
+
+    Download the appropriate binary for your platform from the assets below.
+
+    ```bash
+    # Linux (x86_64)
+    curl -L https://github.com/DataDog/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Linux_x86_64.tar.gz | tar xz
+
+    # macOS (Apple Silicon)
+    curl -L https://github.com/DataDog/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Darwin_arm64.tar.gz | tar xz
+
+    # macOS (Intel)
+    curl -L https://github.com/DataDog/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Darwin_x86_64.tar.gz | tar xz
+    ```
+
+    ### Verifying Signatures
+
+    All artifacts are signed with cosign. To verify:
+
+    ```bash
+    cosign verify-blob \
+      --certificate pup_{{ .Version }}_Linux_x86_64.tar.gz.pem \
+      --signature pup_{{ .Version }}_Linux_x86_64.tar.gz.sig \
+      pup_{{ .Version }}_Linux_x86_64.tar.gz
+    ```
+
+  footer: |
+    ### What's Changed
+
+    See the [CHANGELOG](https://github.com/DataDog/pup/blob/{{ .Tag }}/CHANGELOG.md) for details.
+
+    **Full Changelog**: https://github.com/DataDog/pup/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+changelog:
+  use: github
+  sort: asc
+  abbrev: 0
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - typo
+  groups:
+    - title: "🚀 Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🐛 Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "🔒 Security"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "📚 Documentation"
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: "Other Changes"
+      order: 999
+
+# Announce releases
+announce:
+  skip: false
