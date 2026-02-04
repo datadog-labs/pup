@@ -1,6 +1,9 @@
 # golangci-lint configuration for pup
 # https://golangci-lint.run/usage/configuration/
 
+# Specify config format version (required in v2.0+)
+version: 2
+
 run:
   timeout: 5m
   tests: true
