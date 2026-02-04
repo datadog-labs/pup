@@ -1,0 +1,37 @@
+# golangci-lint configuration for pup
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - gofmt
+    - goimports
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+linters-settings:
+  errcheck:
+    # Exclude test files from errcheck
+    # Test cleanup code errors are generally not critical
+    exclude-functions:
+      - (io.Closer).Close
+      - (*database/sql.Rows).Close
+      - (*database/sql.Stmt).Close
+      - (*os.File).Close
+
+issues:
+  # Exclude errcheck from test files
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+    # Exclude errcheck from test helper files
+    - path: testing\.go
+      linters:
+        - errcheck
