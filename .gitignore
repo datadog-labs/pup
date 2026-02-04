@@ -12,6 +12,9 @@ coverage.html
 
 # Output of the go coverage tool
 *.out
+coverage_report.txt
+comment_body.txt
+comment_final.txt
 
 # Go workspace file
 go.work

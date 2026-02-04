@@ -346,6 +346,53 @@ See the [Automated Development Workflow](#automated-development-workflow-for-cla
 - Aim for >80% code coverage
 - Include integration tests for critical paths
 
+### CI/CD and Code Coverage
+
+**Coverage Requirements:**
+- **Minimum threshold: 80%** - PRs that drop coverage below 80% will fail CI
+- Coverage is automatically calculated and reported on every PR
+- Coverage reports are uploaded as artifacts for 30 days
+
+**CI Workflow:**
+The project uses GitHub Actions with three parallel jobs:
+
+1. **Test and Coverage**:
+   - Runs all tests with race detection
+   - Generates coverage reports (text, HTML)
+   - Checks coverage meets 80% threshold
+   - Comments on PR with detailed coverage breakdown
+   - Uploads coverage artifacts
+
+2. **Lint**:
+   - Runs `golangci-lint` with 5-minute timeout
+   - Enforces Go style and best practices
+
+3. **Build**:
+   - Verifies the project builds successfully
+   - Builds the CLI binary
+   - Validates binary execution
+
+**PR Coverage Comments:**
+Every PR receives an automated comment showing:
+- Overall coverage percentage with color-coded badge
+- Pass/fail status against 80% threshold
+- Detailed coverage breakdown by package
+- Commit SHA for tracking
+
+**Running Coverage Locally:**
+```bash
+# Run tests with coverage
+go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+# View coverage in terminal
+go tool cover -func=coverage.out
+
+# Generate HTML coverage report
+go tool cover -html=coverage.out -o coverage.html
+open coverage.html  # macOS
+xdg-open coverage.html  # Linux
+```
+
 ### Configuration Precedence
 
 Configuration values are resolved in the following order (highest to lowest priority):

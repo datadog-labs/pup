@@ -1,0 +1,186 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    name: Test and Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Run tests with coverage
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Calculate coverage
+        id: coverage
+        run: |
+          # Calculate total coverage
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Total coverage: $COVERAGE%"
+
+          # Calculate coverage by package
+          echo "## Coverage by Package" > coverage_report.txt
+          echo "" >> coverage_report.txt
+          go tool cover -func=coverage.out | grep -v "total:" | awk '{print $1, $3}' | sort -t: -k1,1 -u | while read line; do
+            echo "- $line" >> coverage_report.txt
+          done
+
+          # Get coverage summary
+          echo "" >> coverage_report.txt
+          echo "## Summary" >> coverage_report.txt
+          echo "" >> coverage_report.txt
+          go tool cover -func=coverage.out | tail -1 >> coverage_report.txt
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.coverage }}
+          THRESHOLD=80.0
+
+          echo "Coverage: $COVERAGE%"
+          echo "Threshold: $THRESHOLD%"
+
+          # Use bc for floating point comparison
+          if [ $(echo "$COVERAGE < $THRESHOLD" | bc -l) -eq 1 ]; then
+            echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
+            exit 1
+          else
+            echo "✅ Coverage $COVERAGE% meets threshold $THRESHOLD%"
+          fi
+
+      - name: Generate coverage badge data
+        if: github.event_name == 'pull_request'
+        id: badge
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.coverage }}
+
+          # Determine badge color based on coverage
+          if [ $(echo "$COVERAGE >= 90" | bc -l) -eq 1 ]; then
+            COLOR="brightgreen"
+          elif [ $(echo "$COVERAGE >= 80" | bc -l) -eq 1 ]; then
+            COLOR="green"
+          elif [ $(echo "$COVERAGE >= 70" | bc -l) -eq 1 ]; then
+            COLOR="yellow"
+          elif [ $(echo "$COVERAGE >= 60" | bc -l) -eq 1 ]; then
+            COLOR="orange"
+          else
+            COLOR="red"
+          fi
+
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+
+      - name: Generate PR comment body
+        if: github.event_name == 'pull_request'
+        id: comment
+        env:
+          COVERAGE: ${{ steps.coverage.outputs.coverage }}
+          BADGE_COLOR: ${{ steps.badge.outputs.color }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Determine status
+          if [ $(echo "$COVERAGE >= 80" | bc -l) -eq 1 ]; then
+            STATUS="✅ PASSED - Coverage meets minimum threshold"
+            STATUS_EMOJI="✅"
+          else
+            STATUS="❌ FAILED - Coverage below minimum threshold"
+            STATUS_EMOJI="❌"
+          fi
+
+          # Create comment body using heredoc
+          cat > comment_final.txt << EOF
+          ## 📊 Test Coverage Report
+
+          **Overall Coverage:** ${COVERAGE}% ![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-${BADGE_COLOR})
+
+          **Threshold:** 80% ${STATUS_EMOJI}
+
+          <details>
+          <summary>Coverage by Package</summary>
+
+          \`\`\`
+          $(cat coverage_report.txt)
+          \`\`\`
+
+          </details>
+
+          ---
+          📈 **Coverage Status:** ${STATUS}
+
+          <sub>Updated for commit ${COMMIT_SHA}</sub>
+          EOF
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: coverage
+          path: comment_final.txt
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.out
+            coverage.html
+            coverage_report.txt
+          retention-days: 30
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --timeout=5m
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Build CLI binary
+        run: go build -o pup .
+
+      - name: Verify binary
+        run: ./pup --version
