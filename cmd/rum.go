@@ -256,64 +256,96 @@ var (
 func init() {
 	// RUM Apps flags
 	rumAppsGetCmd.Flags().StringVar(&rumAppID, "app-id", "", "Application ID (required)")
-	rumAppsGetCmd.MarkFlagRequired("app-id")
+	if err := rumAppsGetCmd.MarkFlagRequired("app-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumAppsCreateCmd.Flags().StringVar(&rumAppName, "name", "", "Application name (required)")
 	rumAppsCreateCmd.Flags().StringVar(&rumAppType, "type", "", "Application type (required)")
-	rumAppsCreateCmd.MarkFlagRequired("name")
-	rumAppsCreateCmd.MarkFlagRequired("type")
+	if err := rumAppsCreateCmd.MarkFlagRequired("name"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := rumAppsCreateCmd.MarkFlagRequired("type"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumAppsUpdateCmd.Flags().StringVar(&rumAppID, "app-id", "", "Application ID (required)")
 	rumAppsUpdateCmd.Flags().StringVar(&rumAppName, "name", "", "Application name")
 	rumAppsUpdateCmd.Flags().StringVar(&rumAppType, "type", "", "Application type")
-	rumAppsUpdateCmd.MarkFlagRequired("app-id")
+	if err := rumAppsUpdateCmd.MarkFlagRequired("app-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumAppsDeleteCmd.Flags().StringVar(&rumAppID, "app-id", "", "Application ID (required)")
-	rumAppsDeleteCmd.MarkFlagRequired("app-id")
+	if err := rumAppsDeleteCmd.MarkFlagRequired("app-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// RUM Metrics flags
 	rumMetricsGetCmd.Flags().StringVar(&rumMetricID, "metric-id", "", "Metric ID (required)")
-	rumMetricsGetCmd.MarkFlagRequired("metric-id")
+	if err := rumMetricsGetCmd.MarkFlagRequired("metric-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumMetricsCreateCmd.Flags().StringVar(&rumMetricName, "name", "", "Metric name (required)")
 	rumMetricsCreateCmd.Flags().StringVar(&rumEventType, "event-type", "", "Event type (required)")
 	rumMetricsCreateCmd.Flags().StringVar(&rumFilter, "filter", "", "Query filter")
 	rumMetricsCreateCmd.Flags().StringVar(&rumCompute, "compute", "", "Compute JSON (required)")
 	rumMetricsCreateCmd.Flags().StringVar(&rumGroupBy, "group-by", "", "Group by JSON")
-	rumMetricsCreateCmd.MarkFlagRequired("name")
-	rumMetricsCreateCmd.MarkFlagRequired("event-type")
-	rumMetricsCreateCmd.MarkFlagRequired("compute")
+	if err := rumMetricsCreateCmd.MarkFlagRequired("name"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := rumMetricsCreateCmd.MarkFlagRequired("event-type"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := rumMetricsCreateCmd.MarkFlagRequired("compute"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumMetricsUpdateCmd.Flags().StringVar(&rumMetricID, "metric-id", "", "Metric ID (required)")
 	rumMetricsUpdateCmd.Flags().StringVar(&rumFilter, "filter", "", "Query filter")
 	rumMetricsUpdateCmd.Flags().StringVar(&rumGroupBy, "group-by", "", "Group by JSON")
 	rumMetricsUpdateCmd.Flags().StringVar(&rumCompute, "compute", "", "Compute JSON")
-	rumMetricsUpdateCmd.MarkFlagRequired("metric-id")
+	if err := rumMetricsUpdateCmd.MarkFlagRequired("metric-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumMetricsDeleteCmd.Flags().StringVar(&rumMetricID, "metric-id", "", "Metric ID (required)")
-	rumMetricsDeleteCmd.MarkFlagRequired("metric-id")
+	if err := rumMetricsDeleteCmd.MarkFlagRequired("metric-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// RUM Retention Filters flags
 	rumRetentionFiltersGetCmd.Flags().StringVar(&rumFilterID, "filter-id", "", "Filter ID (required)")
-	rumRetentionFiltersGetCmd.MarkFlagRequired("filter-id")
+	if err := rumRetentionFiltersGetCmd.MarkFlagRequired("filter-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumRetentionFiltersCreateCmd.Flags().StringVar(&rumFilterName, "name", "", "Filter name (required)")
 	rumRetentionFiltersCreateCmd.Flags().StringVar(&rumFilterQuery, "query", "", "Filter query (required)")
 	rumRetentionFiltersCreateCmd.Flags().IntVar(&rumFilterRate, "rate", 100, "Sample rate (0-100)")
 	rumRetentionFiltersCreateCmd.Flags().StringVar(&rumFilterType, "type", "session-replay", "Filter type")
 	rumRetentionFiltersCreateCmd.Flags().BoolVar(&rumFilterEnabled, "enabled", true, "Enable filter")
-	rumRetentionFiltersCreateCmd.MarkFlagRequired("name")
-	rumRetentionFiltersCreateCmd.MarkFlagRequired("query")
+	if err := rumRetentionFiltersCreateCmd.MarkFlagRequired("name"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := rumRetentionFiltersCreateCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumRetentionFiltersUpdateCmd.Flags().StringVar(&rumFilterID, "filter-id", "", "Filter ID (required)")
 	rumRetentionFiltersUpdateCmd.Flags().StringVar(&rumFilterName, "name", "", "Filter name")
 	rumRetentionFiltersUpdateCmd.Flags().StringVar(&rumFilterQuery, "query", "", "Filter query")
 	rumRetentionFiltersUpdateCmd.Flags().IntVar(&rumFilterRate, "rate", -1, "Sample rate (0-100)")
 	rumRetentionFiltersUpdateCmd.Flags().BoolVar(&rumFilterEnabled, "enabled", true, "Enable filter")
-	rumRetentionFiltersUpdateCmd.MarkFlagRequired("filter-id")
+	if err := rumRetentionFiltersUpdateCmd.MarkFlagRequired("filter-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	rumRetentionFiltersDeleteCmd.Flags().StringVar(&rumFilterID, "filter-id", "", "Filter ID (required)")
-	rumRetentionFiltersDeleteCmd.MarkFlagRequired("filter-id")
+	if err := rumRetentionFiltersDeleteCmd.MarkFlagRequired("filter-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// RUM Sessions flags
 	rumSessionsListCmd.Flags().StringVar(&rumFrom, "from", "1h", "Time range start")
@@ -324,17 +356,23 @@ func init() {
 	rumSessionsSearchCmd.Flags().StringVar(&rumFrom, "from", "1h", "Time range start")
 	rumSessionsSearchCmd.Flags().StringVar(&rumTo, "to", "now", "Time range end")
 	rumSessionsSearchCmd.Flags().IntVar(&rumLimit, "limit", 100, "Maximum results")
-	rumSessionsSearchCmd.MarkFlagRequired("query")
+	if err := rumSessionsSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// RUM Playlists flags
 	rumPlaylistsGetCmd.Flags().StringVar(&rumPlaylistID, "playlist-id", "", "Playlist ID (required)")
-	rumPlaylistsGetCmd.MarkFlagRequired("playlist-id")
+	if err := rumPlaylistsGetCmd.MarkFlagRequired("playlist-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// RUM Heatmaps flags
 	rumHeatmapsQueryCmd.Flags().StringVar(&rumView, "view", "", "View/page name (required)")
 	rumHeatmapsQueryCmd.Flags().StringVar(&rumFrom, "from", "24h", "Time range start")
 	rumHeatmapsQueryCmd.Flags().StringVar(&rumTo, "to", "now", "Time range end")
-	rumHeatmapsQueryCmd.MarkFlagRequired("view")
+	if err := rumHeatmapsQueryCmd.MarkFlagRequired("view"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// Add subcommands
 	rumAppsCmd.AddCommand(rumAppsListCmd, rumAppsGetCmd, rumAppsCreateCmd, rumAppsUpdateCmd, rumAppsDeleteCmd)
@@ -484,7 +522,11 @@ func runRumAppsDelete(cmd *cobra.Command, args []string) error {
 		fmt.Printf("⚠️  WARNING: This will permanently delete RUM application %s\n", rumAppID)
 		fmt.Print("Are you sure you want to continue? (y/N): ")
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// User cancelled or error reading input
+			fmt.Println("\nOperation cancelled")
+			return nil
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return nil

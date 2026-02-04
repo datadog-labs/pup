@@ -74,7 +74,9 @@ var (
 
 func init() {
 	apiKeysCreateCmd.Flags().StringVar(&apiKeyName, "name", "", "API key name (required)")
-	apiKeysCreateCmd.MarkFlagRequired("name")
+	if err := apiKeysCreateCmd.MarkFlagRequired("name"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	apiKeysCmd.AddCommand(apiKeysListCmd, apiKeysGetCmd, apiKeysCreateCmd, apiKeysDeleteCmd)
 }
@@ -169,7 +171,11 @@ func runAPIKeysDelete(cmd *cobra.Command, args []string) error {
 		fmt.Printf("⚠️  WARNING: This will permanently delete API key %s\n", keyID)
 		fmt.Print("Are you sure you want to continue? (y/N): ")
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// User cancelled or error reading input
+			fmt.Println("\nOperation cancelled")
+			return nil
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return nil

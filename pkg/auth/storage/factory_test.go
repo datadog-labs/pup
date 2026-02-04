@@ -91,6 +91,11 @@ func TestGetStorage(t *testing.T) {
 			// Reset storage state
 			ResetStorage()
 
+			// Skip tests that require keychain when it's not available
+			if tt.keychainAvailable && !IsKeychainAvailable() {
+				t.Skip("Keychain not available in test environment")
+			}
+
 			// Set environment variable
 			if tt.envValue != "" {
 				os.Setenv(StorageEnvVar, tt.envValue)

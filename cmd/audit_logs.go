@@ -68,7 +68,9 @@ func init() {
 	auditLogsSearchCmd.Flags().StringVar(&auditLogsFrom, "from", "1h", "Start time")
 	auditLogsSearchCmd.Flags().StringVar(&auditLogsTo, "to", "now", "End time")
 	auditLogsSearchCmd.Flags().Int32Var(&auditLogsLimit, "limit", 100, "Maximum results")
-	auditLogsSearchCmd.MarkFlagRequired("query")
+	if err := auditLogsSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	auditLogsCmd.AddCommand(auditLogsListCmd, auditLogsSearchCmd)
 }

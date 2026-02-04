@@ -315,7 +315,11 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 	if err := callbackServer.Start(); err != nil {
 		return fmt.Errorf("failed to start callback server: %w", err)
 	}
-	defer callbackServer.Stop()
+	defer func() {
+		if err := callbackServer.Stop(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to stop callback server: %v\n", err)
+		}
+	}()
 
 	redirectURI := callbackServer.RedirectURI()
 	fmt.Printf("📡 Callback server started on: %s\n", redirectURI)

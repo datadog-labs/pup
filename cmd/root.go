@@ -94,7 +94,9 @@ func initConfig() {
 	// Set auto-approve from flag if specified
 	if autoApprove {
 		cfg.AutoApprove = true
-		os.Setenv("DD_CLI_AUTO_APPROVE", "true")
+		if err := os.Setenv("DD_CLI_AUTO_APPROVE", "true"); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to set DD_CLI_AUTO_APPROVE: %v\n", err)
+		}
 	}
 }
 

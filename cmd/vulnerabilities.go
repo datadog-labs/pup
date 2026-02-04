@@ -163,7 +163,9 @@ func init() {
 	vulnerabilitiesSearchCmd.Flags().StringVar(&vulnTo, "to", "", "End time")
 	vulnerabilitiesSearchCmd.Flags().Int32Var(&vulnLimit, "limit", 100, "Maximum results")
 	vulnerabilitiesSearchCmd.Flags().Int32Var(&vulnOffset, "offset", 0, "Results offset")
-	vulnerabilitiesSearchCmd.MarkFlagRequired("query")
+	if err := vulnerabilitiesSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	vulnerabilitiesListCmd.Flags().StringVar(&vulnSeverity, "severity", "", "Filter by severity")
 	vulnerabilitiesListCmd.Flags().StringVar(&vulnStatus, "status", "", "Filter by status")

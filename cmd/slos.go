@@ -279,7 +279,11 @@ func runSlosDelete(cmd *cobra.Command, args []string) error {
 		fmt.Print("Are you sure you want to continue? (y/N): ")
 
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// User cancelled or error reading input
+			fmt.Println("\nOperation cancelled")
+			return nil
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return nil

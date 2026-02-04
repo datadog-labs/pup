@@ -431,7 +431,9 @@ func init() {
 	metricsQueryCmd.Flags().StringVar(&queryString, "query", "", "Metric query string (required)")
 	metricsQueryCmd.Flags().StringVar(&fromTime, "from", "1h", "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")
 	metricsQueryCmd.Flags().StringVar(&toTime, "to", "now", "End time (e.g., now, unix timestamp)")
-	metricsQueryCmd.MarkFlagRequired("query")
+	if err := metricsQueryCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// List command flags
 	metricsListCmd.Flags().StringVar(&filterPattern, "filter", "", "Filter metrics by pattern (e.g., system.*)")
@@ -451,8 +453,12 @@ func init() {
 	metricsSubmitCmd.Flags().StringVar(&submitTags, "tags", "", "Comma-separated tags (e.g., env:prod,team:api)")
 	metricsSubmitCmd.Flags().StringVar(&submitHost, "host", "", "Host name")
 	metricsSubmitCmd.Flags().Int64Var(&submitInterval, "interval", 0, "Interval in seconds for rate/count metrics")
-	metricsSubmitCmd.MarkFlagRequired("name")
-	metricsSubmitCmd.MarkFlagRequired("value")
+	if err := metricsSubmitCmd.MarkFlagRequired("name"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := metricsSubmitCmd.MarkFlagRequired("value"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// Tags command flags
 	metricsTagsListCmd.Flags().StringVar(&fromTime, "from", "1h", "Start time")

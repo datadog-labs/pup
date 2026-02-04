@@ -99,14 +99,18 @@ func init() {
 	cicdPipelinesListCmd.Flags().StringVar(&cicdTo, "to", "now", "End time")
 
 	cicdPipelinesGetCmd.Flags().StringVar(&pipelineID, "pipeline-id", "", "Pipeline ID (required)")
-	cicdPipelinesGetCmd.MarkFlagRequired("pipeline-id")
+	if err := cicdPipelinesGetCmd.MarkFlagRequired("pipeline-id"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	cicdEventsSearchCmd.Flags().StringVar(&cicdQuery, "query", "", "Search query (required)")
 	cicdEventsSearchCmd.Flags().StringVar(&cicdFrom, "from", "1h", "Start time")
 	cicdEventsSearchCmd.Flags().StringVar(&cicdTo, "to", "now", "End time")
 	cicdEventsSearchCmd.Flags().Int32Var(&cicdLimit, "limit", 50, "Maximum results")
 	cicdEventsSearchCmd.Flags().StringVar(&cicdSort, "sort", "desc", "Sort order (asc or desc)")
-	cicdEventsSearchCmd.MarkFlagRequired("query")
+	if err := cicdEventsSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	cicdEventsAggregateCmd.Flags().StringVar(&cicdQuery, "query", "", "Search query (required)")
 	cicdEventsAggregateCmd.Flags().StringVar(&cicdFrom, "from", "1h", "Start time")
@@ -114,7 +118,9 @@ func init() {
 	cicdEventsAggregateCmd.Flags().StringVar(&cicdCompute, "compute", "count", "Aggregation function")
 	cicdEventsAggregateCmd.Flags().StringVar(&cicdGroupBy, "group-by", "", "Group by field(s)")
 	cicdEventsAggregateCmd.Flags().Int32Var(&cicdLimit, "limit", 10, "Maximum groups")
-	cicdEventsAggregateCmd.MarkFlagRequired("query")
+	if err := cicdEventsAggregateCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	cicdPipelinesCmd.AddCommand(cicdPipelinesListCmd, cicdPipelinesGetCmd)
 	cicdEventsCmd.AddCommand(cicdEventsSearchCmd, cicdEventsAggregateCmd)

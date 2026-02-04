@@ -517,8 +517,12 @@ func init() {
 	logsSearchCmd.Flags().IntVar(&logsLimit, "limit", 50, "Maximum number of logs (1-1000)")
 	logsSearchCmd.Flags().StringVar(&logsSort, "sort", "desc", "Sort order: asc or desc")
 	logsSearchCmd.Flags().StringVar(&logsIndex, "index", "", "Comma-separated log indexes")
-	logsSearchCmd.MarkFlagRequired("query")
-	logsSearchCmd.MarkFlagRequired("from")
+	if err := logsSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := logsSearchCmd.MarkFlagRequired("from"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// List command flags (v2)
 	logsListCmd.Flags().StringVar(&logsQuery, "query", "*", "Search query")
@@ -526,7 +530,9 @@ func init() {
 	logsListCmd.Flags().StringVar(&logsTo, "to", "now", "End time")
 	logsListCmd.Flags().IntVar(&logsLimit, "limit", 10, "Number of logs")
 	logsListCmd.Flags().StringVar(&logsSort, "sort", "-timestamp", "Sort order")
-	logsListCmd.MarkFlagRequired("from")
+	if err := logsListCmd.MarkFlagRequired("from"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// Query command flags (v2)
 	logsQueryCmd.Flags().StringVar(&logsQuery, "query", "", "Log query (required)")
@@ -535,8 +541,12 @@ func init() {
 	logsQueryCmd.Flags().IntVar(&logsLimit, "limit", 50, "Maximum results")
 	logsQueryCmd.Flags().StringVar(&logsSort, "sort", "-timestamp", "Sort order")
 	logsQueryCmd.Flags().StringVar(&logsTimezone, "timezone", "", "Timezone for timestamps")
-	logsQueryCmd.MarkFlagRequired("query")
-	logsQueryCmd.MarkFlagRequired("from")
+	if err := logsQueryCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := logsQueryCmd.MarkFlagRequired("from"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// Aggregate command flags (v2)
 	logsAggregateCmd.Flags().StringVar(&logsQuery, "query", "", "Log query (required)")
@@ -545,8 +555,12 @@ func init() {
 	logsAggregateCmd.Flags().StringVar(&logsCompute, "compute", "count", "Metric to compute")
 	logsAggregateCmd.Flags().StringVar(&logsGroupBy, "group-by", "", "Field to group by")
 	logsAggregateCmd.Flags().IntVar(&logsLimit, "limit", 10, "Maximum groups")
-	logsAggregateCmd.MarkFlagRequired("query")
-	logsAggregateCmd.MarkFlagRequired("from")
+	if err := logsAggregateCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+	if err := logsAggregateCmd.MarkFlagRequired("from"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 
 	// Add subcommands
 	logsCmd.AddCommand(logsSearchCmd)
@@ -923,7 +937,11 @@ func runLogsArchivesDelete(cmd *cobra.Command, args []string) error {
 		fmt.Print("Are you sure you want to continue? (y/N): ")
 
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// User cancelled or error reading input
+			fmt.Println("\nOperation cancelled")
+			return nil
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return nil
@@ -1059,7 +1077,11 @@ func runLogsMetricsDelete(cmd *cobra.Command, args []string) error {
 		fmt.Print("Are you sure you want to continue? (y/N): ")
 
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// User cancelled or error reading input
+			fmt.Println("\nOperation cancelled")
+			return nil
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return nil
