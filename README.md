@@ -1,5 +1,10 @@
 # Pup - Datadog API CLI Wrapper
 
+[![CI](https://github.com/DataDog/pup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DataDog/pup/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/DataDog/pup/main/.github/badges/coverage.json)](https://github.com/DataDog/pup/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go)](https://go.dev/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 A Go-based command-line wrapper for easy interaction with Datadog APIs.
 
 ## Features

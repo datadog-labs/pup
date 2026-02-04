@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]  # Run on all branches
   pull_request:
-    branches: [ main ]
+    branches: [ '**' ]  # Run on PRs to all branches
 
 permissions:
   contents: read
@@ -133,6 +133,46 @@ jobs:
         with:
           header: coverage
           path: comment_final.txt
+
+      - name: Generate coverage badge for main branch
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          COVERAGE: ${{ steps.coverage.outputs.coverage }}
+        run: |
+          # Determine badge color
+          if [ $(echo "$COVERAGE >= 90" | bc -l) -eq 1 ]; then
+            COLOR="brightgreen"
+          elif [ $(echo "$COVERAGE >= 80" | bc -l) -eq 1 ]; then
+            COLOR="green"
+          elif [ $(echo "$COVERAGE >= 70" | bc -l) -eq 1 ]; then
+            COLOR="yellow"
+          elif [ $(echo "$COVERAGE >= 60" | bc -l) -eq 1 ]; then
+            COLOR="orange"
+          else
+            COLOR="red"
+          fi
+
+          # Create badge JSON for shields.io endpoint schema
+          mkdir -p .github/badges
+          cat > .github/badges/coverage.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "coverage",
+            "message": "${COVERAGE}%",
+            "color": "${COLOR}"
+          }
+          EOF
+
+          echo "Generated coverage badge: ${COVERAGE}% (${COLOR})"
+
+      - name: Commit coverage badge to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/coverage.json
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4

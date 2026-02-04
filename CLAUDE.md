@@ -350,11 +350,12 @@ See the [Automated Development Workflow](#automated-development-workflow-for-cla
 
 **Coverage Requirements:**
 - **Minimum threshold: 80%** - PRs that drop coverage below 80% will fail CI
-- Coverage is automatically calculated and reported on every PR
+- Coverage is automatically calculated and reported on every PR and branch
 - Coverage reports are uploaded as artifacts for 30 days
+- Coverage badge is automatically updated on the main branch
 
 **CI Workflow:**
-The project uses GitHub Actions with three parallel jobs:
+The project uses GitHub Actions with three parallel jobs that run on all branches:
 
 1. **Test and Coverage**:
    - Runs all tests with race detection
@@ -362,6 +363,7 @@ The project uses GitHub Actions with three parallel jobs:
    - Checks coverage meets 80% threshold
    - Comments on PR with detailed coverage breakdown
    - Uploads coverage artifacts
+   - On main branch: Updates coverage badge in README.md
 
 2. **Lint**:
    - Runs `golangci-lint` with 5-minute timeout
@@ -371,6 +373,12 @@ The project uses GitHub Actions with three parallel jobs:
    - Verifies the project builds successfully
    - Builds the CLI binary
    - Validates binary execution
+
+**Coverage Badge:**
+The README.md displays a live coverage badge that updates automatically on each push to main:
+- Badge color indicates coverage level (green 80%+, yellow 70-80%, red <70%)
+- Badge data stored in `.github/badges/coverage.json`
+- Uses shields.io endpoint for dynamic display
 
 **PR Coverage Comments:**
 Every PR receives an automated comment showing:
