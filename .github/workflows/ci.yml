@@ -31,10 +31,11 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Run tests on all packages
+          # Run tests on all packages with race detection
           go test -v -race ./...
           # Calculate coverage only for pkg/ (cmd/ is CLI code with lower test coverage)
-          go test -race -coverprofile=coverage.out -covermode=atomic ./pkg/...
+          # Use -count=1 to disable test caching and get accurate coverage
+          go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
           go tool cover -html=coverage.out -o coverage.html
 
       - name: Calculate coverage
