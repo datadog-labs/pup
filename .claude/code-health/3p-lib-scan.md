@@ -6,4 +6,16 @@ Steps:
 - For each, evaluate whether replacing is worth it.
 - If yes, recommend categories of libraries (no need to pick a single one if uncertain), migration risk, and a staged rollout plan.
 
-Output: A plan in .claude/plans with a decision rubric: keep/build/buy, plus why. This should be a markdown format.
+Output: Create GitHub issues for each finding using the `gh` CLI tool (preferred) or GitHub MCP server (fallback).
+
+**Issue Format:**
+- **Title**: Clear, concise description (e.g., "Replace custom retry logic with standard library")
+- **Body**: Include decision rubric (keep/build/buy), rationale, migration plan, and staged rollout steps in markdown format
+- **Labels**: Apply `code-health`, `3p-lib-scan`, and appropriate priority label (`P0`, `P1`, `P2`, `P3`)
+
+**Using gh CLI (preferred):**
+```bash
+gh issue create --title "..." --body "..." --label "code-health,3p-lib-scan,P2"
+```
+
+**Fallback to GitHub MCP server if gh CLI unavailable.**
