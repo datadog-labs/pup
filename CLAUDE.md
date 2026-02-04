@@ -286,6 +286,17 @@ fetch/
 
 ## Development Guidelines
 
+### Workflow for Claude Code
+
+**When completing any task that involves code changes:**
+1. Create a feature branch with appropriate prefix (feat/, fix/, etc.)
+2. Make changes following the code style guidelines below
+3. Stage specific files (avoid `git add .`)
+4. Commit with conventional commit format
+5. Create PR using `gh pr create` with detailed description
+
+See the [Automated Development Workflow](#automated-development-workflow-for-claude-code) section for complete details and examples.
+
 ### Code Style
 
 - Follow standard Go conventions and idioms
@@ -371,7 +382,216 @@ Based on the TypeScript plugin implementation:
    go run main.go <command>
    ```
 
-### Pull Request Process
+### Automated Development Workflow (For Claude Code)
+
+When working on tasks, follow this automated workflow:
+
+#### 1. Create Feature Branch
+
+Create a descriptive branch name based on the work being done:
+
+```bash
+# Branch naming convention: <type>/<short-description>
+# Examples:
+git checkout -b feat/oauth2-token-refresh
+git checkout -b fix/metrics-query-timeout
+git checkout -b refactor/simplify-auth-client
+git checkout -b docs/update-readme-oauth
+```
+
+**Branch type prefixes:**
+- `feat/` - New features
+- `fix/` - Bug fixes
+- `refactor/` - Code refactoring
+- `docs/` - Documentation updates
+- `test/` - Test additions/updates
+- `chore/` - Maintenance tasks
+- `perf/` - Performance improvements
+
+#### 2. Make Changes and Commit
+
+After completing the work:
+
+1. **Stage relevant files** (prefer specific files over `git add .`):
+   ```bash
+   git add pkg/auth/oauth/client.go pkg/auth/oauth/client_test.go
+   ```
+
+2. **Commit with conventional commit message**:
+   ```bash
+   git commit -m "$(cat <<'EOF'
+   <type>(<scope>): <subject>
+
+   <body describing what changed and why>
+
+   - Key change 1
+   - Key change 2
+   - Key change 3
+
+   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+   EOF
+   )"
+   ```
+
+**Important**: Always include the Co-Authored-By line to credit Claude's contribution.
+
+#### 3. Create Pull Request with gh CLI
+
+Use `gh` CLI to push and create PR in one step:
+
+```bash
+gh pr create \
+  --title "<type>(<scope>): <clear, concise title>" \
+  --body "$(cat <<'EOF'
+## Summary
+Brief overview of what this PR does (1-2 sentences).
+
+## Changes
+- Specific change 1 with file reference
+- Specific change 2 with file reference
+- Specific change 3 with file reference
+
+## Testing
+- Test scenarios covered
+- How to verify the changes
+
+## Related Issues
+Closes #<issue-number> (if applicable)
+Fixes #<issue-number> (if applicable)
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)" \
+  --label "<appropriate-labels>" \
+  --draft  # Optional: use --draft for work-in-progress
+
+# Example:
+gh pr create \
+  --title "feat(auth): implement OAuth2 token refresh with PKCE" \
+  --body "$(cat <<'EOF'
+## Summary
+Implements automatic OAuth2 token refresh using PKCE flow to maintain authentication without user intervention.
+
+## Changes
+- Added token refresher in pkg/auth/refresh/refresher.go:45
+- Implemented background refresh scheduler
+- Added unit tests for refresh logic in pkg/auth/refresh/refresher_test.go
+- Updated OAuth client to use refresh tokens
+
+## Testing
+- Unit tests verify refresh token exchange
+- Integration tests validate automatic refresh before expiration
+- Manual test: wait 50 minutes and verify token auto-refreshes
+
+## Related Issues
+Closes #42
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)" \
+  --label "enhancement,auth"
+```
+
+#### 4. PR Description Best Practices
+
+**Good PR descriptions include:**
+- **Summary**: What and why in 1-2 sentences
+- **Changes**: Bulleted list of specific changes with file references
+- **Testing**: How the changes were tested
+- **Related Issues**: Link to GitHub issues using `Closes #N` or `Fixes #N`
+- **Screenshots/Examples**: For UI changes or CLI output changes
+- **Breaking Changes**: Clearly marked if any
+- **Migration Guide**: If breaking changes require user action
+
+**Example of excellent PR body:**
+```markdown
+## Summary
+Adds OAuth2 authentication with PKCE to replace API key authentication, providing better security and per-installation access control.
+
+## Changes
+- Implemented DCR client in pkg/auth/dcr/client.go
+- Added PKCE challenge generation in pkg/auth/oauth/pkce.go:23
+- Integrated OS keychain storage in pkg/auth/storage/keychain.go
+- Added `pup auth login` command in cmd/auth.go:156
+- Updated CLAUDE.md with OAuth2 documentation
+
+## Testing
+- Unit tests cover all OAuth2 flow steps
+- Integration tests validate end-to-end authentication
+- Manual testing on macOS, Linux, and Windows
+- Verified keychain storage and fallback to encrypted file
+
+## Breaking Changes
+None. OAuth2 is opt-in; API key authentication still works.
+
+## Related Issues
+Closes #42
+Implements RFC: #38
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+#### 5. Complete Automated Workflow Example
+
+Here's the complete workflow in one script:
+
+```bash
+# 1. Create feature branch
+git checkout -b feat/add-oauth2-auth
+
+# 2. [Make code changes...]
+
+# 3. Stage specific files
+git add pkg/auth/oauth/ cmd/auth.go
+
+# 4. Commit with proper message
+git commit -m "$(cat <<'EOF'
+feat(auth): add OAuth2 authentication with PKCE
+
+Implement OAuth2 authentication flow including:
+- Dynamic Client Registration (DCR)
+- PKCE code challenge generation
+- Secure token storage via OS keychain
+- Automatic token refresh
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+EOF
+)"
+
+# 5. Create PR with gh CLI
+gh pr create \
+  --title "feat(auth): add OAuth2 authentication with PKCE" \
+  --body "$(cat <<'EOF'
+## Summary
+Adds OAuth2 authentication with PKCE flow to provide secure, per-installation authentication as an alternative to API keys.
+
+## Changes
+- Implemented DCR client in pkg/auth/dcr/client.go
+- Added PKCE utilities in pkg/auth/oauth/pkce.go
+- Created token storage with keychain integration
+- Added `pup auth login/logout/status` commands
+- Updated documentation in CLAUDE.md
+
+## Testing
+- Unit tests for OAuth flow components
+- Integration tests for end-to-end flow
+- Manual testing on macOS/Linux/Windows
+- Verified token refresh automation
+
+## Related Issues
+Closes #42
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)" \
+  --label "enhancement,auth"
+```
+
+### Pull Request Process (For Human Contributors)
 
 1. **Create a feature branch**: `git checkout -b feature/your-feature-name`
 2. **Make your changes**: Write clear, well-documented code
@@ -380,7 +600,7 @@ Based on the TypeScript plugin implementation:
 5. **Run linters**: `golangci-lint run`
 6. **Commit changes**: Use clear, descriptive commit messages
 7. **Push branch**: `git push origin feature/your-feature-name`
-8. **Create PR**: Open a pull request with detailed description
+8. **Create PR**: Open a pull request with detailed description (use `gh pr create` or web UI)
 9. **Address feedback**: Respond to review comments promptly
 10. **Merge**: Once approved, squash and merge
 
