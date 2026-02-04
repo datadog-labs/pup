@@ -208,14 +208,8 @@ jobs:
 
           echo "Generated coverage badge: ${COVERAGE}% (${COLOR})"
 
-      - name: Commit coverage badge to main
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .github/badges/coverage.json
-          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
-          git push
+      # Note: Auto-committing badge disabled due to branch protection requiring signed commits
+      # Badge can be updated manually or via a separate workflow with appropriate permissions
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
