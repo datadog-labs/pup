@@ -15,34 +15,56 @@ import (
 )
 
 const (
-	// KeychainService is the service name for keychain entries
-	KeychainService = "datadog-pup-cli"
+	// KeychainTokenService is the service name for token keychain entries
+	// Matches TypeScript PR #84: "datadog-cli"
+	KeychainTokenService = "datadog-cli"
 
-	// TokenPrefix is the prefix for token keychain entries
-	TokenPrefix = "oauth-tokens:"
+	// KeychainClientService is the service name for client credential keychain entries
+	// Matches TypeScript PR #84: "datadog-cli-dcr"
+	KeychainClientService = "datadog-cli-dcr"
 
-	// ClientPrefix is the prefix for client credential keychain entries
-	ClientPrefix = "oauth-client:"
+	// TokenPrefix is the prefix for token keychain account names
+	// Matches TypeScript PR #84: "oauth:"
+	TokenPrefix = "oauth:"
+
+	// ClientPrefix is the prefix for client credential keychain account names
+	// Matches TypeScript PR #84: "client:"
+	ClientPrefix = "client:"
 )
 
 // KeychainStorage stores OAuth tokens and credentials in the OS keychain
+// Uses separate keyring services to match TypeScript PR #84
 type KeychainStorage struct {
-	keyring keyring.Keyring
+	tokenKeyring  keyring.Keyring // For tokens (service: "datadog-cli")
+	clientKeyring keyring.Keyring // For client credentials (service: "datadog-cli-dcr")
 }
 
 // NewKeychainStorage creates a new keychain storage instance
+// Opens two separate keychains to match TypeScript PR #84 architecture
 func NewKeychainStorage() (*KeychainStorage, error) {
-	ring, err := keyring.Open(keyring.Config{
-		ServiceName:              KeychainService,
+	// Open keyring for tokens
+	tokenRing, err := keyring.Open(keyring.Config{
+		ServiceName:              KeychainTokenService,
 		AllowedBackends:          []keyring.BackendType{keyring.KeychainBackend, keyring.WinCredBackend, keyring.SecretServiceBackend},
 		KeychainTrustApplication: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open keychain: %w", err)
+		return nil, fmt.Errorf("failed to open token keychain: %w", err)
+	}
+
+	// Open keyring for client credentials
+	clientRing, err := keyring.Open(keyring.Config{
+		ServiceName:              KeychainClientService,
+		AllowedBackends:          []keyring.BackendType{keyring.KeychainBackend, keyring.WinCredBackend, keyring.SecretServiceBackend},
+		KeychainTrustApplication: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open client keychain: %w", err)
 	}
 
 	return &KeychainStorage{
-		keyring: ring,
+		tokenKeyring:  tokenRing,
+		clientKeyring: clientRing,
 	}, nil
 }
 
@@ -78,7 +100,7 @@ func (s *KeychainStorage) SaveTokens(site string, tokens *types.TokenSet) error 
 		Data: data,
 	}
 
-	if err := s.keyring.Set(item); err != nil {
+	if err := s.tokenKeyring.Set(item); err != nil {
 		return fmt.Errorf("failed to save tokens to keychain: %w", err)
 	}
 
@@ -88,7 +110,7 @@ func (s *KeychainStorage) SaveTokens(site string, tokens *types.TokenSet) error 
 // LoadTokens loads OAuth tokens for a site
 func (s *KeychainStorage) LoadTokens(site string) (*types.TokenSet, error) {
 	key := TokenPrefix + site
-	item, err := s.keyring.Get(key)
+	item, err := s.tokenKeyring.Get(key)
 	if err != nil {
 		if err == keyring.ErrKeyNotFound {
 			return nil, nil
@@ -107,7 +129,7 @@ func (s *KeychainStorage) LoadTokens(site string) (*types.TokenSet, error) {
 // DeleteTokens deletes OAuth tokens for a site
 func (s *KeychainStorage) DeleteTokens(site string) error {
 	key := TokenPrefix + site
-	if err := s.keyring.Remove(key); err != nil {
+	if err := s.tokenKeyring.Remove(key); err != nil {
 		if err == keyring.ErrKeyNotFound {
 			return nil
 		}
@@ -129,7 +151,7 @@ func (s *KeychainStorage) SaveClientCredentials(site string, creds *types.Client
 		Data: data,
 	}
 
-	if err := s.keyring.Set(item); err != nil {
+	if err := s.clientKeyring.Set(item); err != nil {
 		return fmt.Errorf("failed to save credentials to keychain: %w", err)
 	}
 
@@ -139,7 +161,7 @@ func (s *KeychainStorage) SaveClientCredentials(site string, creds *types.Client
 // LoadClientCredentials loads OAuth client credentials for a site
 func (s *KeychainStorage) LoadClientCredentials(site string) (*types.ClientCredentials, error) {
 	key := ClientPrefix + site
-	item, err := s.keyring.Get(key)
+	item, err := s.clientKeyring.Get(key)
 	if err != nil {
 		if err == keyring.ErrKeyNotFound {
 			return nil, nil
@@ -158,7 +180,7 @@ func (s *KeychainStorage) LoadClientCredentials(site string) (*types.ClientCrede
 // DeleteClientCredentials deletes OAuth client credentials for a site
 func (s *KeychainStorage) DeleteClientCredentials(site string) error {
 	key := ClientPrefix + site
-	if err := s.keyring.Remove(key); err != nil {
+	if err := s.clientKeyring.Remove(key); err != nil {
 		if err == keyring.ErrKeyNotFound {
 			return nil
 		}
@@ -170,7 +192,7 @@ func (s *KeychainStorage) DeleteClientCredentials(site string) error {
 // IsKeychainAvailable checks if keychain storage is available on this system
 func IsKeychainAvailable() bool {
 	_, err := keyring.Open(keyring.Config{
-		ServiceName:              KeychainService + "-test",
+		ServiceName:              KeychainTokenService + "-test",
 		AllowedBackends:          []keyring.BackendType{keyring.KeychainBackend, keyring.WinCredBackend, keyring.SecretServiceBackend},
 		KeychainTrustApplication: true,
 	})

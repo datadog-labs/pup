@@ -230,7 +230,10 @@ func runMonitorsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListMonitors(client.Context(), opts)
 	if err != nil {
-		return fmt.Errorf("failed to list monitors: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to list monitors: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to list monitors: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -253,7 +256,10 @@ func runMonitorsGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetMonitor(client.Context(), parseInt64(monitorID))
 	if err != nil {
-		return fmt.Errorf("failed to get monitor: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to get monitor: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to get monitor: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -290,7 +296,10 @@ func runMonitorsDelete(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.DeleteMonitor(client.Context(), parseInt64(monitorID))
 	if err != nil {
-		return fmt.Errorf("failed to delete monitor: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to delete monitor: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to delete monitor: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)

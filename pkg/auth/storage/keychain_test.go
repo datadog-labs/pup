@@ -85,7 +85,7 @@ func TestKeychainStorage_TokenOperations(t *testing.T) {
 		RefreshToken: "test-keychain-refresh-token",
 		TokenType:    "Bearer",
 		ExpiresIn:    3600,
-		ExpiresAt:    time.Now().Add(1 * time.Hour),
+		IssuedAt:     time.Now().Unix(),
 		Scope:        "dashboards_read dashboards_write",
 	}
 
@@ -165,8 +165,9 @@ func TestKeychainStorage_ClientCredentialOperations(t *testing.T) {
 	// Test SaveClientCredentials
 	creds := &types.ClientCredentials{
 		ClientID:     "test-keychain-client-id",
-		ClientSecret: "test-keychain-client-secret",
-		CreatedAt:    time.Now(),
+		ClientName:   "test-client",
+		RedirectURIs: []string{"http://127.0.0.1:8000/oauth/callback"},
+		RegisteredAt: time.Now().Unix(),
 		Site:         site,
 	}
 
@@ -189,8 +190,8 @@ func TestKeychainStorage_ClientCredentialOperations(t *testing.T) {
 		t.Errorf("Expected client ID %v, got %v", creds.ClientID, loadedCreds.ClientID)
 	}
 
-	if loadedCreds.ClientSecret != creds.ClientSecret {
-		t.Errorf("Expected client secret %v, got %v", creds.ClientSecret, loadedCreds.ClientSecret)
+	if loadedCreds.ClientName != creds.ClientName {
+		t.Errorf("Expected client name %v, got %v", creds.ClientName, loadedCreds.ClientName)
 	}
 
 	// Test LoadClientCredentials for non-existent site

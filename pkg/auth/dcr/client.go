@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -34,15 +35,15 @@ func NewClient(site string) *Client {
 }
 
 // Register performs Dynamic Client Registration
+// Registers all standard redirect URIs (ports 8000, 8080, 8888, 9000)
+// Matches TypeScript PR #84 behavior for compatibility
 func (c *Client) Register(redirectURI string, scopes []string) (*types.ClientCredentials, error) {
-	// Build registration request
+	// Build registration request - matches TypeScript PR #84
+	// Only sends client_name, redirect_uris, and grant_types (no scope, auth method, or response_types)
 	req := RegistrationRequest{
-		ClientName:    "Datadog Pup CLI",
-		RedirectURIs:  []string{redirectURI},
-		GrantTypes:    []string{"authorization_code", "refresh_token"},
-		ResponseTypes: []string{"code"},
-		TokenEndpointAuthMethod: "client_secret_post",
-		Scope: strings.Join(scopes, " "),
+		ClientName:   DCRClientName,
+		RedirectURIs: GetRedirectURIs(), // Register all standard ports
+		GrantTypes:   []string{"authorization_code", "refresh_token"},
 	}
 
 	// Marshal request
@@ -89,59 +90,53 @@ func (c *Client) Register(redirectURI string, scopes []string) (*types.ClientCre
 		return nil, fmt.Errorf("failed to parse registration response: %w", err)
 	}
 
-	// Return client credentials
+	// Return client credentials - matches TypeScript PR #84 format
 	return &types.ClientCredentials{
 		ClientID:     regResp.ClientID,
-		ClientSecret: regResp.ClientSecret,
-		CreatedAt:    time.Now(),
+		ClientName:   regResp.ClientName,
+		RedirectURIs: regResp.RedirectURIs,
+		RegisteredAt: time.Now().Unix(),
 		Site:         c.site,
 	}, nil
 }
 
 // ExchangeCode exchanges an authorization code for tokens
+// Matches TypeScript PR #84 - uses form-encoded data, no client_secret (public client)
 func (c *Client) ExchangeCode(code, redirectURI, codeVerifier string, creds *types.ClientCredentials) (*types.TokenSet, error) {
-	// Build token request
-	req := TokenRequest{
-		GrantType:    "authorization_code",
-		Code:         code,
-		RedirectURI:  redirectURI,
-		ClientID:     creds.ClientID,
-		ClientSecret: creds.ClientSecret,
-		CodeVerifier: codeVerifier,
-	}
+	// Build form data
+	data := url.Values{}
+	data.Set("grant_type", "authorization_code")
+	data.Set("client_id", creds.ClientID)
+	data.Set("code", code)
+	data.Set("redirect_uri", redirectURI)
+	data.Set("code_verifier", codeVerifier)
 
-	return c.requestTokens(req)
+	return c.requestTokens(data)
 }
 
 // RefreshToken refreshes an access token using a refresh token
+// Matches TypeScript PR #84 - uses form-encoded data, no client_secret (public client)
 func (c *Client) RefreshToken(refreshToken string, creds *types.ClientCredentials) (*types.TokenSet, error) {
-	// Build token request
-	req := TokenRequest{
-		GrantType:    "refresh_token",
-		RefreshToken: refreshToken,
-		ClientID:     creds.ClientID,
-		ClientSecret: creds.ClientSecret,
-	}
+	// Build form data
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("client_id", creds.ClientID)
+	data.Set("refresh_token", refreshToken)
 
-	return c.requestTokens(req)
+	return c.requestTokens(data)
 }
 
 // requestTokens makes a token request to the OAuth2 token endpoint
-func (c *Client) requestTokens(req TokenRequest) (*types.TokenSet, error) {
-	// Marshal request
-	body, err := json.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal token request: %w", err)
-	}
-
-	// Create HTTP request
-	url := fmt.Sprintf("https://api.%s/oauth2/v1/token", c.site)
-	httpReq, err := http.NewRequest("POST", url, bytes.NewReader(body))
+// Matches TypeScript PR #84 - uses application/x-www-form-urlencoded (not JSON)
+func (c *Client) requestTokens(data url.Values) (*types.TokenSet, error) {
+	// Create HTTP request with form-encoded body
+	tokenURL := fmt.Sprintf("https://api.%s/oauth2/v1/token", c.site)
+	httpReq, err := http.NewRequest("POST", tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	httpReq.Header.Set("Accept", "application/json")
 
 	// Send request
@@ -172,16 +167,17 @@ func (c *Client) requestTokens(req TokenRequest) (*types.TokenSet, error) {
 		return nil, fmt.Errorf("failed to parse token response: %w", err)
 	}
 
-	// Calculate expiration time
-	expiresAt := time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
+	// Get issued at timestamp (matches PR #84)
+	issuedAt := time.Now().Unix()
 
-	// Return token set
+	// Return token set with client ID
 	return &types.TokenSet{
 		AccessToken:  tokenResp.AccessToken,
 		RefreshToken: tokenResp.RefreshToken,
 		TokenType:    tokenResp.TokenType,
 		ExpiresIn:    tokenResp.ExpiresIn,
-		ExpiresAt:    expiresAt,
+		IssuedAt:     issuedAt,
 		Scope:        tokenResp.Scope,
+		ClientID:     "", // Will be set by caller if needed
 	}, nil
 }

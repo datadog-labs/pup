@@ -230,7 +230,10 @@ func runIncidentsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListIncidents(client.Context())
 	if err != nil {
-		return fmt.Errorf("failed to list incidents: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to list incidents: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to list incidents: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -253,7 +256,10 @@ func runIncidentsGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetIncident(client.Context(), incidentID)
 	if err != nil {
-		return fmt.Errorf("failed to get incident: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to get incident: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to get incident: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)

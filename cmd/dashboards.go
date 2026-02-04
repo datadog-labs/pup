@@ -206,7 +206,10 @@ func runDashboardsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListDashboards(client.Context())
 	if err != nil {
-		return fmt.Errorf("failed to list dashboards: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to list dashboards: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to list dashboards: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -229,7 +232,10 @@ func runDashboardsGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetDashboard(client.Context(), dashboardID)
 	if err != nil {
-		return fmt.Errorf("failed to get dashboard: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to get dashboard: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to get dashboard: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -266,7 +272,10 @@ func runDashboardsDelete(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.DeleteDashboard(client.Context(), dashboardID)
 	if err != nil {
-		return fmt.Errorf("failed to delete dashboard: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to delete dashboard: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to delete dashboard: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)

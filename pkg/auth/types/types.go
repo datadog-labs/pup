@@ -8,27 +8,33 @@ package types
 import "time"
 
 // TokenSet represents OAuth2 tokens
+// JSON format matches TypeScript PR #84 for cross-compatibility
 type TokenSet struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	TokenType    string    `json:"token_type"`
-	ExpiresIn    int64     `json:"expires_in"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	Scope        string    `json:"scope"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	TokenType    string `json:"tokenType"`
+	ExpiresIn    int64  `json:"expiresIn"`
+	IssuedAt     int64  `json:"issuedAt"` // Unix timestamp in seconds
+	Scope        string `json:"scope,omitempty"`
+	ClientID     string `json:"clientId,omitempty"` // Client ID used for this token
 }
 
 // IsExpired checks if the access token is expired
 func (t *TokenSet) IsExpired() bool {
-	// Consider token expired 5 minutes before actual expiration
-	return time.Now().Add(5 * time.Minute).After(t.ExpiresAt)
+	// Consider token expired 5 minutes before actual expiration (matches PR #84)
+	expiresAt := time.Unix(t.IssuedAt+t.ExpiresIn, 0)
+	return time.Now().Add(5 * time.Minute).After(expiresAt)
 }
 
 // ClientCredentials represents DCR client credentials
+// JSON format matches TypeScript PR #84 for cross-compatibility
+// Note: Public clients don't receive a client_secret
 type ClientCredentials struct {
-	ClientID     string    `json:"client_id"`
-	ClientSecret string    `json:"client_secret"`
-	CreatedAt    time.Time `json:"created_at"`
-	Site         string    `json:"site"`
+	ClientID     string   `json:"clientId"`
+	ClientName   string   `json:"clientName"`
+	RedirectURIs []string `json:"redirectUris"`
+	RegisteredAt int64    `json:"registeredAt"` // Unix timestamp in seconds
+	Site         string   `json:"site"`
 }
 
 // AuthConfig represents authentication configuration
@@ -60,13 +66,21 @@ func DefaultScopes() []string {
 		// Synthetics
 		"synthetics_read",
 		"synthetics_write",
+		"synthetics_global_variable_read",
+		"synthetics_global_variable_write",
+		"synthetics_private_location_read",
+		"synthetics_private_location_write",
 		// Security
 		"security_monitoring_signals_read",
 		"security_monitoring_rules_read",
 		"security_monitoring_findings_read",
+		"security_monitoring_suppressions_read",
+		"security_monitoring_filters_read",
 		// RUM
 		"rum_apps_read",
 		"rum_apps_write",
+		"rum_retention_filters_read",
+		"rum_retention_filters_write",
 		// Infrastructure
 		"hosts_read",
 		// Users

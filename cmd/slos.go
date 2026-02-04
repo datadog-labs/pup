@@ -224,7 +224,10 @@ func runSlosList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListSLOs(client.Context())
 	if err != nil {
-		return fmt.Errorf("failed to list SLOs: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to list SLOs: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to list SLOs: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -247,7 +250,10 @@ func runSlosGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetSLO(client.Context(), sloID)
 	if err != nil {
-		return fmt.Errorf("failed to get SLO: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to get SLO: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to get SLO: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)
@@ -284,7 +290,10 @@ func runSlosDelete(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.DeleteSLO(client.Context(), sloID)
 	if err != nil {
-		return fmt.Errorf("failed to delete SLO: %w (status: %d)", err, r.StatusCode)
+		if r != nil {
+			return fmt.Errorf("failed to delete SLO: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to delete SLO: %w", err)
 	}
 
 	output, err := formatter.ToJSON(resp)

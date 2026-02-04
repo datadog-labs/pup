@@ -5,27 +5,47 @@
 
 package dcr
 
+import (
+	"fmt"
+)
+
+// Constants from TypeScript PR #84 for compatibility
+const (
+	// DCRClientName is the client name used during registration
+	// Matches datadog-api-claude-plugin for compatibility
+	DCRClientName = "datadog-api-claude-plugin"
+)
+
+// DCRRedirectPorts are the specific ports to register for OAuth callbacks
+// Must match TypeScript PR #84 for compatibility
+var DCRRedirectPorts = []int{8000, 8080, 8888, 9000}
+
+// GetRedirectURIs returns the standard redirect URIs for the given ports
+func GetRedirectURIs() []string {
+	uris := make([]string, len(DCRRedirectPorts))
+	for i, port := range DCRRedirectPorts {
+		uris[i] = fmt.Sprintf("http://127.0.0.1:%d/oauth/callback", port)
+	}
+	return uris
+}
+
 // RegistrationRequest represents a DCR registration request (RFC 7591)
+// Matches TypeScript PR #84 format for compatibility
 type RegistrationRequest struct {
-	ClientName    string   `json:"client_name"`
-	RedirectURIs  []string `json:"redirect_uris"`
-	GrantTypes    []string `json:"grant_types"`
-	ResponseTypes []string `json:"response_types"`
-	TokenEndpointAuthMethod string `json:"token_endpoint_auth_method"`
-	Scope         string   `json:"scope,omitempty"`
+	ClientName   string   `json:"client_name"`
+	RedirectURIs []string `json:"redirect_uris"`
+	GrantTypes   []string `json:"grant_types"`
 }
 
 // RegistrationResponse represents a DCR registration response
+// Matches TypeScript PR #84 format for compatibility
+// Note: Public clients (token_endpoint_auth_method: 'none') don't receive client_secret
 type RegistrationResponse struct {
 	ClientID                string   `json:"client_id"`
-	ClientSecret            string   `json:"client_secret"`
-	ClientIDIssuedAt        int64    `json:"client_id_issued_at"`
-	ClientSecretExpiresAt   int64    `json:"client_secret_expires_at"`
 	ClientName              string   `json:"client_name"`
 	RedirectURIs            []string `json:"redirect_uris"`
-	GrantTypes              []string `json:"grant_types"`
-	ResponseTypes           []string `json:"response_types"`
 	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
+	GrantTypes              []string `json:"grant_types"`
 	Scope                   string   `json:"scope,omitempty"`
 }
 

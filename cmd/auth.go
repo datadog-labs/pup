@@ -400,7 +400,8 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("\n✅ Login successful!")
-	fmt.Printf("   Access token expires: %s\n", tokens.ExpiresAt.Format(time.RFC3339))
+	expiresAt := time.Unix(tokens.IssuedAt+tokens.ExpiresIn, 0)
+	fmt.Printf("   Access token expires: %s\n", expiresAt.Format(time.RFC3339))
 	fmt.Printf("   Token stored in: %s\n", storage.GetStorageDescription())
 
 	return nil
@@ -433,7 +434,7 @@ func runAuthStatus(cmd *cobra.Command, args []string) error {
 	status := map[string]interface{}{
 		"authenticated": !expired,
 		"site":          site,
-		"expires_at":    tokens.ExpiresAt.Format(time.RFC3339),
+		"expires_at":    time.Unix(tokens.IssuedAt+tokens.ExpiresIn, 0).Format(time.RFC3339),
 		"token_type":    tokens.TokenType,
 		"has_refresh":   tokens.RefreshToken != "",
 	}
@@ -444,7 +445,8 @@ func runAuthStatus(cmd *cobra.Command, args []string) error {
 		fmt.Println("   Run 'pup auth refresh' to refresh or 'pup auth login' to re-authenticate")
 	} else {
 		status["status"] = "valid"
-		timeLeft := time.Until(tokens.ExpiresAt)
+		expiresAt := time.Unix(tokens.IssuedAt+tokens.ExpiresIn, 0)
+		timeLeft := time.Until(expiresAt)
 		fmt.Printf("✅ Authenticated for site: %s\n", site)
 		fmt.Printf("   Token expires in: %s\n", timeLeft.Round(time.Second))
 	}
@@ -526,7 +528,8 @@ func runAuthRefresh(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("✅ Token refreshed successfully!")
-	fmt.Printf("   New token expires: %s\n", newTokens.ExpiresAt.Format(time.RFC3339))
+	expiresAt := time.Unix(newTokens.IssuedAt+newTokens.ExpiresIn, 0)
+	fmt.Printf("   New token expires: %s\n", expiresAt.Format(time.RFC3339))
 
 	return nil
 }

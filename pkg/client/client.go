@@ -66,7 +66,7 @@ func New(cfg *config.Config) (*Client, error) {
 
 	// Configure the API client
 	configuration := datadog.NewConfiguration()
-	configuration.Host = fmt.Sprintf("https://api.%s", cfg.Site)
+	configuration.Host = fmt.Sprintf("api.%s", cfg.Site)
 	configuration.SetUnstableOperationEnabled("v2.QueryTimeseriesData", true)
 	configuration.SetUnstableOperationEnabled("v2.ListIncidents", true)
 	configuration.SetUnstableOperationEnabled("v2.GetIncident", true)

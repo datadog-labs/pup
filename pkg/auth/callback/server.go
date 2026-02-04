@@ -29,14 +29,33 @@ type Server struct {
 	resultCh chan CallbackResult
 }
 
+// DCRRedirectPorts are the specific ports to try for OAuth callbacks
+// Must match TypeScript PR #84 and DCR registration
+var DCRRedirectPorts = []int{8000, 8080, 8888, 9000}
+
 // NewServer creates a new callback server
+// Tries to bind to one of the pre-registered DCR ports (8000, 8080, 8888, 9000)
+// Matches TypeScript PR #84 behavior for compatibility
 func NewServer() (*Server, error) {
-	// Find available port
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return nil, fmt.Errorf("failed to find available port: %w", err)
+	// Try each DCR port in order
+	var listener net.Listener
+	var port int
+	var lastErr error
+
+	for _, p := range DCRRedirectPorts {
+		addr := fmt.Sprintf("127.0.0.1:%d", p)
+		l, err := net.Listen("tcp", addr)
+		if err == nil {
+			listener = l
+			port = p
+			break
+		}
+		lastErr = err
 	}
-	port := listener.Addr().(*net.TCPAddr).Port
+
+	if listener == nil {
+		return nil, fmt.Errorf("failed to bind to any DCR port (tried %v): %w", DCRRedirectPorts, lastErr)
+	}
 	listener.Close()
 
 	return &Server{
@@ -51,14 +70,15 @@ func (s *Server) Port() int {
 }
 
 // RedirectURI returns the full redirect URI
+// Uses /oauth/callback path to match TypeScript PR #84
 func (s *Server) RedirectURI() string {
-	return fmt.Sprintf("http://127.0.0.1:%d/callback", s.port)
+	return fmt.Sprintf("http://127.0.0.1:%d/oauth/callback", s.port)
 }
 
 // Start starts the callback server
 func (s *Server) Start() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/callback", s.handleCallback)
+	mux.HandleFunc("/oauth/callback", s.handleCallback)
 
 	s.server = &http.Server{
 		Addr:    fmt.Sprintf("127.0.0.1:%d", s.port),
