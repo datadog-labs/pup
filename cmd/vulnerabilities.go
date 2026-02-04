@@ -7,6 +7,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
@@ -208,20 +209,30 @@ func runVulnerabilitiesSearch(cmd *cobra.Command, args []string) error {
 		Page: &datadogV2.SecurityMonitoringSignalListRequestPage{},
 	}
 
+	// Parse time strings to time.Time
 	if vulnFrom != "" {
-		body.Filter.From = &vulnFrom
+		fromTime, err := time.Parse(time.RFC3339, vulnFrom)
+		if err != nil {
+			return fmt.Errorf("invalid from time format (use RFC3339): %w", err)
+		}
+		body.Filter.From = &fromTime
 	}
 	if vulnTo != "" {
-		body.Filter.To = &vulnTo
+		toTime, err := time.Parse(time.RFC3339, vulnTo)
+		if err != nil {
+			return fmt.Errorf("invalid to time format (use RFC3339): %w", err)
+		}
+		body.Filter.To = &toTime
 	}
 	if vulnLimit > 0 {
-		body.Page.Limit = &vulnLimit
+		limit := int32(vulnLimit)
+		body.Page.Limit = &limit
 	}
-	if vulnOffset > 0 {
-		body.Page.Offset = &vulnOffset
-	}
+	// Note: Offset pagination is not supported, use cursor-based pagination instead
 
-	resp, r, err := api.SearchSecurityMonitoringSignals(client.Context(), datadogV2.SearchSecurityMonitoringSignalsOptionalParameters{}.WithBody(body))
+	opts := datadogV2.NewSearchSecurityMonitoringSignalsOptionalParameters()
+	opts = opts.WithBody(body)
+	resp, r, err := api.SearchSecurityMonitoringSignals(client.Context(), *opts)
 	if err != nil {
 		if r != nil {
 			return fmt.Errorf("failed to search vulnerabilities: %w (status: %d)", err, r.StatusCode)
@@ -244,7 +255,7 @@ func runVulnerabilitiesList(cmd *cobra.Command, args []string) error {
 	}
 
 	api := datadogV2.NewSecurityMonitoringApi(client.V2())
-	opts := datadogV2.ListSecurityMonitoringSignalsOptionalParameters{}
+	opts := datadogV2.NewListSecurityMonitoringSignalsOptionalParameters()
 
 	var queryParts []string
 	if vulnSeverity != "" {
@@ -269,10 +280,10 @@ func runVulnerabilitiesList(cmd *cobra.Command, args []string) error {
 	}
 
 	if vulnLimit > 0 {
-		opts = opts.WithPageLimit(int64(vulnLimit))
+		opts = opts.WithPageLimit(int32(vulnLimit))
 	}
 
-	resp, r, err := api.ListSecurityMonitoringSignals(client.Context(), opts)
+	resp, r, err := api.ListSecurityMonitoringSignals(client.Context(), *opts)
 	if err != nil {
 		if r != nil {
 			return fmt.Errorf("failed to list vulnerabilities: %w (status: %d)", err, r.StatusCode)

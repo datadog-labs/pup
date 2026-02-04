@@ -80,7 +80,9 @@ func runUsageSummary(cmd *cobra.Command, args []string) error {
 	}
 
 	api := datadogV1.NewUsageMeteringApi(client.V1())
-	resp, r, err := api.GetUsageSummary(client.Context(), startTime, datadogV1.GetUsageSummaryOptionalParameters{}.WithEndHr(endTime))
+	opts := datadogV1.NewGetUsageSummaryOptionalParameters()
+	opts = opts.WithEndMonth(endTime)
+	resp, r, err := api.GetUsageSummary(client.Context(), startTime, *opts)
 	if err != nil {
 		if r != nil {
 			return fmt.Errorf("failed to get usage summary: %w (status: %d)", err, r.StatusCode)
@@ -113,7 +115,9 @@ func runUsageHourly(cmd *cobra.Command, args []string) error {
 	}
 
 	api := datadogV1.NewUsageMeteringApi(client.V1())
-	resp, r, err := api.GetUsageHosts(client.Context(), startTime, datadogV1.GetUsageHostsOptionalParameters{}.WithEndHr(endTime))
+	opts := datadogV1.NewGetUsageHostsOptionalParameters()
+	opts = opts.WithEndHr(endTime)
+	resp, r, err := api.GetUsageHosts(client.Context(), startTime, *opts)
 	if err != nil {
 		if r != nil {
 			return fmt.Errorf("failed to get hourly usage: %w (status: %d)", err, r.StatusCode)

@@ -131,7 +131,7 @@ func runSyntheticsLocationsList(cmd *cobra.Command, args []string) error {
 	}
 
 	api := datadogV1.NewSyntheticsApi(client.V1())
-	resp, r, err := api.GetLocations(client.Context())
+	resp, r, err := api.ListLocations(client.Context())
 	if err != nil {
 		if r != nil {
 			return fmt.Errorf("failed to list locations: %w (status: %d)", err, r.StatusCode)
