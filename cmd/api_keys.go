@@ -16,17 +16,17 @@ import (
 var apiKeysCmd = &cobra.Command{
 	Use:   "api-keys",
 	Short: "Manage API keys",
-	Long: `Manage Datadog API keys and application keys.
+	Long: `Manage Datadog API keys.
 
-API keys authenticate requests to Datadog APIs. Application keys provide
-additional authentication for writing data.
+API keys authenticate requests to Datadog APIs. This command manages API keys
+only (not application keys).
 
 CAPABILITIES:
   • List API keys
   • Get API key details
   • Create new API keys
-  • Update API keys
-  • Delete API keys
+  • Update API keys (name only)
+  • Delete API keys (requires confirmation)
 
 EXAMPLES:
   # List all API keys
@@ -38,8 +38,12 @@ EXAMPLES:
   # Create new API key
   pup api-keys create --name="Production Key"
 
+  # Delete an API key (with confirmation prompt)
+  pup api-keys delete key-id
+
 AUTHENTICATION:
-  Requires either OAuth2 authentication or existing API keys.`,
+  Requires OAuth2 (via 'pup auth login') or a valid API key + Application key
+  combination. Note: You cannot use an API key to delete itself.`,
 }
 
 var apiKeysListCmd = &cobra.Command{
@@ -63,9 +67,20 @@ var apiKeysCreateCmd = &cobra.Command{
 
 var apiKeysDeleteCmd = &cobra.Command{
 	Use:   "delete [key-id]",
-	Short: "Delete an API key",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runAPIKeysDelete,
+	Short: "Delete an API key (DESTRUCTIVE)",
+	Long: `Delete an API key permanently.
+
+WARNING: This is a destructive operation that cannot be undone. Deleting an API
+key will immediately revoke access for any applications or services using it.
+
+Before deleting, ensure:
+  • No active services are using this key
+  • You have alternative authentication configured
+  • You cannot delete the API key currently being used for authentication
+
+Use --auto-approve to skip the confirmation prompt (use with caution).`,
+	Args: cobra.ExactArgs(1),
+	RunE: runAPIKeysDelete,
 }
 
 var (
@@ -168,16 +183,26 @@ func runAPIKeysDelete(cmd *cobra.Command, args []string) error {
 
 	keyID := args[0]
 	if !cfg.AutoApprove {
-		fmt.Printf("⚠️  WARNING: This will permanently delete API key %s\n", keyID)
-		fmt.Print("Are you sure you want to continue? (y/N): ")
+		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+		fmt.Printf("⚠️  DESTRUCTIVE OPERATION WARNING ⚠️\n")
+		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+		fmt.Printf("\nYou are about to PERMANENTLY DELETE API key: %s\n", keyID)
+		fmt.Println("\nThis action:")
+		fmt.Println("  • Cannot be undone")
+		fmt.Println("  • Will immediately revoke access for any services using this key")
+		fmt.Println("  • May cause service disruptions if the key is in active use")
+		fmt.Println("\nPlease confirm you have:")
+		fmt.Println("  • Verified no active services depend on this key")
+		fmt.Println("  • Documented or backed up the key information if needed")
+		fmt.Print("\nType 'yes' to confirm deletion (or anything else to cancel): ")
 		var response string
 		if _, err := fmt.Scanln(&response); err != nil {
 			// User cancelled or error reading input
-			fmt.Println("\nOperation cancelled")
+			fmt.Println("\n✓ Operation cancelled")
 			return nil
 		}
-		if response != "y" && response != "Y" {
-			fmt.Println("Operation cancelled")
+		if response != "yes" {
+			fmt.Println("✓ Operation cancelled")
 			return nil
 		}
 	}
