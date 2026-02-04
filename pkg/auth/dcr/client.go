@@ -73,7 +73,11 @@ func (c *Client) Register(redirectURI string, scopes []string) (*types.ClientCre
 	if err != nil {
 		return nil, fmt.Errorf("failed to send registration request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log but don't fail - response already read
+		}
+	}()
 
 	// Read response
 	respBody, err := io.ReadAll(resp.Body)
@@ -150,7 +154,11 @@ func (c *Client) requestTokens(data url.Values) (*types.TokenSet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send token request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log but don't fail - response already read
+		}
+	}()
 
 	// Read response
 	respBody, err := io.ReadAll(resp.Body)
