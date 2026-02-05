@@ -1,6 +1,6 @@
 module github.com/DataDog/pup
 
-go 1.21
+go 1.25
 
 require (
 	github.com/99designs/keyring v1.2.2
