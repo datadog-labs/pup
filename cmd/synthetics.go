@@ -96,7 +96,7 @@ func runSyntheticsTestsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -120,7 +120,7 @@ func runSyntheticsTestsGet(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -143,6 +143,6 @@ func runSyntheticsLocationsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }

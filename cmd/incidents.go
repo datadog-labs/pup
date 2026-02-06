@@ -241,7 +241,7 @@ func runIncidentsList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -267,6 +267,6 @@ func runIncidentsGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }

@@ -87,7 +87,7 @@ func runUsersList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -111,7 +111,7 @@ func runUsersGet(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -134,6 +134,6 @@ func runUsersRolesList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }

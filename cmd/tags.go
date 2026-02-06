@@ -99,7 +99,7 @@ func runTagsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -123,7 +123,7 @@ func runTagsGet(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -153,7 +153,7 @@ func runTagsAdd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -183,7 +183,7 @@ func runTagsUpdate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
