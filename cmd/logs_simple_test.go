@@ -366,3 +366,125 @@ func TestRunLogsMetricsGet(t *testing.T) {
 		})
 	}
 }
+
+func TestRunLogsArchivesDelete(t *testing.T) {
+	cleanup := setupLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name       string
+		archiveID  string
+		wantErr    bool
+	}{
+		{
+			name:      "delete archive",
+			archiveID: "archive-123",
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runLogsArchivesDelete(logsArchivesDeleteCmd, []string{tt.archiveID})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runLogsArchivesDelete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRunLogsMetricsDelete(t *testing.T) {
+	cleanup := setupLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name      string
+		metricID  string
+		wantErr   bool
+	}{
+		{
+			name:     "delete metric",
+			metricID: "metric-123",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runLogsMetricsDelete(logsMetricsDeleteCmd, []string{tt.metricID})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runLogsMetricsDelete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRunLogsRestrictionQueriesList(t *testing.T) {
+	cleanup := setupLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "list restriction queries",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runLogsRestrictionQueriesList(logsRestrictionQueriesListCmd, []string{})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runLogsRestrictionQueriesList() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRunLogsRestrictionQueriesGet(t *testing.T) {
+	cleanup := setupLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name    string
+		queryID string
+		wantErr bool
+	}{
+		{
+			name:    "get restriction query",
+			queryID: "query-123",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runLogsRestrictionQueriesGet(logsRestrictionQueriesGetCmd, []string{tt.queryID})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runLogsRestrictionQueriesGet() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

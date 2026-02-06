@@ -79,3 +79,15 @@ func TestRunTagsUpdate(t *testing.T) {
 		t.Error("Expected error with mock client")
 	}
 }
+
+func TestRunTagsDelete(t *testing.T) {
+	cleanup := setupTagsTestClient(t)
+	defer cleanup()
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+	err := runTagsDelete(tagsDeleteCmd, []string{"host:web-1"})
+	if err == nil {
+		t.Error("Expected error with mock client")
+	}
+}
