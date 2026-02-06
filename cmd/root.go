@@ -6,7 +6,9 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/DataDog/pup/internal/version"
@@ -15,11 +17,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// defaultClientFactory is the production client factory
+func defaultClientFactory(cfg *config.Config) (*client.Client, error) {
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	return client.New(cfg)
+}
+
 var (
 	cfg          *config.Config
 	ddClient     *client.Client
 	outputFormat string
 	autoApprove  bool
+
+	// Dependency injection points for testing
+	clientFactory = defaultClientFactory
+	outputWriter  io.Writer = os.Stdout
+	inputReader   io.Reader = os.Stdin
 )
 
 // rootCmd represents the base command
@@ -106,17 +121,34 @@ func getClient() (*client.Client, error) {
 		return ddClient, nil
 	}
 
-	if err := cfg.Validate(); err != nil {
-		return nil, err
-	}
-
 	var err error
-	ddClient, err = client.New(cfg)
+	ddClient, err = clientFactory(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
 	return ddClient, nil
+}
+
+// setTestClient sets a mock client for testing and returns a cleanup function
+func setTestClient(mockClient *client.Client) func() {
+	original := ddClient
+	ddClient = mockClient
+	return func() { ddClient = original }
+}
+
+// printOutput writes formatted output (for testing)
+func printOutput(format string, a ...any) {
+	fmt.Fprintf(outputWriter, format, a...)
+}
+
+// readConfirmation reads user confirmation from input
+func readConfirmation() (string, error) {
+	scanner := bufio.NewScanner(inputReader)
+	if scanner.Scan() {
+		return scanner.Text(), nil
+	}
+	return "", scanner.Err()
 }
 
 // versionCmd represents the version command

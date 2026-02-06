@@ -241,7 +241,7 @@ func runMonitorsList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -267,7 +267,7 @@ func runMonitorsGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -281,17 +281,17 @@ func runMonitorsDelete(cmd *cobra.Command, args []string) error {
 
 	// Check if auto-approve is enabled
 	if !cfg.AutoApprove {
-		fmt.Printf("⚠️  WARNING: This will permanently delete monitor %s\n", monitorID)
-		fmt.Print("Are you sure you want to continue? (y/N): ")
+		printOutput("⚠️  WARNING: This will permanently delete monitor %s\n", monitorID)
+		printOutput("Are you sure you want to continue? (y/N): ")
 
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
+		response, err := readConfirmation()
+		if err != nil {
 			// User cancelled or error reading input
-			fmt.Println("\nOperation cancelled")
+			printOutput("\nOperation cancelled\n")
 			return nil
 		}
 		if response != "y" && response != "Y" {
-			fmt.Println("Operation cancelled")
+			printOutput("Operation cancelled\n")
 			return nil
 		}
 	}
@@ -311,6 +311,6 @@ func runMonitorsDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }

@@ -33,7 +33,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 ---
 
-<details open>
+<details>
 <summary><b>📊 Core Observability (5/9 implemented)</b></summary>
 
 | API Domain | Status | Pup Commands | Notes |

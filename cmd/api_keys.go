@@ -115,7 +115,7 @@ func runAPIKeysList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -139,7 +139,7 @@ func runAPIKeysGet(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -171,7 +171,7 @@ func runAPIKeysCreate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -183,26 +183,26 @@ func runAPIKeysDelete(cmd *cobra.Command, args []string) error {
 
 	keyID := args[0]
 	if !cfg.AutoApprove {
-		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-		fmt.Printf("⚠️  DESTRUCTIVE OPERATION WARNING ⚠️\n")
-		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-		fmt.Printf("\nYou are about to PERMANENTLY DELETE API key: %s\n", keyID)
-		fmt.Println("\nThis action:")
-		fmt.Println("  • Cannot be undone")
-		fmt.Println("  • Will immediately revoke access for any services using this key")
-		fmt.Println("  • May cause service disruptions if the key is in active use")
-		fmt.Println("\nPlease confirm you have:")
-		fmt.Println("  • Verified no active services depend on this key")
-		fmt.Println("  • Documented or backed up the key information if needed")
-		fmt.Print("\nType 'yes' to confirm deletion (or anything else to cancel): ")
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
+		printOutput("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+		printOutput("⚠️  DESTRUCTIVE OPERATION WARNING ⚠️\n")
+		printOutput("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+		printOutput("\nYou are about to PERMANENTLY DELETE API key: %s\n", keyID)
+		printOutput("\nThis action:\n")
+		printOutput("  • Cannot be undone\n")
+		printOutput("  • Will immediately revoke access for any services using this key\n")
+		printOutput("  • May cause service disruptions if the key is in active use\n")
+		printOutput("\nPlease confirm you have:\n")
+		printOutput("  • Verified no active services depend on this key\n")
+		printOutput("  • Documented or backed up the key information if needed\n")
+		printOutput("\nType 'yes' to confirm deletion (or anything else to cancel): ")
+		response, err := readConfirmation()
+		if err != nil {
 			// User cancelled or error reading input
-			fmt.Println("\n✓ Operation cancelled")
+			printOutput("\n✓ Operation cancelled\n")
 			return nil
 		}
 		if response != "yes" {
-			fmt.Println("✓ Operation cancelled")
+			printOutput("✓ Operation cancelled\n")
 			return nil
 		}
 	}
@@ -216,6 +216,6 @@ func runAPIKeysDelete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to delete API key: %w", err)
 	}
 
-	fmt.Printf("Successfully deleted API key %s\n", keyID)
+	printOutput("Successfully deleted API key %s\n", keyID)
 	return nil
 }
