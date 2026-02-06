@@ -15,6 +15,145 @@ A Go-based command-line wrapper for easy interaction with Datadog APIs.
 - **JSON Output**: Structured output for easy parsing and automation
 - **Dynamic Client Registration**: Each installation gets unique OAuth credentials
 
+## API Coverage
+
+<!-- Last updated: 2026-02-05 | API Client: v2.30.0 -->
+
+Pup implements **33 of 85+ available Datadog APIs** (38.8% coverage).
+
+**Summary:**
+- ✅ **23 Working** - Fully implemented and functional
+- ⚠️ **7 Blocked** - Implementation complete, waiting for API client updates
+- ⏳ **3 Planned** - Skeleton implementation, endpoints pending
+- ❌ **52+ Not Implemented** - Available in Datadog but not yet in pup
+
+See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
+
+💡 **Tip:** Use Ctrl/Cmd+F to search for specific APIs. [Request features via GitHub Issues](https://github.com/DataDog/pup/issues).
+
+---
+
+<details open>
+<summary><b>📊 Core Observability (5/9 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Metrics | ✅ | `metrics query`, `metrics list`, `metrics get`, `metrics search` | Full query and metadata support |
+| Logs | ✅ | `logs search`, `logs list`, `logs aggregate` | V1 and V2 APIs supported |
+| Traces | ✅ | `traces search`, `traces list`, `traces aggregate` | APM traces support |
+| Events | ⚠️ | `events list`, `events search`, `events get` | API client missing WithStart/WithEnd methods |
+| RUM | ⚠️ | `rum apps list/get`, `rum sessions list` | Missing ListRUMApplications and metrics API |
+| APM Services | ❌ | - | Not yet implemented |
+| Profiling | ❌ | - | Not yet implemented |
+| Session Replay | ❌ | - | Not yet implemented |
+| Spans Metrics | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>🔔 Monitoring & Alerting (6/9 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Monitors | ✅ | `monitors list`, `monitors get`, `monitors delete` | Full CRUD support |
+| Dashboards | ✅ | `dashboards list`, `dashboards get`, `dashboards delete`, `dashboards url` | Full management capabilities |
+| SLOs | ✅ | `slos list`, `slos get`, `slos create`, `slos update`, `slos delete`, `slos corrections` | Full CRUD plus corrections |
+| Synthetics | ✅ | `synthetics tests list`, `synthetics locations list` | Test management support |
+| Downtimes | ✅ | `downtime list`, `downtime get`, `downtime cancel` | Full downtime management |
+| Notebooks | ✅ | `notebooks list`, `notebooks get`, `notebooks delete` | Investigation notebooks supported |
+| Dashboard Lists | ❌ | - | Not yet implemented |
+| Powerpacks | ❌ | - | Not yet implemented |
+| Workflow Automation | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>🔒 Security & Compliance (4/9 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Security Monitoring | ✅ | `security rules list`, `security signals list`, `security findings list` | Rules, signals, and findings |
+| Vulnerabilities | ⚠️ | `vulnerabilities search`, `vulnerabilities list` | API client type signature mismatches |
+| Static Analysis | ⚠️ | `static-analysis ast`, `static-analysis custom-rulesets`, `static-analysis sca`, `static-analysis coverage` | API client type mismatches |
+| Audit Logs | ⚠️ | `audit-logs list`, `audit-logs search` | Pointer method call issue |
+| Data Governance | ✅ | `data-governance scanner-rules list` | Sensitive data scanner rules |
+| Application Security | ❌ | - | Not yet implemented |
+| CSM Threats | ❌ | - | Not yet implemented |
+| Cloud Security (CSPM) | ❌ | - | Not yet implemented |
+| Sensitive Data Scanner | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>☁️ Infrastructure & Cloud (5/8 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Infrastructure | ✅ | `infrastructure hosts list`, `infrastructure hosts get` | Host inventory management |
+| Tags | ⚠️ | `tags list`, `tags get`, `tags add`, `tags update`, `tags delete` | Type mismatch with Tags field |
+| Network | ⏳ | `network flows list`, `network devices list` | Placeholder - API endpoints pending |
+| Cloud (AWS) | ✅ | `cloud aws list` | AWS integration management |
+| Cloud (GCP) | ✅ | `cloud gcp list` | GCP integration management |
+| Cloud (Azure) | ✅ | `cloud azure list` | Azure integration management |
+| Containers | ❌ | - | Not yet implemented |
+| Processes | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>🚨 Incident & Operations (5/7 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Incidents | ✅ | `incidents list`, `incidents get`, `incidents create`, `incidents update` | Incident management with CRUD |
+| On-Call | ✅ | `on-call teams list`, `on-call teams get` | On-call team management |
+| Error Tracking | ✅ | `error-tracking issues list`, `error-tracking issues get` | Error issue management |
+| Service Catalog | ✅ | `service-catalog list`, `service-catalog get` | Service registry management |
+| Scorecards | ✅ | `scorecards list`, `scorecards get` | Service quality scores |
+| Case Management | ❌ | - | Not yet implemented |
+| Incident Services/Teams | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>🔧 CI/CD & Development (1/3 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| CI Visibility | ⚠️ | `cicd pipelines list`, `cicd events list` | Method signature mismatches in API |
+| Test Optimization | ❌ | - | Not yet implemented |
+| DORA Metrics | ❌ | - | Not yet implemented |
+
+</details>
+
+<details>
+<summary><b>👥 Organization & Access (4/6 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Users | ✅ | `users list`, `users get`, `users roles` | User and role management |
+| Organizations | ✅ | `organizations get`, `organizations list` | Organization settings management |
+| API Keys | ✅ | `api-keys list`, `api-keys get`, `api-keys create`, `api-keys delete` | Full API key CRUD |
+| Service Accounts | ✅ | - | Managed via users commands |
+| Teams | ❌ | - | Not yet implemented |
+| Roles | ❌ | - | Only list via users |
+
+</details>
+
+<details>
+<summary><b>⚙️ Platform & Configuration (4/6 implemented)</b></summary>
+
+| API Domain | Status | Pup Commands | Notes |
+|------------|--------|--------------|-------|
+| Usage Metering | ⚠️ | `usage summary`, `usage hourly` | Missing WithEndHr method, deprecated endpoints |
+| Integrations | ✅ | `integrations slack`, `integrations pagerduty`, `integrations webhooks` | Third-party integrations support |
+| Observability Pipelines | ⏳ | `obs-pipelines list`, `obs-pipelines get` | Placeholder - API endpoints pending |
+| Miscellaneous | ✅ | `misc ip-ranges`, `misc status` | IP ranges and status |
+| Key Management | ❌ | - | Not yet implemented |
+| IP Allowlist | ❌ | - | Not yet implemented |
+
+</details>
+
 ## Installation
 
 ```bash
