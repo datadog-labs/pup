@@ -96,10 +96,27 @@ func ToTable(data interface{}) (string, error) {
 					return "", err
 				}
 			} else {
-				// data is a single object
+				// data is a single object - check if it's JSON:API format
 				if dataMap, isMap := dataField.(map[string]interface{}); isMap {
-					if err := formatMapAsTable(table, dataMap); err != nil {
-						return "", err
+					// Check if this is a JSON:API object with attributes
+					if attrs, hasAttrs := dataMap["attributes"].(map[string]interface{}); hasAttrs {
+						// Check if this is timeseries data (has times and values/series)
+						if times, hasTimes := attrs["times"].([]interface{}); hasTimes {
+							if err := formatTimeseriesAsTable(table, attrs, times); err != nil {
+								return "", err
+							}
+						} else {
+							// Has attributes but not timeseries - flatten and display
+							flattened := flattenJSONAPIObject(dataMap)
+							if err := formatMapAsTable(table, flattened); err != nil {
+								return "", err
+							}
+						}
+					} else {
+						// No attributes - format as key-value pairs
+						if err := formatMapAsTable(table, dataMap); err != nil {
+							return "", err
+						}
 					}
 				} else {
 					// Single object - format as key-value pairs
@@ -178,6 +195,58 @@ func flattenJSONAPIObject(obj map[string]interface{}) map[string]interface{} {
 	}
 
 	return flattened
+}
+
+// formatTimeseriesAsTable formats timeseries data (times + values) as a table
+func formatTimeseriesAsTable(table *tablewriter.Table, attrs map[string]interface{}, times []interface{}) error {
+	// Extract values array - typically a 2D array [[series1_values], [series2_values], ...]
+	var valuesArray [][]interface{}
+	if values, hasValues := attrs["values"].([]interface{}); hasValues {
+		// Convert to 2D array
+		for _, seriesVals := range values {
+			if seriesArr, ok := seriesVals.([]interface{}); ok {
+				valuesArray = append(valuesArray, seriesArr)
+			}
+		}
+	}
+
+	// If no values array, show times only
+	if len(valuesArray) == 0 {
+		table.Header("Timestamp")
+		for _, t := range times {
+			if err := table.Append(formatTableValue(t)); err != nil {
+				return fmt.Errorf("failed to append row: %w", err)
+			}
+		}
+		return nil
+	}
+
+	// Build headers - one column for timestamp, one for each series
+	headers := []interface{}{"Timestamp"}
+	for i := range valuesArray {
+		headers = append(headers, fmt.Sprintf("Series %d", i))
+	}
+	table.Header(headers...)
+
+	// Build rows - one row per timestamp
+	for i, timestamp := range times {
+		row := []interface{}{formatTableValue(timestamp)}
+
+		// Add values from each series for this timestamp
+		for _, seriesVals := range valuesArray {
+			if i < len(seriesVals) {
+				row = append(row, formatTableValue(seriesVals[i]))
+			} else {
+				row = append(row, "")
+			}
+		}
+
+		if err := table.Append(row...); err != nil {
+			return fmt.Errorf("failed to append row: %w", err)
+		}
+	}
+
+	return nil
 }
 
 // formatSliceAsTable formats a slice of objects as a table
