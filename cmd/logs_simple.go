@@ -685,6 +685,7 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		Body: &body,
 	}
 
+	// Fetch first page
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
 		if r != nil && r.Body != nil {
@@ -704,7 +705,59 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to search logs: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	// Collect all logs from all pages
+	allLogs := resp.GetData()
+	pageCount := 1
+
+	// Follow pagination if there's more data
+	for {
+		meta, ok := resp.GetMetaOk()
+		if !ok || meta == nil {
+			break
+		}
+		page, ok := meta.GetPageOk()
+		if !ok || page == nil {
+			break
+		}
+		cursor, ok := page.GetAfterOk()
+		if !ok || cursor == nil || *cursor == "" {
+			break
+		}
+
+		// Fetch next page
+		body.Page.Cursor = cursor
+		opts.Body = &body
+		resp, r, err = api.ListLogs(client.Context(), opts)
+		if err != nil {
+			// Return what we have so far with a warning
+			printOutput("Warning: Failed to fetch page %d: %v\n", pageCount+1, err)
+			break
+		}
+
+		allLogs = append(allLogs, resp.GetData()...)
+		pageCount++
+	}
+
+	// Show helpful message if no logs found
+	if len(allLogs) == 0 {
+		printOutput("No logs found matching your query.\n\n")
+		printOutput("Tips:\n")
+		printOutput("- Try a broader time range (e.g., --from=\"30d\")\n")
+		printOutput("- Verify the service name exists in your logs\n")
+		printOutput("- Check your query syntax: https://docs.datadoghq.com/logs/explorer/search_syntax/\n")
+		printOutput("- Try a simpler query like --query=\"*\" to see any logs\n")
+		return nil
+	}
+
+	// Build response with all collected logs
+	finalResp := resp
+	if pageCount > 1 {
+		// Update data with all collected logs
+		finalResp.SetData(allLogs)
+		printOutput("Fetched %d logs across %d pages\n\n", len(allLogs), pageCount)
+	}
+
+	output, err := formatter.FormatOutput(finalResp, formatter.OutputFormat(outputFormat))
 	if err != nil {
 		return err
 	}
