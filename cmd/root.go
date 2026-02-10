@@ -205,6 +205,13 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
+		if cfg.APIKey == "" {
+			return fmt.Errorf("DD_API_KEY is required (set via environment variable or run 'pup auth login')")
+		}
+		if cfg.AppKey == "" {
+			return fmt.Errorf("DD_APP_KEY is required (set via environment variable or run 'pup auth login')")
+		}
+
 		fmt.Println("Configuration is valid:")
 		fmt.Printf("  Site: %s\n", cfg.Site)
 		fmt.Printf("  API Key: %s...%s\n", cfg.APIKey[:8], cfg.APIKey[len(cfg.APIKey)-4:])

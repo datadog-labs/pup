@@ -9,6 +9,8 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/pup/pkg/config"
 )
 
 func TestRootCmd_SilenceUsage(t *testing.T) {
@@ -182,6 +184,71 @@ func TestFormatAPIError(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestTestCmd_MissingKeys(t *testing.T) {
+	tests := []struct {
+		name    string
+		apiKey  string
+		appKey  string
+		wantErr string
+	}{
+		{
+			name:    "missing API key",
+			apiKey:  "",
+			appKey:  "test-app-key-value",
+			wantErr: "DD_API_KEY is required",
+		},
+		{
+			name:    "missing App key",
+			apiKey:  "test-api-key-value",
+			appKey:  "",
+			wantErr: "DD_APP_KEY is required",
+		},
+		{
+			name:    "both keys missing",
+			apiKey:  "",
+			appKey:  "",
+			wantErr: "DD_API_KEY is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			origCfg := cfg
+			defer func() { cfg = origCfg }()
+
+			cfg = &config.Config{
+				APIKey: tt.apiKey,
+				AppKey: tt.appKey,
+				Site:   "datadoghq.com",
+			}
+
+			err := testCmd.RunE(testCmd, []string{})
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("error = %q, want containing %q", err.Error(), tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestTestCmd_ValidKeys(t *testing.T) {
+	origCfg := cfg
+	defer func() { cfg = origCfg }()
+
+	cfg = &config.Config{
+		APIKey: "abcdefgh12345678",
+		AppKey: "ijklmnop87654321",
+		Site:   "datadoghq.com",
+	}
+
+	err := testCmd.RunE(testCmd, []string{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
