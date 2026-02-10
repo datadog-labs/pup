@@ -26,7 +26,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | monitors | list, get, delete | cmd/monitors.go | ✅ |
 | dashboards | list, get, delete, url | cmd/dashboards.go | ✅ |
 | slos | list, get, create, update, delete, corrections | cmd/slos.go | ✅ |
-| incidents | list, get, create, update | cmd/incidents.go | ✅ |
+| incidents | list, get, attachments | cmd/incidents.go | ✅ |
 | rum | apps, sessions | cmd/rum.go | ✅ |
 | cicd | pipelines, events | cmd/cicd.go | ✅ |
 | vulnerabilities | search, list | cmd/vulnerabilities.go | ✅ |
