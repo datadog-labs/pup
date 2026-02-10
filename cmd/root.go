@@ -80,6 +80,7 @@ func init() {
 	rootCmd.AddCommand(onCallCmd)
 	rootCmd.AddCommand(auditLogsCmd)
 	rootCmd.AddCommand(apiKeysCmd)
+	rootCmd.AddCommand(appKeysCmd)
 	rootCmd.AddCommand(infrastructureCmd)
 	rootCmd.AddCommand(syntheticsCmd)
 	rootCmd.AddCommand(usersCmd)
@@ -90,6 +91,7 @@ func init() {
 	rootCmd.AddCommand(errorTrackingCmd)
 	rootCmd.AddCommand(scorecardsCmd)
 	rootCmd.AddCommand(usageCmd)
+	rootCmd.AddCommand(costCmd)
 	rootCmd.AddCommand(dataGovernanceCmd)
 	rootCmd.AddCommand(obsPipelinesCmd)
 	rootCmd.AddCommand(networkCmd)
@@ -97,6 +99,7 @@ func init() {
 	rootCmd.AddCommand(integrationsCmd)
 	rootCmd.AddCommand(miscCmd)
 	rootCmd.AddCommand(investigationsCmd)
+	rootCmd.AddCommand(productAnalyticsCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
