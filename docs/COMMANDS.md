@@ -34,7 +34,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | downtime | list, get, cancel | cmd/downtime.go | ✅ |
 | tags | list, get, add, update, delete | cmd/tags.go | ✅ |
 | events | list, search, get | cmd/events.go | ✅ |
-| on-call | teams (list, get) | cmd/on_call.go | ✅ |
+| on-call | teams (CRUD, memberships) | cmd/on_call.go | ✅ |
 | audit-logs | list, search | cmd/audit_logs.go | ✅ |
 | api-keys | list, get, create, delete | cmd/api_keys.go | ✅ |
 | app-keys | list, get, register, unregister | cmd/app_keys.go | ✅ |
@@ -141,7 +141,7 @@ pup infrastructure hosts list
 
 ### Operations & Incident Response
 - **incidents** - Incident management (list, get, create, update)
-- **on-call** - On-call teams (teams list, teams get)
+- **on-call** - Team management (create, update, delete teams; manage memberships with roles)
 
 ### Organization & Access
 - **users** - User management (list, get, roles)
