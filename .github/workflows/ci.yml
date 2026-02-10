@@ -20,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.21'
+          go-version: '1.25'
           cache: true
 
       - name: Install bc for floating-point math
@@ -228,7 +228,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.21'
+          go-version: '1.25'
           cache: true
 
       - name: Install golangci-lint
@@ -249,7 +249,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.21'
+          go-version: '1.25'
           cache: true
 
       - name: Build

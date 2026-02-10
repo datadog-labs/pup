@@ -177,7 +177,7 @@ See [TESTING.md](docs/TESTING.md) for details.
 
 ## Core Dependencies
 
-- **Go 1.21+** with generics
+- **Go 1.25+**
 - **datadog-api-client-go** - Official API client
 - **cobra** - CLI framework
 - **viper** - Configuration
