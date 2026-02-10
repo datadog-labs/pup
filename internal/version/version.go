@@ -14,5 +14,5 @@ var (
 
 // BuildInfo returns formatted build information
 func BuildInfo() string {
-	return "Fetch " + Version + " (" + GitCommit + ") built on " + BuildDate
+	return "Pup " + Version + " (" + GitCommit + ") built on " + BuildDate
 }
