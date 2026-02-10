@@ -10,13 +10,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/pup/internal/version"
 	"github.com/DataDog/pup/pkg/auth/storage"
 	"github.com/DataDog/pup/pkg/config"
+	"github.com/DataDog/pup/pkg/useragent"
 )
 
 // Client wraps the Datadog API client
@@ -74,7 +73,7 @@ func New(cfg *config.Config) (*Client, error) {
 	configuration.Host = fmt.Sprintf("api.%s", cfg.Site)
 
 	// Set custom user agent to identify requests as coming from pup CLI
-	configuration.UserAgent = getUserAgent()
+	configuration.UserAgent = useragent.Get()
 
 	// Enable all unstable operations to suppress warnings
 	// These are beta/preview features that we want to use
@@ -136,7 +135,7 @@ func (c *Client) RawRequest(method, path string, body io.Reader) (*http.Response
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", getUserAgent())
+	req.Header.Set("User-Agent", useragent.Get())
 
 	// Set auth headers from context
 	if token, ok := c.ctx.Value(datadog.ContextAccessToken).(string); ok && token != "" {
@@ -159,13 +158,3 @@ func (c *Client) RawRequest(method, path string, body io.Reader) (*http.Response
 	return resp, nil
 }
 
-// getUserAgent returns a custom user agent string identifying the pup CLI
-func getUserAgent() string {
-	return fmt.Sprintf(
-		"pup/%s (go %s; os %s; arch %s)",
-		version.Version,
-		runtime.Version(),
-		runtime.GOOS,
-		runtime.GOARCH,
-	)
-}

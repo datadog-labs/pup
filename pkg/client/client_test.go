@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -18,6 +17,7 @@ import (
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/pup/internal/version"
 	"github.com/DataDog/pup/pkg/config"
+	"github.com/DataDog/pup/pkg/useragent"
 )
 
 func TestNew_WithAPIKeys(t *testing.T) {
@@ -494,7 +494,7 @@ func TestClient_APIConfiguration(t *testing.T) {
 }
 
 func TestGetUserAgent(t *testing.T) {
-	userAgent := getUserAgent()
+	userAgent := useragent.Get()
 
 	// Check that it starts with "pup/"
 	if !strings.HasPrefix(userAgent, "pup/") {
@@ -504,21 +504,6 @@ func TestGetUserAgent(t *testing.T) {
 	// Check that it contains the version
 	if !strings.Contains(userAgent, version.Version) {
 		t.Errorf("User-Agent should contain version '%s', got: %s", version.Version, userAgent)
-	}
-
-	// Check that it contains Go version
-	if !strings.Contains(userAgent, runtime.Version()) {
-		t.Errorf("User-Agent should contain Go version '%s', got: %s", runtime.Version(), userAgent)
-	}
-
-	// Check that it contains OS
-	if !strings.Contains(userAgent, runtime.GOOS) {
-		t.Errorf("User-Agent should contain OS '%s', got: %s", runtime.GOOS, userAgent)
-	}
-
-	// Check that it contains architecture
-	if !strings.Contains(userAgent, runtime.GOARCH) {
-		t.Errorf("User-Agent should contain arch '%s', got: %s", runtime.GOARCH, userAgent)
 	}
 
 	// Verify format: pup/<version> (go <version>; os <os>; arch <arch>)
@@ -614,7 +599,7 @@ func TestClient_IntegrationUserAgentInAPIClient(t *testing.T) {
 		t.Errorf("User-Agent should start with 'pup/', got: %s", userAgent)
 	}
 
-	expectedUA := getUserAgent()
+	expectedUA := useragent.Get()
 	if userAgent != expectedUA {
 		t.Errorf("User-Agent = %q, want %q", userAgent, expectedUA)
 	}
