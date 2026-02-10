@@ -1,6 +1,6 @@
 # Command Reference
 
-Complete reference for all 33 command groups in Pup.
+Complete reference for all 37 command groups in Pup.
 
 ## Command Pattern
 
@@ -23,38 +23,44 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | metrics | query, list, get, search | cmd/metrics.go | ✅ |
 | logs | search, list, aggregate | cmd/logs.go | ✅ |
 | traces | search, list, aggregate | cmd/traces.go | ✅ |
-| monitors | list, get, delete | cmd/monitors.go | ✅ |
+| monitors | list, get, delete, search | cmd/monitors.go | ✅ |
 | dashboards | list, get, delete, url | cmd/dashboards.go | ✅ |
 | slos | list, get, create, update, delete, corrections | cmd/slos.go | ✅ |
-| incidents | list, get, create, update | cmd/incidents.go | ✅ |
-| rum | apps, metrics, retention-filters, sessions | cmd/rum.go | ⚠️ |
-| cicd | pipelines, events | cmd/cicd.go | ⚠️ |
-| vulnerabilities | search, list | cmd/vulnerabilities.go | ⚠️ |
-| static-analysis | ast, custom-rulesets, sca, coverage | cmd/vulnerabilities.go | ⚠️ |
+| incidents | list, get, attachments | cmd/incidents.go | ✅ |
+| rum | apps, sessions | cmd/rum.go | ✅ |
+| cicd | pipelines, events | cmd/cicd.go | ✅ |
+| vulnerabilities | search, list | cmd/vulnerabilities.go | ✅ |
+| static-analysis | custom-rulesets | cmd/vulnerabilities.go | ✅ |
 | downtime | list, get, cancel | cmd/downtime.go | ✅ |
-| tags | list, get, add, update, delete | cmd/tags.go | ⚠️ |
-| events | list, search, get | cmd/events.go | ⚠️ |
-| on-call | teams (list, get) | cmd/on_call.go | ✅ |
-| audit-logs | list, search | cmd/audit_logs.go | ⚠️ |
+| tags | list, get, add, update, delete | cmd/tags.go | ✅ |
+| events | list, search, get | cmd/events.go | ✅ |
+| on-call | teams (CRUD, memberships) | cmd/on_call.go | ✅ |
+| audit-logs | list, search | cmd/audit_logs.go | ✅ |
 | api-keys | list, get, create, delete | cmd/api_keys.go | ✅ |
+| app-keys | list, get, register, unregister | cmd/app_keys.go | ✅ |
 | infrastructure | hosts (list, get) | cmd/infrastructure.go | ✅ |
 | synthetics | tests, locations | cmd/synthetics.go | ✅ |
 | users | list, get, roles | cmd/users.go | ✅ |
 | notebooks | list, get, delete | cmd/notebooks.go | ✅ |
-| security | rules, signals, findings | cmd/security.go | ✅ |
+| security | rules, signals, findings (list, get, search) | cmd/security.go | ✅ |
 | organizations | get, list | cmd/organizations.go | ✅ |
 | service-catalog | list, get | cmd/service_catalog.go | ✅ |
 | error-tracking | issues (list, get) | cmd/error_tracking.go | ✅ |
 | scorecards | list, get | cmd/scorecards.go | ✅ |
-| usage | summary, hourly | cmd/usage.go | ⚠️ |
+| usage | summary, hourly | cmd/usage.go | ✅ |
+| cost | projected, attribution, by-org | cmd/cost.go | ✅ |
+| product-analytics | events send | cmd/product_analytics.go | ✅ |
 | data-governance | scanner-rules (list) | cmd/data_governance.go | ✅ |
 | obs-pipelines | list, get | cmd/obs_pipelines.go | ⏳ |
 | network | flows, devices | cmd/network.go | ⏳ |
 | cloud | aws, gcp, azure (list) | cmd/cloud.go | ✅ |
 | integrations | slack, pagerduty, webhooks | cmd/integrations.go | ✅ |
 | misc | ip-ranges, status | cmd/miscellaneous.go | ✅ |
+| cases | create, get, search, assign, archive, projects | cmd/cases.go | ✅ |
 
-**Summary:** 23 working, 7 API-blocked, 3 placeholders
+**Summary:** 34 working, 0 API-blocked, 3 placeholders
+
+**Note:** RUM command (cmd/rum.go) is fully operational. Apps and sessions work completely. Metrics and retention-filters support list/get operations (create/update/delete operations pending due to complex API type structures).
 
 ## Common Patterns
 
@@ -135,20 +141,24 @@ pup infrastructure hosts list
 - **service-catalog** - Service registry (list, get)
 
 ### Operations & Incident Response
-- **incidents** - Incident management (list, get, create, update)
-- **on-call** - On-call teams (teams list, teams get)
+- **incidents** - Incident management (list, get, attachments)
+- **on-call** - Team management (create, update, delete teams; manage memberships with roles)
+- **cases** - Case management (create, search, assign, archive, projects)
 
 ### Organization & Access
 - **users** - User management (list, get, roles)
 - **organizations** - Org settings (get, list)
 - **api-keys** - API key management (list, get, create, delete)
+- **app-keys** - App key registration for Action Connections (list, get, register, unregister)
 
 ### Cost & Usage
 - **usage** - Usage and billing (summary, hourly)
+- **cost** - Cost management (projected, attribution, by-org)
 
 ### Configuration & Data Management
 - **obs-pipelines** - Observability pipelines (list, get)
 - **misc** - Miscellaneous (ip-ranges, status)
+- **product-analytics** - Product analytics events (send)
 
 ## Global Flags
 
@@ -162,16 +172,24 @@ Available on all commands:
 --yes                Skip confirmation prompts
 ```
 
-## Known API Issues
+## Recent Enhancements (v2.54.0 API Client Update)
 
-Commands with ⚠️ status have compilation errors due to datadog-api-client-go library mismatches:
+The upgrade to datadog-api-client-go v2.54.0 has resolved all previous API blocking issues and added new capabilities:
 
-1. **audit_logs.go** - Pointer method call issue with WithBody
-2. **cicd.go** - Method signature mismatches in pipeline events API
-3. **events.go** - Missing WithStart/WithEnd methods
-4. **rum.go** - Missing ListRUMApplications and metrics API
-5. **tags.go** - Type mismatch with Tags field
-6. **usage.go** - Missing WithEndHr method, deprecated endpoints
-7. **vulnerabilities.go** - Type signature mismatches
+### Newly Unblocked Commands
+All 7 previously blocked commands now work:
+- ✅ **audit-logs** - Full audit log search and listing
+- ✅ **cicd** - CI/CD pipeline visibility and events
+- ✅ **events** - Infrastructure event management
+- ✅ **tags** - Host tag operations
+- ✅ **usage** - Usage and billing metrics
+- ✅ **vulnerabilities** - Security vulnerability tracking
+- ✅ **static-analysis** - Code security analysis
 
-These are structural issues in the API client library. Command implementations are correct and will work once the library is updated.
+### New Command Groups
+- ✅ **app-keys** - App key registration for Action Connections and Workflow Automation
+- ✅ **cost** - Cost management with projected costs, attribution by tags, and organizational breakdowns
+- ✅ **product-analytics** - Send server-side product analytics events with custom properties
+
+### Enhanced Existing Commands
+- **security findings** - Now includes get and search capabilities with advanced filtering (severity, status, resource type, evaluation results)

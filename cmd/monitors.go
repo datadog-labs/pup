@@ -212,10 +212,40 @@ WARNING:
 	RunE: runMonitorsDelete,
 }
 
+var monitorsSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search monitors",
+	Long: `Search monitors using a query string.
+
+Search allows more flexible querying than list filtering, supporting
+advanced search syntax for finding specific monitors.
+
+FLAGS:
+  --query        Search query string
+  --page         Page number (default: 0)
+  --per-page     Results per page (default: 30)
+  --sort         Sort order (e.g., "name,asc", "id,desc")
+
+EXAMPLES:
+  # Search for monitors by text
+  pup monitors search --query="database"
+
+  # Search with pagination
+  pup monitors search --query="cpu" --page=1 --per-page=50
+
+  # Search and sort
+  pup monitors search --query="memory" --sort="name,asc"`,
+	RunE: runMonitorsSearch,
+}
+
 var (
-	monitorName  string
-	monitorTags  string
-	monitorLimit int32
+	monitorName    string
+	monitorTags    string
+	monitorLimit   int32
+	searchQuery    string
+	searchPage     int64
+	searchPerPage  int64
+	searchSort     string
 )
 
 func init() {
@@ -223,9 +253,17 @@ func init() {
 	monitorsListCmd.Flags().StringVar(&monitorTags, "tags", "", "Filter monitors by tags (comma-separated)")
 	monitorsListCmd.Flags().Int32Var(&monitorLimit, "limit", 200, "Maximum number of monitors to return (default: 200, max: 1000)")
 
-	monitorsCmd.AddCommand(monitorsListCmd)
-	monitorsCmd.AddCommand(monitorsGetCmd)
-	monitorsCmd.AddCommand(monitorsDeleteCmd)
+	monitorsSearchCmd.Flags().StringVar(&searchQuery, "query", "", "Search query string")
+	monitorsSearchCmd.Flags().Int64Var(&searchPage, "page", 0, "Page number")
+	monitorsSearchCmd.Flags().Int64Var(&searchPerPage, "per-page", 30, "Results per page")
+	monitorsSearchCmd.Flags().StringVar(&searchSort, "sort", "", "Sort order")
+
+	monitorsCmd.AddCommand(
+		monitorsListCmd,
+		monitorsGetCmd,
+		monitorsDeleteCmd,
+		monitorsSearchCmd,
+	)
 }
 
 func runMonitorsList(cmd *cobra.Command, args []string) error {
@@ -349,6 +387,42 @@ func runMonitorsDelete(cmd *cobra.Command, args []string) error {
 	resp, r, err := api.DeleteMonitor(client.Context(), parseInt64(monitorID))
 	if err != nil {
 		return formatAPIError("delete monitor", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+
+	printOutput("%s\n", output)
+	return nil
+}
+
+func runMonitorsSearch(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV1.NewMonitorsApi(client.V1())
+	opts := datadogV1.SearchMonitorsOptionalParameters{}
+
+	if searchQuery != "" {
+		opts.WithQuery(searchQuery)
+	}
+	if searchPage > 0 {
+		opts.WithPage(searchPage)
+	}
+	if searchPerPage > 0 {
+		opts.WithPerPage(searchPerPage)
+	}
+	if searchSort != "" {
+		opts.WithSort(searchSort)
+	}
+
+	resp, r, err := api.SearchMonitors(client.Context(), opts)
+	if err != nil {
+		return formatAPIError("search monitors", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))

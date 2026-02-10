@@ -211,13 +211,76 @@ USE CASES:
   • Review incident tasks and completion
   • Export incident data for postmortems
   • Monitor customer impact duration`,
-	Args:  cobra.ExactArgs(1),
-	RunE:  runIncidentsGet,
+	Args: cobra.ExactArgs(1),
+	RunE: runIncidentsGet,
+}
+
+// Attachments subcommand
+var incidentsAttachmentsCmd = &cobra.Command{
+	Use:   "attachments",
+	Short: "Manage incident attachments",
+	Long: `List and delete incident attachments.
+
+Attachments can include links to runbooks, postmortems, documentation,
+and other resources related to the incident.
+
+ATTACHMENT TYPES:
+  • link: External link to documentation or resources
+  • postmortem: Link to incident postmortem
+  • documentation: Link to related documentation`,
+}
+
+var incidentsAttachmentsListCmd = &cobra.Command{
+	Use:   "list [incident-id]",
+	Short: "List incident attachments",
+	Long: `List all attachments for an incident.
+
+ARGUMENTS:
+  incident-id    The incident ID (format: xxx-xxx-xxx)
+
+EXAMPLES:
+  # List all attachments for an incident
+  pup incidents attachments list abc-123-def
+
+  # List attachments with table output
+  pup incidents attachments list abc-123-def --output=table`,
+	Args: cobra.ExactArgs(1),
+	RunE: runIncidentsAttachmentsList,
+}
+
+var incidentsAttachmentsDeleteCmd = &cobra.Command{
+	Use:   "delete [incident-id] [attachment-id]",
+	Short: "Delete an incident attachment",
+	Long: `Delete an attachment from an incident.
+
+ARGUMENTS:
+  incident-id     The incident ID (format: xxx-xxx-xxx)
+  attachment-id   The attachment ID
+
+FLAGS:
+  --yes, -y      Skip confirmation prompt
+
+EXAMPLES:
+  # Delete attachment with confirmation
+  pup incidents attachments delete abc-123-def attachment-123
+
+  # Delete without confirmation
+  pup incidents attachments delete abc-123-def attachment-123 --yes`,
+	Args: cobra.ExactArgs(2),
+	RunE: runIncidentsAttachmentsDelete,
 }
 
 func init() {
-	incidentsCmd.AddCommand(incidentsListCmd)
-	incidentsCmd.AddCommand(incidentsGetCmd)
+	incidentsAttachmentsCmd.AddCommand(
+		incidentsAttachmentsListCmd,
+		incidentsAttachmentsDeleteCmd,
+	)
+
+	incidentsCmd.AddCommand(
+		incidentsListCmd,
+		incidentsGetCmd,
+		incidentsAttachmentsCmd,
+	)
 }
 
 func runIncidentsList(cmd *cobra.Command, args []string) error {
@@ -227,13 +290,9 @@ func runIncidentsList(cmd *cobra.Command, args []string) error {
 	}
 
 	api := datadogV2.NewIncidentsApi(client.V2())
-
 	resp, r, err := api.ListIncidents(client.Context())
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to list incidents: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to list incidents: %w", err)
+		return formatAPIError("list incidents", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -256,10 +315,7 @@ func runIncidentsGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetIncident(client.Context(), incidentID)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to get incident: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to get incident: %w", err)
+		return formatAPIError("get incident", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -268,5 +324,64 @@ func runIncidentsGet(cmd *cobra.Command, args []string) error {
 	}
 
 	printOutput("%s\n", output)
+	return nil
+}
+
+// Attachment implementations
+func runIncidentsAttachmentsList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	incidentID := args[0]
+	api := datadogV2.NewIncidentsApi(client.V2())
+
+	resp, r, err := api.ListIncidentAttachments(client.Context(), incidentID)
+	if err != nil {
+		return formatAPIError("list incident attachments", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+
+	printOutput("%s\n", output)
+	return nil
+}
+
+func runIncidentsAttachmentsDelete(cmd *cobra.Command, args []string) error {
+	incidentID := args[0]
+	attachmentID := args[1]
+
+	// Confirmation prompt unless --yes flag is set
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will permanently delete attachment '%s' from incident '%s'.\n", attachmentID, incidentID)
+		printOutput("Are you sure you want to continue? [y/N]: ")
+
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	r, err := api.DeleteIncidentAttachment(client.Context(), incidentID, attachmentID)
+	if err != nil {
+		return formatAPIError("delete incident attachment", err, r)
+	}
+
+	printOutput("Attachment '%s' deleted successfully from incident '%s'.\n", attachmentID, incidentID)
 	return nil
 }

@@ -548,49 +548,106 @@ func runRumAppsDelete(cmd *cobra.Command, args []string) error {
 
 // RUM Metrics Implementation
 func runRumMetricsList(cmd *cobra.Command, args []string) error {
-	// NOTE: RUMMetricsApi is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM metrics API is not available in the current API client version")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewRumMetricsApi(client.V2())
+	resp, r, err := api.ListRumMetrics(client.Context())
+	if err != nil {
+		return formatAPIError("list RUM metrics", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runRumMetricsGet(cmd *cobra.Command, args []string) error {
-	// NOTE: RUMMetricsApi is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM metrics API is not available in the current API client version")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	metricID := args[0]
+	api := datadogV2.NewRumMetricsApi(client.V2())
+	resp, r, err := api.GetRumMetric(client.Context(), metricID)
+	if err != nil {
+		return formatAPIError("get RUM metric", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runRumMetricsCreate(cmd *cobra.Command, args []string) error {
-	// NOTE: RUMMetricsApi is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM metrics API is not available in the current API client version")
+	return fmt.Errorf("RUM metrics create is not yet implemented - API client types require additional mapping")
 }
 
 func runRumMetricsUpdate(cmd *cobra.Command, args []string) error {
-	// NOTE: RUMMetricsApi is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM metrics API is not available in the current API client version")
+	return fmt.Errorf("RUM metrics update is not yet implemented - API client types require additional mapping")
 }
 
 func runRumMetricsDelete(cmd *cobra.Command, args []string) error {
-	// NOTE: RUMMetricsApi is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM metrics API is not available in the current API client version")
+	return fmt.Errorf("RUM metrics delete is not yet implemented - API client types require additional mapping")
 }
 
 // RUM Retention Filters Implementation
 func runRumRetentionFiltersList(cmd *cobra.Command, args []string) error {
-	// NOTE: RUM Retention Filters API is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM retention filters API is not available in the current API client version")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewRumRetentionFiltersApi(client.V2())
+	resp, r, err := api.ListRetentionFilters(client.Context(), rumAppID)
+	if err != nil {
+		return formatAPIError("list RUM retention filters", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runRumRetentionFiltersGet(cmd *cobra.Command, args []string) error {
-	// NOTE: RUM Retention Filters API is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM retention filters API is not available in the current API client version")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	filterID := args[0]
+	api := datadogV2.NewRumRetentionFiltersApi(client.V2())
+	resp, r, err := api.GetRetentionFilter(client.Context(), rumAppID, filterID)
+	if err != nil {
+		return formatAPIError("get RUM retention filter", err, r)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runRumRetentionFiltersCreate(cmd *cobra.Command, args []string) error {
-	// NOTE: RUM Retention Filters API is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM retention filters API is not available in the current API client version")
+	return fmt.Errorf("RUM retention filters create is not yet implemented - API client types require additional mapping")
 }
 
 func runRumRetentionFiltersUpdate(cmd *cobra.Command, args []string) error {
-	// NOTE: RUM Retention Filters API is not available in datadog-api-client-go v2.30.0
-	return fmt.Errorf("RUM retention filters API is not available in the current API client version")
+	return fmt.Errorf("RUM retention filters update is not yet implemented - API client types require additional mapping")
 }
 
 func runRumRetentionFiltersDelete(cmd *cobra.Command, args []string) error {
