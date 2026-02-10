@@ -1,6 +1,6 @@
 # Command Reference
 
-Complete reference for all 37 command groups in Pup.
+Complete reference for all 38 command groups in Pup.
 
 ## Command Pattern
 
@@ -48,6 +48,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | error-tracking | issues (list, get) | cmd/error_tracking.go | ✅ |
 | scorecards | list, get | cmd/scorecards.go | ✅ |
 | usage | summary, hourly | cmd/usage.go | ✅ |
+| apm | services (list, stats, operations, resources), entities (list), dependencies (list), flow-map | cmd/apm.go | ✅ |
 | cost | projected, attribution, by-org | cmd/cost.go | ✅ |
 | product-analytics | events send | cmd/product_analytics.go | ✅ |
 | data-governance | scanner-rules (list) | cmd/data_governance.go | ✅ |
