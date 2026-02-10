@@ -7,6 +7,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
@@ -675,7 +676,17 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListLogs(client.Context(), body)
 	if err != nil {
-		if r != nil {
+		if r != nil && r.Body != nil {
+			// Read response body for detailed error message
+			bodyBytes, readErr := io.ReadAll(r.Body)
+			if readErr == nil && len(bodyBytes) > 0 {
+				return fmt.Errorf("failed to search logs: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s (parsed from: %s)\n- To: %s (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your time range is valid\n- Check that your query syntax is correct\n- Ensure you have proper permissions",
+					err, r.StatusCode, string(bodyBytes),
+					logsQuery,
+					fromTimeObj.Format(time.RFC3339), logsFrom,
+					toTimeObj.Format(time.RFC3339), logsTo,
+					logsLimit)
+			}
 			return fmt.Errorf("failed to search logs: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to search logs: %w", err)
@@ -730,7 +741,11 @@ func runLogsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
-		if r != nil {
+		if r != nil && r.Body != nil {
+			bodyBytes, readErr := io.ReadAll(r.Body)
+			if readErr == nil && len(bodyBytes) > 0 {
+				return fmt.Errorf("failed to list logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, string(bodyBytes))
+			}
 			return fmt.Errorf("failed to list logs: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to list logs: %w", err)
@@ -787,7 +802,11 @@ func runLogsQuery(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
-		if r != nil {
+		if r != nil && r.Body != nil {
+			bodyBytes, readErr := io.ReadAll(r.Body)
+			if readErr == nil && len(bodyBytes) > 0 {
+				return fmt.Errorf("failed to query logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, string(bodyBytes))
+			}
 			return fmt.Errorf("failed to query logs: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to query logs: %w", err)
@@ -857,7 +876,11 @@ func runLogsAggregate(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.AggregateLogs(client.Context(), body)
 	if err != nil {
-		if r != nil {
+		if r != nil && r.Body != nil {
+			bodyBytes, readErr := io.ReadAll(r.Body)
+			if readErr == nil && len(bodyBytes) > 0 {
+				return fmt.Errorf("failed to aggregate logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, string(bodyBytes))
+			}
 			return fmt.Errorf("failed to aggregate logs: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to aggregate logs: %w", err)
