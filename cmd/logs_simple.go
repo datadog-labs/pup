@@ -655,8 +655,8 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewLogsApi(client.V1())
 
 	limit := int32(logsLimit)
-	fromTimeObj := time.Unix(fromTime, 0)
-	toTimeObj := time.Unix(toTime, 0)
+	fromTimeObj := time.UnixMilli(fromTime)
+	toTimeObj := time.UnixMilli(toTime)
 
 	body := datadogV1.LogsListRequest{
 		Query: &logsQuery,
