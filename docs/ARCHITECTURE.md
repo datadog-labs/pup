@@ -137,6 +137,23 @@ Based on [RFC 6749](https://tools.ietf.org/html/rfc6749) and [RFC 7636](https://
 **Fallback:**
 - If refresh fails, prompt user to re-authenticate
 
+## User Agent
+
+Custom user agent identifies pup CLI and detects AI coding assistants:
+
+**Format:**
+```
+pup/v0.1.0 (go go1.25.0; os darwin; arch arm64)              # Without agent
+pup/v0.1.0 (go go1.25.0; os darwin; arch arm64) claude-code  # With agent
+```
+
+**AI Agent Detection:**
+- `CLAUDECODE=1` or `CLAUDE_CODE=1` → appends `claude-code`
+- `CURSOR_AGENT=true` or `CURSOR_AGENT=1` → appends `cursor`
+- Precedence: CLAUDECODE > CURSOR_AGENT
+
+**Implementation:** `pkg/useragent` - Separate package for reusability and testing.
+
 ## API Client Wrapper
 
 ### Design Pattern
