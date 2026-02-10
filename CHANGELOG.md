@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SBOM (Software Bill of Materials) generation
 - Code signing with cosign
 - Commands: `auth`, `monitors`, `dashboards`, `slos`, `incidents`
+- APM services/entities API commands (`apm services`, `apm entities`, `apm dependencies`, `apm flow-map`)
 - Automatic fallback from OAuth2 to API key authentication
 - Comprehensive LLM-friendly help text
 

@@ -19,10 +19,10 @@ A Go-based command-line wrapper for easy interaction with Datadog APIs.
 
 <!-- Last updated: 2026-02-10 | API Client: v2.54.0 -->
 
-Pup implements **37 of 85+ available Datadog APIs** (43.5% coverage).
+Pup implements **38 of 85+ available Datadog APIs** (44.7% coverage).
 
 **Summary:**
-- ✅ **34 Working** - Fully implemented and functional
+- ✅ **35 Working** - Fully implemented and functional
 - ⏳ **3 Planned** - Skeleton implementation, endpoints pending
 - ❌ **48+ Not Implemented** - Available in Datadog but not yet in pup
 
@@ -42,7 +42,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 | Traces | ✅ | `traces search`, `traces list`, `traces aggregate` | APM traces support |
 | Events | ✅ | `events list`, `events search`, `events get` | Infrastructure event management |
 | RUM | ✅ | `rum apps`, `rum sessions`, `rum metrics list/get`, `rum retention-filters list/get` | Apps, sessions, metrics, retention filters (create/update pending) |
-| APM Services | ❌ | - | Not yet implemented |
+| APM Services | ✅ | `apm services`, `apm entities`, `apm dependencies`, `apm flow-map` | Services stats, operations, resources; entity queries; dependencies; flow visualization |
 | Profiling | ❌ | - | Not yet implemented |
 | Session Replay | ❌ | - | Not yet implemented |
 | Spans Metrics | ❌ | - | Not yet implemented |
