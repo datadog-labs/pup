@@ -119,7 +119,7 @@ func detectBackend() (BackendType, error) {
 	if !fallbackWarningShown {
 		fmt.Fprintln(os.Stderr,
 			"⚠️  Warning: OS keychain not available, falling back to file-based token storage.\n"+
-				"   Tokens will be stored in ~/.config/fetch/ with file permissions 0600.\n"+
+				"   Tokens will be stored in ~/.config/pup/ with file permissions 0600.\n"+
 				"   Set DD_TOKEN_STORAGE=file to suppress this warning.")
 		fallbackWarningShown = true
 	}

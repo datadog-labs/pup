@@ -31,7 +31,7 @@ API keys. It uses PKCE (Proof Key for Code Exchange) and Dynamic Client
 Registration for maximum security.
 
 AUTHENTICATION METHODS:
-  Fetch supports two authentication methods:
+  Pup supports two authentication methods:
 
   1. OAuth2 (RECOMMENDED):
      - Browser-based login flow
