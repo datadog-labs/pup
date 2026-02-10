@@ -123,8 +123,8 @@ EXAMPLES:
 OUTPUT:
   Returns time-series data including:
   • series: Array of time-series data points
-  • from_date: Query start time (Unix timestamp milliseconds)
-  • to_date: Query end time (Unix timestamp milliseconds)
+  • from_date: Query start time (Unix timestamp seconds)
+  • to_date: Query end time (Unix timestamp seconds)
   • query: The query string used
   • res_type: Response type
   • resp_version: Response version`,
@@ -507,8 +507,8 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 	body := datadogV2.TimeseriesFormulaQueryRequest{
 		Data: datadogV2.TimeseriesFormulaRequest{
 			Attributes: datadogV2.TimeseriesFormulaRequestAttributes{
-				From:    from.UnixMilli(),
-				To:      to.UnixMilli(),
+				From:    from.Unix(),
+				To:      to.Unix(),
 				Queries: []datadogV2.TimeseriesQuery{timeseriesQuery},
 			},
 			Type: datadogV2.TIMESERIESFORMULAREQUESTTYPE_TIMESERIES_REQUEST,
