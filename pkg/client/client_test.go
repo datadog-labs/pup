@@ -10,10 +10,13 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
+	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
+	"github.com/DataDog/pup/internal/version"
 	"github.com/DataDog/pup/pkg/config"
 )
 
@@ -488,4 +491,138 @@ func TestClient_APIConfiguration(t *testing.T) {
 	if client.config.Site != "datadoghq.eu" {
 		t.Errorf("Configuration site = %s, want datadoghq.eu", client.config.Site)
 	}
+}
+
+func TestGetUserAgent(t *testing.T) {
+	userAgent := getUserAgent()
+
+	// Check that it starts with "pup/"
+	if !strings.HasPrefix(userAgent, "pup/") {
+		t.Errorf("User-Agent should start with 'pup/', got: %s", userAgent)
+	}
+
+	// Check that it contains the version
+	if !strings.Contains(userAgent, version.Version) {
+		t.Errorf("User-Agent should contain version '%s', got: %s", version.Version, userAgent)
+	}
+
+	// Check that it contains Go version
+	if !strings.Contains(userAgent, runtime.Version()) {
+		t.Errorf("User-Agent should contain Go version '%s', got: %s", runtime.Version(), userAgent)
+	}
+
+	// Check that it contains OS
+	if !strings.Contains(userAgent, runtime.GOOS) {
+		t.Errorf("User-Agent should contain OS '%s', got: %s", runtime.GOOS, userAgent)
+	}
+
+	// Check that it contains architecture
+	if !strings.Contains(userAgent, runtime.GOARCH) {
+		t.Errorf("User-Agent should contain arch '%s', got: %s", runtime.GOARCH, userAgent)
+	}
+
+	// Verify format: pup/<version> (go <version>; os <os>; arch <arch>)
+	if !strings.Contains(userAgent, "(go ") {
+		t.Errorf("User-Agent should contain '(go ', got: %s", userAgent)
+	}
+	if !strings.Contains(userAgent, "; os ") {
+		t.Errorf("User-Agent should contain '; os ', got: %s", userAgent)
+	}
+	if !strings.Contains(userAgent, "; arch ") {
+		t.Errorf("User-Agent should contain '; arch ', got: %s", userAgent)
+	}
+
+	t.Logf("User-Agent: %s", userAgent)
+}
+
+// captureTransport is a custom HTTP RoundTripper that captures request headers
+type captureTransport struct {
+	transport      http.RoundTripper
+	capturedHeader http.Header
+}
+
+func (c *captureTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Capture the headers before the request is sent
+	c.capturedHeader = req.Header.Clone()
+
+	// Use the underlying transport or default
+	transport := c.transport
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+
+	return transport.RoundTrip(req)
+}
+
+func TestClient_IntegrationUserAgentInAPIClient(t *testing.T) {
+	// Integration test: verify User-Agent is automatically set by API client configuration
+	// This captures actual requests made through the Datadog API client
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		// Return a minimal valid API response
+		w.Write([]byte(`{"data":{"type":"monitor","id":"12345","attributes":{"name":"test"}}}`))
+	}))
+	defer server.Close()
+
+	// Extract host from server URL
+	serverURL := strings.TrimPrefix(server.URL, "http://")
+	serverURL = strings.TrimPrefix(serverURL, "https://")
+
+	// Create capture transport to intercept requests
+	capture := &captureTransport{}
+
+	cfg := &config.Config{
+		APIKey: "test-api-key",
+		AppKey: "test-app-key",
+		Site:   serverURL,
+	}
+
+	// Create client - this sets configuration.UserAgent = getUserAgent()
+	client, err := New(cfg)
+	if err != nil {
+		t.Fatalf("New() failed: %v", err)
+	}
+
+	// Replace the HTTP client with our capturing version
+	// This allows us to intercept requests made by the API client
+	client.api.GetConfig().HTTPClient = &http.Client{
+		Transport: capture,
+	}
+
+	// Make a request through the Datadog API client
+	// This tests that the API client uses the custom User-Agent we configured
+	ctx := client.Context()
+	monitorsApi := datadogV1.NewMonitorsApi(client.V1())
+	_, _, _ = monitorsApi.GetMonitor(ctx, 12345)
+
+	// We expect an error since we're not returning valid responses,
+	// but we should have captured the headers
+	if capture.capturedHeader == nil {
+		t.Fatal("Failed to capture request headers")
+	}
+
+	// Verify User-Agent header was set by the API client
+	userAgent := capture.capturedHeader.Get("User-Agent")
+	if userAgent == "" {
+		t.Fatal("User-Agent header not set by API client")
+	}
+
+	// Verify it's our custom user agent (not the default datadog-api-client-go one)
+	if !strings.HasPrefix(userAgent, "pup/") {
+		t.Errorf("User-Agent should start with 'pup/', got: %s", userAgent)
+	}
+
+	expectedUA := getUserAgent()
+	if userAgent != expectedUA {
+		t.Errorf("User-Agent = %q, want %q", userAgent, expectedUA)
+	}
+
+	// Verify it contains expected components
+	if !strings.Contains(userAgent, version.Version) {
+		t.Errorf("User-Agent should contain version, got: %s", userAgent)
+	}
+
+	t.Logf("✓ Integration test passed - API client uses custom User-Agent: %s", userAgent)
 }
