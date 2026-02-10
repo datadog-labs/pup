@@ -10,7 +10,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
@@ -653,33 +652,46 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
 
-	api := datadogV1.NewLogsApi(client.V1())
+	// Use v2 API instead of deprecated v1 API
+	api := datadogV2.NewLogsApi(client.V2())
 
+	query := logsQuery
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
 	limit := int32(logsLimit)
-	fromTimeObj := time.UnixMilli(fromTime)
-	toTimeObj := time.UnixMilli(toTime)
 
-	body := datadogV1.LogsListRequest{
-		Query: &logsQuery,
-		Time: *datadogV1.NewLogsListRequestTime(fromTimeObj, toTimeObj),
-		Limit: &limit,
+	// Convert v1 sort values (asc/desc) to v2 format (timestamp/-timestamp)
+	v2Sort := datadogV2.LogsSort("-timestamp") // default: descending
+	if logsSort == "asc" {
+		v2Sort = datadogV2.LogsSort("timestamp")
 	}
 
-	if logsSort != "" {
-		sort := datadogV1.LogsSort(logsSort)
-		body.Sort = &sort
+	body := datadogV2.LogsListRequest{
+		Filter: &datadogV2.LogsQueryFilter{
+			Query: &query,
+			From:  &from,
+			To:    &to,
+		},
+		Page: &datadogV2.LogsListRequestPage{
+			Limit: &limit,
+		},
+		Sort: &v2Sort,
 	}
 
-	if logsIndex != "" {
-		body.Index = &logsIndex
+	// Note: v2 API doesn't support the index parameter the same way v1 did
+	// If index filtering is needed, it should be included in the query string
+
+	opts := datadogV2.ListLogsOptionalParameters{
+		Body: &body,
 	}
 
-	resp, r, err := api.ListLogs(client.Context(), body)
+	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
 		if r != nil && r.Body != nil {
-			// Read response body for detailed error message
 			bodyBytes, readErr := io.ReadAll(r.Body)
 			if readErr == nil && len(bodyBytes) > 0 {
+				fromTimeObj := time.UnixMilli(fromTime)
+				toTimeObj := time.UnixMilli(toTime)
 				return fmt.Errorf("failed to search logs: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s (parsed from: %s)\n- To: %s (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your time range is valid\n- Check that your query syntax is correct\n- Ensure you have proper permissions",
 					err, r.StatusCode, string(bodyBytes),
 					logsQuery,
