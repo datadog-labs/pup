@@ -135,7 +135,6 @@ EXAMPLES:
 var (
 	// Findings list flags
 	findingsPageSize     int64
-	findingsPageNumber   int64
 	findingsStatus       string
 	findingsEvaluation   string
 	findingsRuleID       string
