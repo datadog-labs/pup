@@ -69,9 +69,8 @@ Created 26 test files with 163 test functions covering command structure, flags,
 11. **security_test.go** - Security monitoring
     - Tests: Rules, signals, findings management
 
-12. **vulnerabilities_test.go** - Security vulnerabilities
-    - Tests: Search, list, static analysis commands
-    - Includes: AST, custom rulesets, SCA, coverage subcommands
+12. **vulnerabilities_test.go** - Static analysis
+    - Tests: Static analysis commands (AST, custom rulesets, SCA, coverage)
 
 ### User & Organization Commands
 13. **users_test.go** - User management
@@ -160,8 +159,7 @@ Several command implementations have compilation errors due to datadog-api-clien
 3. **events.go** - Missing WithStart and WithEnd methods
 4. **tags.go** - Type mismatch with Tags field
 5. **usage.go** - Missing WithEndHr method
-6. **vulnerabilities.go** - Type and method signature mismatches
-7. **rum.go** - Missing ListRUMApplications and NewRUMMetricsApi
+6. **rum.go** - Missing ListRUMApplications and NewRUMMetricsApi
 
 **Impact**: These are structural issues in the API client library, not test issues. The command structure and test patterns are correct and will work once the API client is updated.
 

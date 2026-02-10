@@ -242,9 +242,8 @@ pup security signals list --from="1h"
 
 ### Search Security Findings
 ```bash
-pup security findings list \
-  --filter="severity:high" \
-  --from="24h"
+pup security findings search \
+  --query="@severity:high"
 ```
 
 ## Infrastructure
@@ -433,7 +432,7 @@ pup security signals list --from="24h"
 pup security rules list
 
 # Search security findings
-pup security findings list --filter="severity:critical"
+pup security findings search --query="@severity:critical"
 
 # Review audit logs
 pup audit-logs list --from="7d"

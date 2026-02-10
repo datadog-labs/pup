@@ -29,7 +29,6 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | incidents | list, get, attachments | cmd/incidents.go | ✅ |
 | rum | apps, sessions | cmd/rum.go | ✅ |
 | cicd | pipelines, events | cmd/cicd.go | ✅ |
-| vulnerabilities | search, list | cmd/vulnerabilities.go | ✅ |
 | static-analysis | custom-rulesets | cmd/vulnerabilities.go | ✅ |
 | downtime | list, get, cancel | cmd/downtime.go | ✅ |
 | tags | list, get, add, update, delete | cmd/tags.go | ✅ |
@@ -42,7 +41,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | synthetics | tests, locations | cmd/synthetics.go | ✅ |
 | users | list, get, roles | cmd/users.go | ✅ |
 | notebooks | list, get, delete | cmd/notebooks.go | ✅ |
-| security | rules, signals, findings (list, get, search) | cmd/security.go | ✅ |
+| security | rules, signals, findings (search) | cmd/security.go | ✅ |
 | organizations | get, list | cmd/organizations.go | ✅ |
 | service-catalog | list, get | cmd/service_catalog.go | ✅ |
 | error-tracking | issues (list, get) | cmd/error_tracking.go | ✅ |
@@ -125,8 +124,7 @@ pup infrastructure hosts list
 - **tags** - Host tag management (list, get, add, update, delete)
 
 ### Security & Compliance
-- **security** - Security monitoring (rules, signals, findings)
-- **vulnerabilities** - Vulnerability management (search, list)
+- **security** - Security monitoring (rules, signals, findings search)
 - **static-analysis** - Code security (ast, custom-rulesets, sca, coverage)
 - **audit-logs** - Audit trail (list, search)
 - **data-governance** - Sensitive data scanning (scanner-rules list)
@@ -184,7 +182,6 @@ All 7 previously blocked commands now work:
 - ✅ **events** - Infrastructure event management
 - ✅ **tags** - Host tag operations
 - ✅ **usage** - Usage and billing metrics
-- ✅ **vulnerabilities** - Security vulnerability tracking
 - ✅ **static-analysis** - Code security analysis
 
 ### New Command Groups
