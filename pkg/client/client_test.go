@@ -28,9 +28,10 @@ func TestNew_WithAPIKeys(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	if client == nil {
@@ -72,12 +73,13 @@ func TestNew_NoAuthentication(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	_, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	_, err := NewWithAPIKeys(cfg)
 	if err == nil {
-		t.Error("New() expected error but got none")
+		t.Error("NewWithAPIKeys() expected error but got none")
 	}
 
-	if !strings.Contains(err.Error(), "authentication required") {
+	if err != nil && !strings.Contains(err.Error(), "authentication required") {
 		t.Errorf("Error = %v, want authentication error", err)
 	}
 }
@@ -90,12 +92,13 @@ func TestNew_MissingAPIKey(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	_, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	_, err := NewWithAPIKeys(cfg)
 	if err == nil {
-		t.Error("New() expected error but got none")
+		t.Error("NewWithAPIKeys() expected error but got none")
 	}
 
-	if !strings.Contains(err.Error(), "authentication required") {
+	if err != nil && !strings.Contains(err.Error(), "authentication required") {
 		t.Errorf("Error = %v, want authentication error", err)
 	}
 }
@@ -108,12 +111,13 @@ func TestNew_MissingAppKey(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	_, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	_, err := NewWithAPIKeys(cfg)
 	if err == nil {
-		t.Error("New() expected error but got none")
+		t.Error("NewWithAPIKeys() expected error but got none")
 	}
 
-	if !strings.Contains(err.Error(), "authentication required") {
+	if err != nil && !strings.Contains(err.Error(), "authentication required") {
 		t.Errorf("Error = %v, want authentication error", err)
 	}
 }
@@ -141,13 +145,14 @@ func TestNew_DifferentSites(t *testing.T) {
 				Site:   tt.site,
 			}
 
-			client, err := New(cfg)
+			// Use NewWithAPIKeys to avoid keychain access in tests
+			client, err := NewWithAPIKeys(cfg)
 			if err != nil {
-				t.Fatalf("New() error = %v", err)
+				t.Fatalf("NewWithAPIKeys() error = %v", err)
 			}
 
 			if client == nil {
-				t.Fatal("New() returned nil")
+				t.Fatal("NewWithAPIKeys() returned nil")
 			}
 
 			if client.config.Site != tt.site {
@@ -165,9 +170,10 @@ func TestClient_Context(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	ctx := client.Context()
@@ -194,9 +200,10 @@ func TestClient_V1(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	api := client.V1()
@@ -218,9 +225,10 @@ func TestClient_V2(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	api := client.V2()
@@ -242,9 +250,10 @@ func TestClient_API(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	api := client.API()
@@ -271,9 +280,10 @@ func TestClient_Config(t *testing.T) {
 		Site:   "datadoghq.com",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	returnedCfg := client.Config()
@@ -488,9 +498,10 @@ func TestClient_APIConfiguration(t *testing.T) {
 		Site:   "datadoghq.eu",
 	}
 
-	client, err := New(cfg)
+	// Use NewWithAPIKeys to avoid keychain access in tests
+	client, err := NewWithAPIKeys(cfg)
 	if err != nil {
-		t.Fatalf("New() error = %v", err)
+		t.Fatalf("NewWithAPIKeys() error = %v", err)
 	}
 
 	// Access the configuration through the API client
