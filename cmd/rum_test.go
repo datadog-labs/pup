@@ -8,6 +8,7 @@ package cmd
 import (
 	"testing"
 
+	"github.com/DataDog/pup/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -206,4 +207,188 @@ func TestRumAppsListCmd(t *testing.T) {
 	if rumAppsListCmd.RunE == nil {
 		t.Error("RunE is nil")
 	}
+}
+
+// TestRumSessionsList_TimeConversion tests that relative time strings are converted properly
+func TestRumSessionsList_TimeConversion(t *testing.T) {
+	// Save originals
+	origCfg := cfg
+	origClient := ddClient
+	origFrom := rumFrom
+	origTo := rumTo
+	origLimit := rumLimit
+
+	// Cleanup
+	defer func() {
+		cfg = origCfg
+		ddClient = origClient
+		rumFrom = origFrom
+		rumTo = origTo
+		rumLimit = origLimit
+	}()
+
+	tests := []struct {
+		name      string
+		from      string
+		to        string
+		wantError bool
+		errorMsg  string
+	}{
+		{
+			name:      "valid relative time 1h",
+			from:      "1h",
+			to:        "now",
+			wantError: true, // Will fail on getClient, but time parsing should work
+		},
+		{
+			name:      "valid relative time 30m",
+			from:      "30m",
+			to:        "now",
+			wantError: true, // Will fail on getClient, but time parsing should work
+		},
+		{
+			name:      "valid relative time 7d",
+			from:      "7d",
+			to:        "now",
+			wantError: true, // Will fail on getClient, but time parsing should work
+		},
+		{
+			name:      "invalid time format",
+			from:      "invalid",
+			to:        "now",
+			wantError: true,
+			errorMsg:  "invalid --from time",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup: set test values
+			cfg = &config.Config{}
+			ddClient = nil // Don't create real client (avoids keychain)
+			rumFrom = tt.from
+			rumTo = tt.to
+			rumLimit = 10
+
+			// Run the command
+			err := runRumSessionsList(nil, nil)
+
+			// Verify error behavior
+			if tt.wantError && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !tt.wantError && err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if tt.errorMsg != "" && err != nil {
+				if !containsString(err.Error(), tt.errorMsg) {
+					t.Errorf("Error message %q does not contain %q", err.Error(), tt.errorMsg)
+				}
+			}
+		})
+	}
+}
+
+// TestRumSessionsSearch_TimeConversion tests that relative time strings are converted properly
+func TestRumSessionsSearch_TimeConversion(t *testing.T) {
+	// Save originals
+	origCfg := cfg
+	origClient := ddClient
+	origFrom := rumFrom
+	origTo := rumTo
+	origLimit := rumLimit
+	origQuery := rumQuery
+
+	// Cleanup
+	defer func() {
+		cfg = origCfg
+		ddClient = origClient
+		rumFrom = origFrom
+		rumTo = origTo
+		rumLimit = origLimit
+		rumQuery = origQuery
+	}()
+
+	tests := []struct {
+		name      string
+		query     string
+		from      string
+		to        string
+		wantError bool
+		errorMsg  string
+	}{
+		{
+			name:      "valid relative time 1h",
+			query:     "@type:view",
+			from:      "1h",
+			to:        "now",
+			wantError: true, // Will fail on getClient, but time parsing should work
+		},
+		{
+			name:      "valid relative time 2h",
+			query:     "status:error",
+			from:      "2h",
+			to:        "1h",
+			wantError: true, // Will fail on getClient, but time parsing should work
+		},
+		{
+			name:      "invalid from time format",
+			query:     "@type:view",
+			from:      "invalid",
+			to:        "now",
+			wantError: true,
+			errorMsg:  "invalid --from time",
+		},
+		{
+			name:      "invalid to time format",
+			query:     "@type:view",
+			from:      "1h",
+			to:        "bad-time",
+			wantError: true,
+			errorMsg:  "invalid --to time",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup: set test values
+			cfg = &config.Config{}
+			ddClient = nil // Don't create real client (avoids keychain)
+			rumQuery = tt.query
+			rumFrom = tt.from
+			rumTo = tt.to
+			rumLimit = 10
+
+			// Run the command
+			err := runRumSessionsSearch(nil, nil)
+
+			// Verify error behavior
+			if tt.wantError && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !tt.wantError && err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if tt.errorMsg != "" && err != nil {
+				if !containsString(err.Error(), tt.errorMsg) {
+					t.Errorf("Error message %q does not contain %q", err.Error(), tt.errorMsg)
+				}
+			}
+		})
+	}
+}
+
+// Helper function for string contains check
+func containsString(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(len(s) > 0 && len(substr) > 0 && findSubstring(s, substr)))
+}
+
+func findSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

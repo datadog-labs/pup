@@ -657,6 +657,21 @@ func runRumRetentionFiltersDelete(cmd *cobra.Command, args []string) error {
 
 // RUM Sessions Implementation
 func runRumSessionsList(cmd *cobra.Command, args []string) error {
+	// Convert relative time strings to absolute timestamps (validate input first)
+	fromTime, err := parseTimeString(rumFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+	}
+
+	toTime, err := parseTimeString(rumTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+	}
+
+	// Convert timestamps to strings for RUM API
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
+
 	client, err := getClient()
 	if err != nil {
 		return err
@@ -665,8 +680,8 @@ func runRumSessionsList(cmd *cobra.Command, args []string) error {
 	api := datadogV2.NewRUMApi(client.V2())
 	body := datadogV2.RUMSearchEventsRequest{
 		Filter: &datadogV2.RUMQueryFilter{
-			From: &rumFrom,
-			To:   &rumTo,
+			From: &from,
+			To:   &to,
 		},
 		Page: &datadogV2.RUMQueryPageOptions{
 			Limit: datadog.PtrInt32(int32(rumLimit)),
@@ -676,7 +691,7 @@ func runRumSessionsList(cmd *cobra.Command, args []string) error {
 	resp, r, err := api.SearchRUMEvents(client.Context(), body)
 	if err != nil {
 		if r != nil {
-			return fmt.Errorf("failed to list RUM sessions: %w (status: %d)", err, r.StatusCode)
+			return fmt.Errorf("failed to list RUM sessions: %w (status: %d)\n\nRequest Details:\n- From: %s (parsed from: %s)\n- To: %s (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your time range is valid and --from is before --to\n- Ensure you have proper permissions for RUM data access\n- Check that RUM data exists for your selected time range", err, r.StatusCode, from, rumFrom, to, rumTo, rumLimit)
 		}
 		return fmt.Errorf("failed to list RUM sessions: %w", err)
 	}
@@ -690,6 +705,21 @@ func runRumSessionsList(cmd *cobra.Command, args []string) error {
 }
 
 func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
+	// Convert relative time strings to absolute timestamps (validate input first)
+	fromTime, err := parseTimeString(rumFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+	}
+
+	toTime, err := parseTimeString(rumTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+	}
+
+	// Convert timestamps to strings for RUM API
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
+
 	client, err := getClient()
 	if err != nil {
 		return err
@@ -699,8 +729,8 @@ func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
 	body := datadogV2.RUMSearchEventsRequest{
 		Filter: &datadogV2.RUMQueryFilter{
 			Query: &rumQuery,
-			From:  &rumFrom,
-			To:    &rumTo,
+			From:  &from,
+			To:    &to,
 		},
 		Page: &datadogV2.RUMQueryPageOptions{
 			Limit: datadog.PtrInt32(int32(rumLimit)),
@@ -710,7 +740,7 @@ func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
 	resp, r, err := api.SearchRUMEvents(client.Context(), body)
 	if err != nil {
 		if r != nil {
-			return fmt.Errorf("failed to search RUM sessions: %w (status: %d)", err, r.StatusCode)
+			return fmt.Errorf("failed to search RUM sessions: %w (status: %d)\n\nRequest Details:\n- Query: %s\n- From: %s (parsed from: %s)\n- To: %s (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your time range is valid and --from is before --to\n- Check that your query syntax is correct\n- Ensure you have proper permissions for RUM data access\n- Check that RUM data exists for your selected time range and query", err, r.StatusCode, rumQuery, from, rumFrom, to, rumTo, rumLimit)
 		}
 		return fmt.Errorf("failed to search RUM sessions: %w", err)
 	}
