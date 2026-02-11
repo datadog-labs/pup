@@ -28,9 +28,9 @@ func TestGet_NoAgent(t *testing.T) {
 		t.Errorf("Get() = %q, want %q", result, expected)
 	}
 
-	// Verify no agent suffix
-	if strings.Contains(result, "claude-code") || strings.Contains(result, "cursor") {
-		t.Errorf("Get() should not contain agent suffix, got %q", result)
+	// Verify no agent in output
+	if strings.Contains(result, "ai-agent") {
+		t.Errorf("Get() should not contain ai-agent, got %q", result)
 	}
 }
 
@@ -58,13 +58,14 @@ func TestGet_WithClaudeCode(t *testing.T) {
 
 			result := Get()
 
-			// Verify suffix is present
-			if !strings.HasSuffix(result, " "+tt.wantSuf) {
-				t.Errorf("Get() = %q, want suffix %q", result, tt.wantSuf)
+			// Verify agent is present in structured format
+			expectedAgent := "; ai-agent " + tt.wantSuf + ")"
+			if !strings.HasSuffix(result, expectedAgent) {
+				t.Errorf("Get() = %q, want suffix %q", result, expectedAgent)
 			}
 
 			// Verify base format is still correct
-			expectedBase := "pup/" + version.Version + " (go " + runtime.Version() + "; os " + runtime.GOOS + "; arch " + runtime.GOARCH + ")"
+			expectedBase := "pup/" + version.Version + " (go " + runtime.Version() + "; os " + runtime.GOOS + "; arch " + runtime.GOARCH
 			if !strings.HasPrefix(result, expectedBase) {
 				t.Errorf("Get() = %q, want prefix %q", result, expectedBase)
 			}
@@ -95,13 +96,13 @@ func TestGet_WithCursor(t *testing.T) {
 
 			result := Get()
 
-			// Verify suffix is present
-			if !strings.HasSuffix(result, " cursor") {
-				t.Errorf("Get() = %q, want suffix 'cursor'", result)
+			// Verify agent is present in structured format
+			if !strings.HasSuffix(result, "; ai-agent cursor)") {
+				t.Errorf("Get() = %q, want suffix '; ai-agent cursor)'", result)
 			}
 
 			// Verify base format is still correct
-			expectedBase := "pup/" + version.Version + " (go " + runtime.Version() + "; os " + runtime.GOOS + "; arch " + runtime.GOARCH + ")"
+			expectedBase := "pup/" + version.Version + " (go " + runtime.Version() + "; os " + runtime.GOOS + "; arch " + runtime.GOARCH
 			if !strings.HasPrefix(result, expectedBase) {
 				t.Errorf("Get() = %q, want prefix %q", result, expectedBase)
 			}
@@ -124,9 +125,9 @@ func TestGet_WithMultipleAgents(t *testing.T) {
 
 	result := Get()
 
-	// Should have claude-code, not cursor
-	if !strings.HasSuffix(result, " claude-code") {
-		t.Errorf("Get() = %q, want suffix 'claude-code' (CLAUDECODE should take precedence)", result)
+	// Should have ai-agent claude-code, not cursor
+	if !strings.HasSuffix(result, "; ai-agent claude-code)") {
+		t.Errorf("Get() = %q, want suffix '; ai-agent claude-code)' (CLAUDECODE should take precedence)", result)
 	}
 	if strings.Contains(result, "cursor") {
 		t.Errorf("Get() = %q, should not contain 'cursor' when CLAUDECODE is set", result)
@@ -281,15 +282,15 @@ func TestGet_Format(t *testing.T) {
 
 	resultWithAgent := Get()
 
-	// Verify agent is appended with single space
-	expectedSuffix := " claude-code"
+	// Verify agent is in structured format
+	expectedSuffix := "; ai-agent claude-code)"
 	if !strings.HasSuffix(resultWithAgent, expectedSuffix) {
 		t.Errorf("Get() with agent should end with %q, got %q", expectedSuffix, resultWithAgent)
 	}
 
-	// Verify base part is unchanged
-	basePart := strings.TrimSuffix(resultWithAgent, expectedSuffix)
-	if basePart != result {
-		t.Errorf("Get() base part should be unchanged, got %q, want %q", basePart, result)
+	// Verify base part is present
+	expectedBase := "pup/" + version.Version + " (go " + runtime.Version() + "; os " + runtime.GOOS + "; arch " + runtime.GOARCH
+	if !strings.HasPrefix(resultWithAgent, expectedBase) {
+		t.Errorf("Get() with agent should start with %q, got %q", expectedBase, resultWithAgent)
 	}
 }

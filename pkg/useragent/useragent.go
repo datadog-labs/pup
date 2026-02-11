@@ -22,16 +22,16 @@ import (
 //
 // Format with agent:
 //
-//	pup/v0.1.0 (go go1.25.0; os darwin; arch arm64) claude-code
+//	pup/v0.1.0 (go go1.25.0; os darwin; arch arm64; ai-agent claude-code)
 //
 // AI agents are detected via environment variables:
-//   - CLAUDECODE=1 or CLAUDE_CODE=1 → appends "claude-code"
-//   - CURSOR_AGENT=true or CURSOR_AGENT=1 → appends "cursor"
+//   - CLAUDECODE=1 or CLAUDE_CODE=1 → adds "ai-agent claude-code"
+//   - CURSOR_AGENT=true or CURSOR_AGENT=1 → adds "ai-agent cursor"
 //
 // If multiple agents are detected, CLAUDECODE takes precedence.
 func Get() string {
 	base := fmt.Sprintf(
-		"pup/%s (go %s; os %s; arch %s)",
+		"pup/%s (go %s; os %s; arch %s",
 		version.Version,
 		runtime.Version(),
 		runtime.GOOS,
@@ -39,9 +39,9 @@ func Get() string {
 	)
 
 	if agent := detectAgent(); agent != "" {
-		return base + " " + agent
+		return base + fmt.Sprintf("; ai-agent %s)", agent)
 	}
-	return base
+	return base + ")"
 }
 
 // detectAgent detects AI coding assistant from environment variables.
