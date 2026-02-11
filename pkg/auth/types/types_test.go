@@ -172,6 +172,8 @@ func TestDefaultScopes(t *testing.T) {
 		"timeseries_query",
 		// Usage
 		"usage_read",
+		// Error Tracking
+		"error_tracking_read",
 	}
 
 	if len(scopes) != len(expectedScopes) {
