@@ -552,6 +552,14 @@ func runAPMServicesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("--env flag is required (e.g., --env prod)")
 	}
 
+	// Set default time range if not provided (shared variables may be 0)
+	if startTime == 0 {
+		startTime = time.Now().Add(-1 * time.Hour).Unix()
+	}
+	if endTime == 0 {
+		endTime = time.Now().Unix()
+	}
+
 	// Build query parameters
 	params := url.Values{}
 	params.Add("start", strconv.FormatInt(startTime, 10))
