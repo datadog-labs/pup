@@ -1,4 +1,4 @@
-# Pup - Datadog API CLI Wrapper
+# [PREVIEW] Pup - Datadog API CLI Wrapper
 
 **NOTICE: This is in Preview mode, we are fine tuning the interactions and bugs that arise. Please file issues or submit PRs. Thank you for your early interest!**
 
