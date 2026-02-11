@@ -157,7 +157,7 @@ changelog:
       order: 999
 
 # Homebrew Tap
-brews:
+homebrew_casks:
   - name: pup
     repository:
       owner: DataDog
@@ -166,23 +166,18 @@ brews:
     homepage: https://github.com/DataDog/pup
     description: "Datadog API CLI - OAuth2 + API key authentication for Datadog APIs"
     license: Apache-2.0
-    directory: Formula
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
-    commit_msg_template: "chore(formula): update {{ .ProjectName }} to {{ .Tag }}"
-    install: |
-      bin.install "pup"
-    test: |
-      system "#{bin}/pup", "version"
-    dependencies:
-      - name: go
-        type: optional
-    extra_install: |
-      # Generate shell completions
-      bash_completion.install "completions/pup.bash" => "pup"
-      zsh_completion.install "completions/pup.zsh" => "_pup"
-      fish_completion.install "completions/pup.fish"
+    commit_msg_template: "chore(cask): update {{ .ProjectName }} to {{ .Tag }}"
+    binaries:
+      - pup
+    completions:
+      bash: "completions/pup.bash"
+      zsh: "completions/pup.zsh"
+      fish: "completions/pup.fish"
+    url:
+      verified: github.com/DataDog/pup/releases/download
 
 # Announce releases
 announce:
