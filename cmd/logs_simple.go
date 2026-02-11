@@ -705,12 +705,12 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to search logs: %w", err)
 	}
 
-	// Collect all logs from all pages
+	// Collect logs up to the requested limit
 	allLogs := resp.GetData()
 	pageCount := 1
 
-	// Follow pagination if there's more data
-	for {
+	// Follow pagination until we hit the limit or run out of pages
+	for logsLimit > 0 && len(allLogs) < logsLimit {
 		meta, ok := resp.GetMetaOk()
 		if !ok || meta == nil {
 			break
@@ -724,18 +724,28 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 			break
 		}
 
-		// Fetch next page
+		remaining := logsLimit - len(allLogs)
+		if remaining <= 0 {
+			break
+		}
+		remainingLimit := int32(remaining)
+		if remainingLimit < limit {
+			body.Page.Limit = &remainingLimit
+		}
 		body.Page.Cursor = cursor
 		opts.Body = &body
 		resp, r, err = api.ListLogs(client.Context(), opts)
 		if err != nil {
-			// Return what we have so far with a warning
 			printOutput("Warning: Failed to fetch page %d: %v\n", pageCount+1, err)
 			break
 		}
 
 		allLogs = append(allLogs, resp.GetData()...)
 		pageCount++
+	}
+
+	if logsLimit > 0 && len(allLogs) > logsLimit {
+		allLogs = allLogs[:logsLimit]
 	}
 
 	// Show helpful message if no logs found
@@ -749,10 +759,8 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	// Build response with all collected logs
 	finalResp := resp
 	if pageCount > 1 {
-		// Update data with all collected logs
 		finalResp.SetData(allLogs)
 		printOutput("Fetched %d logs across %d pages\n\n", len(allLogs), pageCount)
 	}
