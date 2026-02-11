@@ -428,7 +428,10 @@ var (
 
 func init() {
 	// Services list flags
-	apmServicesListCmd.Flags().StringVar(&envFilter, "env", "prod", "Environment filter")
+	apmServicesListCmd.Flags().StringVar(&envFilter, "env", "", "Environment filter (required)")
+	if err := apmServicesListCmd.MarkFlagRequired("env"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
 	apmServicesListCmd.Flags().Int64Var(&startTime, "start", time.Now().Add(-1*time.Hour).Unix(), "Start time (Unix timestamp)")
 	apmServicesListCmd.Flags().Int64Var(&endTime, "end", time.Now().Unix(), "End time (Unix timestamp)")
 
@@ -544,13 +547,16 @@ func runAPMServicesList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Validate that env filter is provided
+	if envFilter == "" {
+		return fmt.Errorf("--env flag is required (e.g., --env prod)")
+	}
+
 	// Build query parameters
 	params := url.Values{}
 	params.Add("start", strconv.FormatInt(startTime, 10))
 	params.Add("end", strconv.FormatInt(endTime, 10))
-	if envFilter != "" {
-		params.Add("filter[env]", envFilter)
-	}
+	params.Add("filter[env]", envFilter)
 
 	path := fmt.Sprintf("/api/v2/apm/services?%s", params.Encode())
 	resp, err := client.RawRequest("GET", path, nil)
