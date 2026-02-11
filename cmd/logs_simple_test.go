@@ -14,6 +14,7 @@ import (
 
 	"github.com/DataDog/pup/pkg/client"
 	"github.com/DataDog/pup/pkg/config"
+	"github.com/DataDog/pup/pkg/util"
 )
 
 func TestLogsCmd(t *testing.T) {
@@ -59,6 +60,15 @@ func TestParseTimeString(t *testing.T) {
 			},
 		},
 		{
+			name:  "RFC3339 timestamp",
+			input: "2024-01-01T00:00:00Z",
+			check: func(ts int64) bool {
+				// Should be Jan 1, 2024 in milliseconds
+				// 2024-01-01T00:00:00Z = 1704067200000ms
+				return ts == 1704067200000
+			},
+		},
+		{
 			name:    "invalid format",
 			input:   "invalid",
 			wantErr: true,
@@ -67,15 +77,15 @@ func TestParseTimeString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseTimeString(tt.input)
+			got, err := util.ParseTimeToUnixMilli(tt.input)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseTimeString() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("util.ParseTimeToUnixMilli() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !tt.wantErr && tt.check != nil && !tt.check(got) {
-				t.Errorf("parseTimeString() = %d, validation failed", got)
+				t.Errorf("util.ParseTimeToUnixMilli() = %d, validation failed", got)
 			}
 		})
 	}

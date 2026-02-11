@@ -14,6 +14,7 @@ import (
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/DataDog/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -556,8 +557,8 @@ var (
 func init() {
 	// Search command flags (v1)
 	logsSearchCmd.Flags().StringVar(&logsQuery, "query", "", "Search query (required)")
-	logsSearchCmd.Flags().StringVar(&logsFrom, "from", "", "Start time: 1h, 30m, 7d, or timestamp (required)")
-	logsSearchCmd.Flags().StringVar(&logsTo, "to", "now", "End time: 1h, 30m, now, or timestamp")
+	logsSearchCmd.Flags().StringVar(&logsFrom, "from", "1h", "Start time: 1h, 30m, 7d, RFC3339, or Unix timestamp")
+	logsSearchCmd.Flags().StringVar(&logsTo, "to", "now", "End time: 1h, 30m, now, RFC3339, or Unix timestamp")
 	logsSearchCmd.Flags().IntVar(&logsLimit, "limit", 50, "Maximum number of logs (1-1000)")
 	logsSearchCmd.Flags().StringVar(&logsSort, "sort", "desc", "Sort order: asc or desc")
 	logsSearchCmd.Flags().StringVar(&logsIndex, "index", "", "Comma-separated log indexes")
@@ -565,24 +566,18 @@ func init() {
 	if err := logsSearchCmd.MarkFlagRequired("query"); err != nil {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
-	if err := logsSearchCmd.MarkFlagRequired("from"); err != nil {
-		panic(fmt.Errorf("failed to mark flag as required: %w", err))
-	}
 
 	// List command flags (v2)
 	logsListCmd.Flags().StringVar(&logsQuery, "query", "*", "Search query")
-	logsListCmd.Flags().StringVar(&logsFrom, "from", "", "Start time (required)")
+	logsListCmd.Flags().StringVar(&logsFrom, "from", "1h", "Start time: 1h, 30m, 7d, RFC3339, or Unix timestamp")
 	logsListCmd.Flags().StringVar(&logsTo, "to", "now", "End time")
 	logsListCmd.Flags().IntVar(&logsLimit, "limit", 10, "Number of logs")
 	logsListCmd.Flags().StringVar(&logsSort, "sort", "-timestamp", "Sort order")
 	logsListCmd.Flags().StringVar(&logsStorage, "storage", "", "Storage tier: indexes, online-archives, or flex")
-	if err := logsListCmd.MarkFlagRequired("from"); err != nil {
-		panic(fmt.Errorf("failed to mark flag as required: %w", err))
-	}
 
 	// Query command flags (v2)
 	logsQueryCmd.Flags().StringVar(&logsQuery, "query", "", "Log query (required)")
-	logsQueryCmd.Flags().StringVar(&logsFrom, "from", "", "Start time (required)")
+	logsQueryCmd.Flags().StringVar(&logsFrom, "from", "1h", "Start time: 1h, 30m, 7d, RFC3339, or Unix timestamp")
 	logsQueryCmd.Flags().StringVar(&logsTo, "to", "now", "End time")
 	logsQueryCmd.Flags().IntVar(&logsLimit, "limit", 50, "Maximum results")
 	logsQueryCmd.Flags().StringVar(&logsSort, "sort", "-timestamp", "Sort order")
@@ -591,22 +586,16 @@ func init() {
 	if err := logsQueryCmd.MarkFlagRequired("query"); err != nil {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
-	if err := logsQueryCmd.MarkFlagRequired("from"); err != nil {
-		panic(fmt.Errorf("failed to mark flag as required: %w", err))
-	}
 
 	// Aggregate command flags (v2)
 	logsAggregateCmd.Flags().StringVar(&logsQuery, "query", "", "Log query (required)")
-	logsAggregateCmd.Flags().StringVar(&logsFrom, "from", "", "Start time (required)")
+	logsAggregateCmd.Flags().StringVar(&logsFrom, "from", "1h", "Start time: 1h, 30m, 7d, RFC3339, or Unix timestamp")
 	logsAggregateCmd.Flags().StringVar(&logsTo, "to", "now", "End time")
 	logsAggregateCmd.Flags().StringVar(&logsCompute, "compute", "count", "Metric to compute")
 	logsAggregateCmd.Flags().StringVar(&logsGroupBy, "group-by", "", "Field to group by")
 	logsAggregateCmd.Flags().IntVar(&logsLimit, "limit", 10, "Maximum groups")
 	logsAggregateCmd.Flags().StringVar(&logsStorage, "storage", "", "Storage tier: indexes, online-archives, or flex")
 	if err := logsAggregateCmd.MarkFlagRequired("query"); err != nil {
-		panic(fmt.Errorf("failed to mark flag as required: %w", err))
-	}
-	if err := logsAggregateCmd.MarkFlagRequired("from"); err != nil {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
 
@@ -640,47 +629,6 @@ func init() {
 }
 
 // Helper functions
-
-// parseTimeString converts relative or absolute time to Unix timestamp in milliseconds (UTC)
-func parseTimeString(timeStr string) (int64, error) {
-	if timeStr == "now" {
-		return time.Now().UTC().UnixMilli(), nil
-	}
-
-	// Try parsing as relative time (1h, 30m, 7d)
-	if len(timeStr) >= 2 {
-		unit := timeStr[len(timeStr)-1:]
-		valueStr := timeStr[:len(timeStr)-1]
-
-		var value int64
-		if _, err := fmt.Sscanf(valueStr, "%d", &value); err == nil {
-			var duration time.Duration
-			switch unit {
-			case "s":
-				duration = time.Duration(value) * time.Second
-			case "m":
-				duration = time.Duration(value) * time.Minute
-			case "h":
-				duration = time.Duration(value) * time.Hour
-			case "d":
-				duration = time.Duration(value) * 24 * time.Hour
-			case "w":
-				duration = time.Duration(value) * 7 * 24 * time.Hour
-			default:
-				return 0, fmt.Errorf("invalid time unit: %s (use s, m, h, d, or w)", unit)
-			}
-			return time.Now().UTC().Add(-duration).UnixMilli(), nil
-		}
-	}
-
-	// Try parsing as Unix timestamp (milliseconds)
-	var timestamp int64
-	if _, err := fmt.Sscanf(timeStr, "%d", &timestamp); err == nil {
-		return timestamp, nil
-	}
-
-	return 0, fmt.Errorf("invalid time format: %s (use relative like '1h' or Unix timestamp)", timeStr)
-}
 
 // validateAndConvertStorageTier validates the storage tier string and converts it to LogsStorageTier
 // Returns nil if storage is empty (which means search all tiers)
@@ -782,12 +730,12 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fromTime, err := parseTimeString(logsFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(logsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	toTime, err := parseTimeString(logsTo)
+	toTime, err := util.ParseTimeToUnixMilli(logsTo)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -930,12 +878,12 @@ func runLogsList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fromTime, err := parseTimeString(logsFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(logsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	toTime, err := parseTimeString(logsTo)
+	toTime, err := util.ParseTimeToUnixMilli(logsTo)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -1000,12 +948,12 @@ func runLogsQuery(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fromTime, err := parseTimeString(logsFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(logsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	toTime, err := parseTimeString(logsTo)
+	toTime, err := util.ParseTimeToUnixMilli(logsTo)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -1072,12 +1020,12 @@ func runLogsAggregate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fromTime, err := parseTimeString(logsFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(logsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	toTime, err := parseTimeString(logsTo)
+	toTime, err := util.ParseTimeToUnixMilli(logsTo)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}

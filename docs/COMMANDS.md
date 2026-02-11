@@ -22,7 +22,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | auth | login, logout, status, refresh | cmd/auth.go | ✅ |
 | metrics | query, list, get, search | cmd/metrics.go | ✅ |
 | logs | search, list, aggregate | cmd/logs.go | ✅ |
-| traces | search, list, aggregate | cmd/traces.go | ✅ |
+| traces | - | cmd/traces_simple.go | ❌ |
 | monitors | list, get, delete, search | cmd/monitors.go | ✅ |
 | dashboards | list, get, delete, url | cmd/dashboards.go | ✅ |
 | slos | list, get, create, update, delete, corrections | cmd/slos.go | ✅ |
@@ -108,7 +108,7 @@ pup infrastructure hosts list
 ### Data & Observability
 - **metrics** - Time-series metrics (query, list, get, search)
 - **logs** - Log search and analysis (search, list, aggregate)
-- **traces** - APM traces (search, list, aggregate)
+- **traces** - APM traces (not yet implemented - use `apm` commands instead)
 - **rum** - Real User Monitoring (apps, metrics, retention-filters, sessions)
 - **events** - Infrastructure events (list, search, get)
 

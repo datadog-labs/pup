@@ -12,6 +12,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/DataDog/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -658,14 +659,14 @@ func runRumRetentionFiltersDelete(cmd *cobra.Command, args []string) error {
 // RUM Sessions Implementation
 func runRumSessionsList(cmd *cobra.Command, args []string) error {
 	// Convert relative time strings to absolute timestamps (validate input first)
-	fromTime, err := parseTimeString(rumFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(rumFrom)
 	if err != nil {
-		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- RFC3339: 2024-01-01T00:00:00Z\n- now: Current time", err)
 	}
 
-	toTime, err := parseTimeString(rumTo)
+	toTime, err := util.ParseTimeToUnixMilli(rumTo)
 	if err != nil {
-		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- RFC3339: 2024-01-01T00:00:00Z\n- now: Current time", err)
 	}
 
 	// Convert timestamps to strings for RUM API
@@ -706,14 +707,14 @@ func runRumSessionsList(cmd *cobra.Command, args []string) error {
 
 func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
 	// Convert relative time strings to absolute timestamps (validate input first)
-	fromTime, err := parseTimeString(rumFrom)
+	fromTime, err := util.ParseTimeToUnixMilli(rumFrom)
 	if err != nil {
-		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+		return fmt.Errorf("invalid --from time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- RFC3339: 2024-01-01T00:00:00Z\n- now: Current time", err)
 	}
 
-	toTime, err := parseTimeString(rumTo)
+	toTime, err := util.ParseTimeToUnixMilli(rumTo)
 	if err != nil {
-		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- now: Current time", err)
+		return fmt.Errorf("invalid --to time: %w\n\nSupported formats:\n- Relative: 1h, 30m, 7d, 1w (hour, minute, day, week)\n- Absolute: Unix timestamp in milliseconds\n- RFC3339: 2024-01-01T00:00:00Z\n- now: Current time", err)
 	}
 
 	// Convert timestamps to strings for RUM API

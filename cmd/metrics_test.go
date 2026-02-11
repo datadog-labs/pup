@@ -15,6 +15,7 @@ import (
 
 	"github.com/DataDog/pup/pkg/client"
 	"github.com/DataDog/pup/pkg/config"
+	"github.com/DataDog/pup/pkg/util"
 )
 
 func TestMetricsCmd(t *testing.T) {
@@ -529,16 +530,16 @@ func TestParseTimeParam(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := parseTimeParam(tt.timeStr)
+			result, err := util.ParseTimeParam(tt.timeStr)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseTimeParam(%q) error = %v, wantErr %v", tt.timeStr, err, tt.wantErr)
+				t.Errorf("util.ParseTimeParam(%q) error = %v, wantErr %v", tt.timeStr, err, tt.wantErr)
 			}
 
 			// Validate result for successful cases
 			if err == nil {
 				if result.IsZero() {
-					t.Errorf("parseTimeParam(%q) returned zero time", tt.timeStr)
+					t.Errorf("util.ParseTimeParam(%q) returned zero time", tt.timeStr)
 				}
 			}
 		})
@@ -574,23 +575,23 @@ func TestParseTimeParam_RelativeTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := parseTimeParam(tt.timeStr)
+			result, err := util.ParseTimeParam(tt.timeStr)
 			if err != nil {
-				t.Fatalf("parseTimeParam(%q) unexpected error: %v", tt.timeStr, err)
+				t.Fatalf("util.ParseTimeParam(%q) unexpected error: %v", tt.timeStr, err)
 			}
 
 			now := time.Now()
 			if tt.expectPast && result.After(now) {
-				t.Errorf("parseTimeParam(%q) = %v, expected time in the past", tt.timeStr, result)
+				t.Errorf("util.ParseTimeParam(%q) = %v, expected time in the past", tt.timeStr, result)
 			}
 		})
 	}
 }
 
 func TestParseTimeParam_NowKeyword(t *testing.T) {
-	result, err := parseTimeParam("now")
+	result, err := util.ParseTimeParam("now")
 	if err != nil {
-		t.Fatalf("parseTimeParam(\"now\") unexpected error: %v", err)
+		t.Fatalf("util.ParseTimeParam(\"now\") unexpected error: %v", err)
 	}
 
 	now := time.Now()
@@ -598,6 +599,6 @@ func TestParseTimeParam_NowKeyword(t *testing.T) {
 
 	// Should be very close to current time (within 1 second)
 	if diff > time.Second || diff < -time.Second {
-		t.Errorf("parseTimeParam(\"now\") = %v, too far from current time %v (diff: %v)", result, now, diff)
+		t.Errorf("util.ParseTimeParam(\"now\") = %v, too far from current time %v (diff: %v)", result, now, diff)
 	}
 }

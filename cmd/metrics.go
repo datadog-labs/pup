@@ -16,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/DataDog/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -523,12 +524,12 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse time ranges
-	from, err := parseTimeParam(fromTime)
+	from, err := util.ParseTimeParam(fromTime)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	to, err := parseTimeParam(toTime)
+	to, err := util.ParseTimeParam(toTime)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -589,12 +590,12 @@ func runMetricsSearch(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse time ranges
-	from, err := parseTimeParam(fromTime)
+	from, err := util.ParseTimeParam(fromTime)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	to, err := parseTimeParam(toTime)
+	to, err := util.ParseTimeParam(toTime)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -859,48 +860,3 @@ func runMetricsTagsList(cmd *cobra.Command, args []string) error {
 	return fmt.Errorf("listing tags by metric name is not supported in the current API client version")
 }
 
-// parseTimeParam parses a time parameter (relative or absolute)
-func parseTimeParam(timeStr string) (time.Time, error) {
-	// Handle "now" keyword
-	if strings.ToLower(timeStr) == "now" {
-		return time.Now(), nil
-	}
-
-	// Try parsing as unix timestamp
-	if timestamp, err := strconv.ParseInt(timeStr, 10, 64); err == nil {
-		return time.Unix(timestamp, 0), nil
-	}
-
-	// Parse relative time (e.g., 1h, 30m, 7d, 1w)
-	if len(timeStr) < 2 {
-		return time.Time{}, fmt.Errorf("invalid time format: %s", timeStr)
-	}
-
-	valueStr := timeStr[:len(timeStr)-1]
-	unit := timeStr[len(timeStr)-1:]
-
-	value, err := strconv.ParseInt(valueStr, 10, 64)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid time value: %s", timeStr)
-	}
-
-	now := time.Now()
-	var duration time.Duration
-
-	switch strings.ToLower(unit) {
-	case "s":
-		duration = time.Duration(value) * time.Second
-	case "m":
-		duration = time.Duration(value) * time.Minute
-	case "h":
-		duration = time.Duration(value) * time.Hour
-	case "d":
-		duration = time.Duration(value) * 24 * time.Hour
-	case "w":
-		duration = time.Duration(value) * 7 * 24 * time.Hour
-	default:
-		return time.Time{}, fmt.Errorf("invalid time unit: %s (use s, m, h, d, or w)", unit)
-	}
-
-	return now.Add(-duration), nil
-}

@@ -549,7 +549,7 @@ func runAPMServicesList(cmd *cobra.Command, args []string) error {
 	params.Add("start", strconv.FormatInt(startTime, 10))
 	params.Add("end", strconv.FormatInt(endTime, 10))
 	if envFilter != "" {
-		params.Add("env", envFilter)
+		params.Add("filter[env]", envFilter)
 	}
 
 	path := fmt.Sprintf("/api/v2/apm/services?%s", params.Encode())

@@ -41,7 +41,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 |------------|--------|--------------|-------|
 | Metrics | ✅ | `metrics search`, `metrics query`, `metrics list`, `metrics get` | V1 and V2 APIs supported |
 | Logs | ✅ | `logs search`, `logs list`, `logs aggregate` | V1 and V2 APIs supported |
-| Traces | ✅ | `traces search`, `traces list`, `traces aggregate` | APM traces support |
+| Traces | ❌ | - | Not yet implemented (use APM commands for trace data) |
 | Events | ✅ | `events list`, `events search`, `events get` | Infrastructure event management |
 | RUM | ✅ | `rum apps`, `rum sessions`, `rum metrics list/get`, `rum retention-filters list/get` | Apps, sessions, metrics, retention filters (create/update pending) |
 | APM Services | ✅ | `apm services`, `apm entities`, `apm dependencies`, `apm flow-map` | Services stats, operations, resources; entity queries; dependencies; flow visualization |
