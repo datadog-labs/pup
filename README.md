@@ -156,9 +156,22 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
+```bash
+brew tap datadog/pack
+brew install pup
+```
+
+### Go Install
+
 ```bash
 go install github.com/DataDog/pup@latest
 ```
+
+### Manual Download
+
+Download pre-built binaries from the [latest release](https://github.com/DataDog/pup/releases/latest).
 
 ## Authentication
 

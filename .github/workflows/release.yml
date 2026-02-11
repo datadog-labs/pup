@@ -36,6 +36,13 @@ jobs:
       - name: Install syft (for SBOM generation)
         uses: anchore/sbom-action/download-syft@v0.22.2
 
+      - name: Get Homebrew tap token via dd-octo-sts
+        uses: DataDog/dd-octo-sts-action@acaa02eee7e3bb0839e4272dacb37b8f3b58ba80 # v1.0.3
+        id: octo-sts
+        with:
+          scope: DataDog/homebrew-pack
+          policy: pup-release
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -44,6 +51,7 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ steps.octo-sts.outputs.token }}
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v6

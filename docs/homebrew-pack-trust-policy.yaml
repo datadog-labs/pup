@@ -1,0 +1,23 @@
+# Trust policy for pup release workflow to push Homebrew formulas
+#
+# This file should be placed at:
+# .github/chainguard/pup-release.sts.yaml
+#
+# in the DataDog/homebrew-pack repository
+
+issuer: https://token.actions.githubusercontent.com
+
+# Allow releases from semantic version tags (v1.2.3, v0.1.0, etc.)
+subject_pattern: repo:DataDog/pup:ref:refs/tags/v[0-9]+\.[0-9]+\.[0-9]+
+
+# Defense-in-depth: additional claim validation
+claim_pattern:
+  repository: DataDog/pup
+  ref: refs/tags/v[0-9]+\.[0-9]+\.[0-9]+
+  ref_type: tag
+  event_name: push
+  job_workflow_ref: DataDog/pup/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+
+
+# Grant write access to push formula updates
+permissions:
+  contents: write
