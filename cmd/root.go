@@ -260,7 +260,14 @@ func getClientForEndpoint(method, path string) (*client.Client, error) {
 				method, path,
 			)
 		}
-		return client.NewWithAPIKeys(cfg)
+
+		// Try to use the mocked factory if in test mode (allows test to fail intentionally)
+		// This respects the clientFactory mock in tests
+		c, err := clientFactory(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return c, nil
 	}
 
 	// Endpoint supports OAuth, use standard client
