@@ -428,7 +428,7 @@ var (
 
 func init() {
 	// Services list flags
-	apmServicesListCmd.Flags().StringVar(&envFilter, "env", "", "Environment filter")
+	apmServicesListCmd.Flags().StringVar(&envFilter, "env", "prod", "Environment filter")
 	apmServicesListCmd.Flags().Int64Var(&startTime, "start", time.Now().Add(-1*time.Hour).Unix(), "Start time (Unix timestamp)")
 	apmServicesListCmd.Flags().Int64Var(&endTime, "end", time.Now().Unix(), "End time (Unix timestamp)")
 
