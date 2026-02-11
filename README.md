@@ -37,7 +37,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 | API Domain | Status | Pup Commands | Notes |
 |------------|--------|--------------|-------|
-| Metrics | ✅ | `metrics query`, `metrics list`, `metrics get`, `metrics search` | Full query and metadata support |
+| Metrics | ✅ | `metrics search`, `metrics query`, `metrics list`, `metrics get` | V1 and V2 APIs supported |
 | Logs | ✅ | `logs search`, `logs list`, `logs aggregate` | V1 and V2 APIs supported |
 | Traces | ✅ | `traces search`, `traces list`, `traces aggregate` | APM traces support |
 | Events | ✅ | `events list`, `events search`, `events get` | Infrastructure event management |
@@ -258,6 +258,19 @@ pup monitors get 12345678
 
 # Delete monitor
 pup monitors delete 12345678 --yes
+```
+
+### Metrics
+
+```bash
+# Search metrics using classic query syntax (v1 API)
+pup metrics search --query="avg:system.cpu.user{*}" --from="1h"
+
+# Query time-series data (v2 API)
+pup metrics query --query="avg:system.cpu.user{*}" --from="1h"
+
+# List available metrics
+pup metrics list --filter="system.*"
 ```
 
 ### Dashboards

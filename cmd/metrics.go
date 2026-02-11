@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/DataDog/pup/pkg/formatter"
@@ -81,7 +82,7 @@ AUTHENTICATION:
 // Query command
 var metricsQueryCmd = &cobra.Command{
 	Use:   "query",
-	Short: "Query time-series metrics data",
+	Short: "Query time-series metrics data (v2 API)",
 	Long: `Query time-series metrics data with flexible aggregation and filtering.
 
 This command queries metrics data from Datadog using the metrics query language.
@@ -130,6 +131,31 @@ OUTPUT:
   • res_type: Response type
   • resp_version: Response version`,
 	RunE: runMetricsQuery,
+}
+
+// Search command (v1 API)
+var metricsSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search metrics (v1 API)",
+	Long: `Search metrics using the v1 QueryMetrics API with classic query syntax.
+
+This command uses the v1 metrics query endpoint which accepts the traditional
+Datadog query string format directly. Use this when you want straightforward
+metric queries without v2 timeseries formula semantics.
+
+QUERY SYNTAX:
+  <aggregation>:<metric_name>{<filter>} [by {<group>}]
+
+EXAMPLES:
+  # Query CPU usage for the last hour
+  pup metrics search --query="avg:system.cpu.user{*}" --from="1h"
+
+  # Query request count by service
+  pup metrics search --query="sum:app.requests{env:prod} by {service}" --from="4h"
+
+  # Query with absolute time range
+  pup metrics search --query="avg:system.load.1{*}" --from="1704067200" --to="1704153600"`,
+	RunE: runMetricsSearch,
 }
 
 // List command
@@ -436,6 +462,14 @@ func init() {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
 
+	// Search command flags
+	metricsSearchCmd.Flags().StringVar(&queryString, "query", "", "Metric query string (required)")
+	metricsSearchCmd.Flags().StringVar(&fromTime, "from", "1h", "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")
+	metricsSearchCmd.Flags().StringVar(&toTime, "to", "now", "End time (e.g., now, unix timestamp)")
+	if err := metricsSearchCmd.MarkFlagRequired("query"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+
 	// List command flags
 	metricsListCmd.Flags().StringVar(&filterPattern, "filter", "", "Filter metrics by pattern (e.g., system.*)")
 
@@ -474,6 +508,7 @@ func init() {
 
 	// Add subcommands to metrics
 	metricsCmd.AddCommand(metricsQueryCmd)
+	metricsCmd.AddCommand(metricsSearchCmd)
 	metricsCmd.AddCommand(metricsListCmd)
 	metricsCmd.AddCommand(metricsMetadataCmd)
 	metricsCmd.AddCommand(metricsSubmitCmd)
@@ -498,19 +533,24 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
 
-	// Use v2 API for timeseries query (more flexible)
+	// Use v2 API for timeseries query
 	api := datadogV2.NewMetricsApi(client.V2())
-
-	// Build query request
-	metricsQuery := datadogV2.NewMetricsTimeseriesQuery(datadogV2.METRICSDATASOURCE_METRICS, queryString)
-	timeseriesQuery := datadogV2.MetricsTimeseriesQueryAsTimeseriesQuery(metricsQuery)
 
 	body := datadogV2.TimeseriesFormulaQueryRequest{
 		Data: datadogV2.TimeseriesFormulaRequest{
 			Attributes: datadogV2.TimeseriesFormulaRequestAttributes{
-				From:    from.UTC().UnixMilli(),
-				To:      to.UTC().UnixMilli(),
-				Queries: []datadogV2.TimeseriesQuery{timeseriesQuery},
+				Formulas: []datadogV2.QueryFormula{
+					{Formula: "a"},
+				},
+				Queries: []datadogV2.TimeseriesQuery{{
+					MetricsTimeseriesQuery: &datadogV2.MetricsTimeseriesQuery{
+						DataSource: datadogV2.METRICSDATASOURCE_METRICS,
+						Query:      queryString,
+						Name:       datadog.PtrString("a"),
+					},
+				}},
+				From: from.UTC().UnixMilli(),
+				To:   to.UTC().UnixMilli(),
 			},
 			Type: datadogV2.TIMESERIESFORMULAREQUESTTYPE_TIMESERIES_REQUEST,
 		},
@@ -530,6 +570,48 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to query metrics: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to query metrics: %w", err)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+
+	printOutput("%s\n", output)
+	return nil
+}
+
+// runMetricsSearch executes the metrics search command using the v1 API
+func runMetricsSearch(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	// Parse time ranges
+	from, err := parseTimeParam(fromTime)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w", err)
+	}
+
+	to, err := parseTimeParam(toTime)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w", err)
+	}
+
+	api := datadogV1.NewMetricsApi(client.V1())
+
+	resp, r, err := api.QueryMetrics(client.Context(), from.Unix(), to.Unix(), queryString)
+	if err != nil {
+		if r != nil && r.Body != nil {
+			bodyBytes, readErr := io.ReadAll(r.Body)
+			if readErr == nil && len(bodyBytes) > 0 {
+				return fmt.Errorf("failed to search metrics: %w\nStatus: %d\nAPI Response: %s",
+					err, r.StatusCode, string(bodyBytes))
+			}
+			return fmt.Errorf("failed to search metrics: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to search metrics: %w", err)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -727,9 +809,9 @@ func runMetricsSubmit(cmd *cobra.Command, args []string) error {
 	}
 
 	series := datadogV2.MetricSeries{
-		Metric: submitName,
-		Type:   &metricType,
-		Points: []datadogV2.MetricPoint{point},
+		Metric:    submitName,
+		Type:      &metricType,
+		Points:    []datadogV2.MetricPoint{point},
 		Resources: []datadogV2.MetricResource{resource},
 	}
 

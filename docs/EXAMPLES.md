@@ -38,19 +38,22 @@ pup metrics list --filter="system.*"
 pup metrics list --filter="custom.app.*"
 ```
 
-### Query Metrics
+### Search Metrics (v1 API)
 ```bash
-# Simple query
+# Classic query syntax
+pup metrics search --query="avg:system.cpu.user{*}" --from="1h"
+
+# Search with aggregation and grouping
+pup metrics search --query="sum:app.requests{env:prod} by {service}" --from="4h"
+```
+
+### Query Metrics (v2 API)
+```bash
+# Timeseries formula query
 pup metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
 
 # Query with aggregation
 pup metrics query --query="sum:app.requests{env:prod} by {service}" --from="4h"
-
-# Query with multiple metrics
-pup metrics query \
-  --query="avg:system.cpu.user{*}" \
-  --query="avg:system.mem.used{*}" \
-  --from="1h"
 ```
 
 ## Monitors
