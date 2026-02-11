@@ -140,11 +140,31 @@ func TestParseComputeString(t *testing.T) {
 			wantErr:         false,
 		},
 		{
-			name:            "percentile with metric and parameter",
+			name:            "percentile with metric and parameter - converts to pc99",
 			input:           "percentile(@duration, 99)",
-			wantAggregation: "percentile",
+			wantAggregation: "pc99",
 			wantMetric:      "@duration",
 			wantErr:         false,
+		},
+		{
+			name:            "percentile pc95",
+			input:           "percentile(@latency, 95)",
+			wantAggregation: "pc95",
+			wantMetric:      "@latency",
+			wantErr:         false,
+		},
+		{
+			name:            "percentile pc50 (median)",
+			input:           "percentile(@response_time, 50)",
+			wantAggregation: "pc50",
+			wantMetric:      "@response_time",
+			wantErr:         false,
+		},
+		{
+			name:        "percentile without value",
+			input:       "percentile(@duration)",
+			wantErr:     true,
+			errContains: "percentile requires a percentile value",
 		},
 		{
 			name:            "median with metric",

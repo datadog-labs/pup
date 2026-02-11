@@ -655,7 +655,7 @@ func parseComputeString(compute string) (aggregation string, metric string, err 
 
 	// Parse format: function(metric) or function(metric, param)
 	// Examples: avg(@duration), percentile(@duration, 99), cardinality(@user.id)
-	re := regexp.MustCompile(`^(\w+)\(([^,)]+)(?:,\s*\d+)?\)$`)
+	re := regexp.MustCompile(`^(\w+)\(([^,)]+)(?:,\s*(\d+))?\)$`)
 	matches := re.FindStringSubmatch(compute)
 
 	if matches == nil {
@@ -672,6 +672,18 @@ func parseComputeString(compute string) (aggregation string, metric string, err 
 
 	aggregation = strings.ToLower(matches[1])
 	metric = strings.TrimSpace(matches[2])
+	percentileValue := ""
+	if len(matches) > 3 && matches[3] != "" {
+		percentileValue = matches[3]
+	}
+
+	// Handle percentile special case: convert "percentile" to "pcNN"
+	if aggregation == "percentile" {
+		if percentileValue == "" {
+			return "", "", fmt.Errorf("percentile requires a percentile value: e.g. percentile(@duration, 99)")
+		}
+		aggregation = "pc" + percentileValue
+	}
 
 	// Validate aggregation function
 	isValid := false
@@ -681,13 +693,13 @@ func parseComputeString(compute string) (aggregation string, metric string, err 
 			break
 		}
 	}
-	// Also allow percentile (pcNN format)
-	if strings.HasPrefix(aggregation, "pc") || aggregation == "percentile" {
+	// Also allow pcNN format (e.g., pc99, pc95, pc50)
+	if strings.HasPrefix(aggregation, "pc") {
 		isValid = true
 	}
 
 	if !isValid {
-		return "", "", fmt.Errorf("unknown aggregation function: %q\n\nSupported functions: %s",
+		return "", "", fmt.Errorf("unknown aggregation function: %q\n\nSupported functions: %s, percentiles (pc50, pc75, pc90, pc95, pc99)",
 			aggregation, strings.Join(validFunctions, ", "))
 	}
 
