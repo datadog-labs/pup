@@ -63,8 +63,8 @@ func TestErrorTrackingIssuesCmd(t *testing.T) {
 		commandMap[cmd.Use] = true
 	}
 
-	if !commandMap["list"] {
-		t.Error("Missing issues list subcommand")
+	if !commandMap["search"] {
+		t.Error("Missing issues search subcommand")
 	}
 
 	// Check if get command exists
@@ -79,21 +79,48 @@ func TestErrorTrackingIssuesCmd(t *testing.T) {
 	}
 }
 
-func TestErrorTrackingIssuesListCmd(t *testing.T) {
-	if errorTrackingIssuesListCmd == nil {
-		t.Fatal("errorTrackingIssuesListCmd is nil")
+func TestErrorTrackingIssuesSearchCmd(t *testing.T) {
+	if errorTrackingIssuesSearchCmd == nil {
+		t.Fatal("errorTrackingIssuesSearchCmd is nil")
 	}
 
-	if errorTrackingIssuesListCmd.Use != "list" {
-		t.Errorf("Use = %s, want list", errorTrackingIssuesListCmd.Use)
+	if errorTrackingIssuesSearchCmd.Use != "search" {
+		t.Errorf("Use = %s, want search", errorTrackingIssuesSearchCmd.Use)
 	}
 
-	if errorTrackingIssuesListCmd.Short == "" {
+	if errorTrackingIssuesSearchCmd.Short == "" {
 		t.Error("Short description is empty")
 	}
 
-	if errorTrackingIssuesListCmd.RunE == nil {
+	if errorTrackingIssuesSearchCmd.RunE == nil {
 		t.Error("RunE is nil")
+	}
+}
+
+func TestErrorTrackingIssuesSearchCmd_Flags(t *testing.T) {
+	flags := errorTrackingIssuesSearchCmd.Flags()
+
+	tests := []struct {
+		name         string
+		defaultValue string
+	}{
+		{"query", "*"},
+		{"from", "1d"},
+		{"to", "now"},
+		{"order-by", "TOTAL_COUNT"},
+		{"limit", "10"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := flags.Lookup(tt.name)
+			if f == nil {
+				t.Fatalf("Missing --%s flag", tt.name)
+			}
+			if f.DefValue != tt.defaultValue {
+				t.Errorf("--%s default = %q, want %q", tt.name, f.DefValue, tt.defaultValue)
+			}
+		})
 	}
 }
 
@@ -143,3 +170,5 @@ func TestErrorTrackingCmd_CommandHierarchy(t *testing.T) {
 		}
 	}
 }
+
+

@@ -44,7 +44,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | security | rules, signals, findings (search) | cmd/security.go | ✅ |
 | organizations | get, list | cmd/organizations.go | ✅ |
 | service-catalog | list, get | cmd/service_catalog.go | ✅ |
-| error-tracking | issues (list, get) | cmd/error_tracking.go | ✅ |
+| error-tracking | issues (search, get) | cmd/error_tracking.go | ✅ |
 | scorecards | list, get | cmd/scorecards.go | ✅ |
 | usage | summary, hourly | cmd/usage.go | ✅ |
 | apm | services (list, stats, operations, resources), entities (list), dependencies (list), flow-map | cmd/apm.go | ✅ |
@@ -135,7 +135,7 @@ pup infrastructure hosts list
 
 ### Development & Quality
 - **cicd** - CI/CD visibility (pipelines, events)
-- **error-tracking** - Error management (issues list, issues get)
+- **error-tracking** - Error management (issues search, issues get)
 - **scorecards** - Service quality (list, get)
 - **service-catalog** - Service registry (list, get)
 

@@ -106,7 +106,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 | Incidents | ✅ | `incidents list`, `incidents get`, `incidents attachments` | Incident management with attachment support |
 | On-Call (Teams) | ✅ | `on-call teams` (CRUD, memberships with roles) | Full team management system with admin/member roles |
 | Case Management | ✅ | `cases` (create, search, assign, archive, projects) | Complete case management with priorities P1-P5 |
-| Error Tracking | ✅ | `error-tracking issues list`, `error-tracking issues get` | Error issue management |
+| Error Tracking | ✅ | `error-tracking issues search`, `error-tracking issues get` | Error issue search and details |
 | Service Catalog | ✅ | `service-catalog list`, `service-catalog get` | Service registry management |
 | Scorecards | ✅ | `scorecards list`, `scorecards get` | Service quality scores |
 | Incident Services/Teams | ❌ | - | Not yet implemented |
