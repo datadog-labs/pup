@@ -160,7 +160,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 ```bash
 brew tap datadog/pack
-brew install datadog/tap/pup
+brew install datadog/pack/pup
 ```
 
 ### Go Install
