@@ -6,6 +6,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -228,6 +229,7 @@ func TestImportAliases(t *testing.T) {
 	t.Run("import non-existing file", func(t *testing.T) {
 		err := ImportAliases("/nonexistent/file.yml")
 		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to read import file")
 	})
 
 	t.Run("import invalid yaml", func(t *testing.T) {
@@ -237,5 +239,164 @@ func TestImportAliases(t *testing.T) {
 
 		err := ImportAliases(importFile)
 		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse import file")
+	})
+}
+
+func TestGetConfigPath(t *testing.T) {
+	t.Run("default config path", func(t *testing.T) {
+		// Reset to default
+		ConfigPathFunc = getDefaultConfigPath
+		defer func() { ConfigPathFunc = getDefaultConfigPath }()
+
+		path, err := GetConfigPath()
+		require.NoError(t, err)
+		assert.Contains(t, path, ".config/pup/config.yml")
+		assert.Contains(t, path, string(filepath.Separator))
+	})
+}
+
+func TestLoadAliasesErrorPaths(t *testing.T) {
+	t.Run("error getting config path", func(t *testing.T) {
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		_, err := LoadAliases()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
+	})
+
+	t.Run("error reading existing file", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		configPath := filepath.Join(tmpDir, "unreadable.yml")
+
+		// Create a directory with the config file name so it can't be read as a file
+		require.NoError(t, os.Mkdir(configPath, 0755))
+
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return configPath, nil
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		_, err := LoadAliases()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to read config file")
+	})
+}
+
+func TestSaveAliasesErrorPaths(t *testing.T) {
+	t.Run("error getting config path", func(t *testing.T) {
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := SaveAliases(map[string]string{"test": "value"})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
+	})
+
+	t.Run("error creating directory", func(t *testing.T) {
+		// Create a file where the directory should be
+		tmpDir := t.TempDir()
+		blockingFile := filepath.Join(tmpDir, "blocking")
+		require.NoError(t, os.WriteFile(blockingFile, []byte("test"), 0644))
+
+		configPath := filepath.Join(blockingFile, "config.yml")
+
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return configPath, nil
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := SaveAliases(map[string]string{"test": "value"})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create config directory")
+	})
+
+	t.Run("error writing file", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		// Create a directory where the file should be
+		configPath := filepath.Join(tmpDir, "config.yml")
+		require.NoError(t, os.Mkdir(configPath, 0755))
+
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return configPath, nil
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := SaveAliases(map[string]string{"test": "value"})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to write config file")
+	})
+}
+
+func TestGetAliasErrorPath(t *testing.T) {
+	t.Run("error loading aliases", func(t *testing.T) {
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		_, err := GetAlias("test")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
+	})
+}
+
+func TestSetAliasErrorPath(t *testing.T) {
+	t.Run("error loading aliases", func(t *testing.T) {
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := SetAlias("test", "value")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
+	})
+}
+
+func TestDeleteAliasErrorPath(t *testing.T) {
+	t.Run("error loading aliases", func(t *testing.T) {
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := DeleteAlias("test")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
+	})
+}
+
+func TestImportAliasesErrorPath(t *testing.T) {
+	t.Run("error loading existing aliases", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		importFile := filepath.Join(tmpDir, "import.yml")
+		content := `aliases:
+  test: value
+`
+		require.NoError(t, os.WriteFile(importFile, []byte(content), 0600))
+
+		originalGetConfigPath := ConfigPathFunc
+		ConfigPathFunc = func() (string, error) {
+			return "", fmt.Errorf("mock error")
+		}
+		defer func() { ConfigPathFunc = originalGetConfigPath }()
+
+		err := ImportAliases(importFile)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mock error")
 	})
 }
