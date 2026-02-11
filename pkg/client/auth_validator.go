@@ -60,6 +60,10 @@ var endpointsWithoutOAuth = []EndpointAuthRequirement{
 	{Path: "/api/v2/app_keys/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
 	{Path: "/api/v2/app_keys/", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
 	{Path: "/api/v2/app_keys/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
+
+	// Error Tracking API - OAuth not working in practice
+	{Path: "/api/v2/error_tracking/issues/search", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
+	{Path: "/api/v2/error_tracking/issues/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
 }
 
 // AuthType represents the type of authentication being used

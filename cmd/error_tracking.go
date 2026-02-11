@@ -115,7 +115,8 @@ func init() {
 }
 
 func runErrorTrackingIssuesSearch(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	// Error Tracking API doesn't support OAuth, use API keys
+	client, err := getClientForEndpoint("POST", "/api/v2/error_tracking/issues/search")
 	if err != nil {
 		return err
 	}
@@ -176,7 +177,8 @@ func runErrorTrackingIssuesSearch(cmd *cobra.Command, args []string) error {
 }
 
 func runErrorTrackingIssuesGet(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	// Error Tracking API doesn't support OAuth, use API keys
+	client, err := getClientForEndpoint("GET", "/api/v2/error_tracking/issues/")
 	if err != nil {
 		return err
 	}

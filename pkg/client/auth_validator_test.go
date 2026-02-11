@@ -75,6 +75,18 @@ func TestRequiresAPIKeyFallback(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:     "error tracking search requires API keys",
+			method:   "POST",
+			path:     "/api/v2/error_tracking/issues/search",
+			expected: true,
+		},
+		{
+			name:     "error tracking get requires API keys",
+			method:   "GET",
+			path:     "/api/v2/error_tracking/issues/abc123",
+			expected: true,
+		},
+		{
 			name:     "monitors list supports OAuth",
 			method:   "GET",
 			path:     "/api/v1/monitor",
