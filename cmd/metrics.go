@@ -165,38 +165,47 @@ var metricsListCmd = &cobra.Command{
 	Long: `List all available metrics in your Datadog account.
 
 This command retrieves the list of all metrics that have been submitted to
-Datadog. You can optionally filter the list using a metric name pattern.
+Datadog. You can optionally filter the list using a metric name pattern or
+filter by Datadog tags.
 
-FILTERING:
-  Use the --filter flag to search for metrics matching a pattern:
+FILTERING BY NAME:
+  Use the --filter flag to search for metrics matching a name pattern:
   • system.* - All system metrics
   • *.cpu.* - All CPU-related metrics
   • custom.* - All custom metrics
   • myapp.* - All metrics starting with myapp
+  • *request* - All metrics containing "request"
+
+  Pattern matching supports wildcards (* and ?) and is case-sensitive.
+  Filtering is performed client-side after fetching all metrics.
+
+FILTERING BY TAGS:
+  Use the --tag-filter flag to filter by Datadog tags (comma-separated):
+  • env:prod - Metrics tagged with env:prod
+  • env:prod,service:api - Metrics tagged with both env:prod AND service:api
+
+  Tag filtering is performed server-side by the Datadog API and returns
+  metrics that match ALL specified tags.
 
 EXAMPLES:
   # List all metrics
   pup metrics list
 
-  # List system metrics
+  # Filter by metric name pattern
   pup metrics list --filter="system.*"
-
-  # List CPU metrics
   pup metrics list --filter="*.cpu.*"
-
-  # List custom metrics
-  pup metrics list --filter="custom.*"
-
-  # Search for specific metrics
   pup metrics list --filter="*request*"
+
+  # Filter by tags
+  pup metrics list --tag-filter="env:prod"
+  pup metrics list --tag-filter="env:prod,service:api"
+
+  # Combine both filters (name pattern + tags)
+  pup metrics list --filter="system.*" --tag-filter="env:prod"
 
 OUTPUT:
   Returns an array of metric names. The response may be paginated for
-  large metric sets.
-
-PAGINATION:
-  Currently returns all matching metrics. For very large metric sets,
-  consider using more specific filters.`,
+  large metric sets.`,
 	RunE: runMetricsList,
 }
 
@@ -435,6 +444,7 @@ var (
 
 	// List flags
 	filterPattern string
+	tagFilter     string
 
 	// Metadata update flags
 	metadataDescription string
@@ -471,7 +481,8 @@ func init() {
 	}
 
 	// List command flags
-	metricsListCmd.Flags().StringVar(&filterPattern, "filter", "", "Filter metrics by pattern (e.g., system.*)")
+	metricsListCmd.Flags().StringVar(&filterPattern, "filter", "", "Filter metrics by name pattern (e.g., system.*, *.cpu.*)")
+	metricsListCmd.Flags().StringVar(&tagFilter, "tag-filter", "", "Filter metrics by tags (e.g., env:prod,service:api)")
 
 	// Metadata update flags
 	metricsMetadataUpdateCmd.Flags().StringVar(&metadataDescription, "description", "", "Metric description")
@@ -623,6 +634,69 @@ func runMetricsSearch(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// matchMetricName checks if a metric name matches a wildcard pattern.
+// Supports * (match any characters) and ? (match single character).
+func matchMetricName(pattern, name string) bool {
+	// If no pattern, match all
+	if pattern == "" {
+		return true
+	}
+
+	// Simple case: exact match
+	if pattern == name {
+		return true
+	}
+
+	// Convert glob pattern to regex-like matching
+	pIdx, nIdx := 0, 0
+	pLen, nLen := len(pattern), len(name)
+
+	// Track position for backtracking after *
+	var starIdx, matchIdx int = -1, 0
+
+	for nIdx < nLen {
+		if pIdx < pLen {
+			switch pattern[pIdx] {
+			case '?':
+				// ? matches any single character
+				pIdx++
+				nIdx++
+				continue
+			case '*':
+				// * matches zero or more characters
+				starIdx = pIdx
+				matchIdx = nIdx
+				pIdx++
+				continue
+			default:
+				// Regular character must match exactly
+				if pattern[pIdx] == name[nIdx] {
+					pIdx++
+					nIdx++
+					continue
+				}
+			}
+		}
+
+		// If we have a star, try backtracking
+		if starIdx != -1 {
+			pIdx = starIdx + 1
+			matchIdx++
+			nIdx = matchIdx
+			continue
+		}
+
+		return false
+	}
+
+	// Consume remaining * in pattern
+	for pIdx < pLen && pattern[pIdx] == '*' {
+		pIdx++
+	}
+
+	return pIdx == pLen
+}
+
 // runMetricsList executes the metrics list command
 func runMetricsList(cmd *cobra.Command, args []string) error {
 	client, err := getClient()
@@ -635,9 +709,10 @@ func runMetricsList(cmd *cobra.Command, args []string) error {
 	// From time defaults to 1 hour ago
 	from := time.Now().Add(-1 * time.Hour).Unix()
 
+	// Build API options - only use tag filter for --tag-filter flag
 	opts := datadogV1.NewListActiveMetricsOptionalParameters()
-	if filterPattern != "" {
-		opts = opts.WithTagFilter(filterPattern)
+	if tagFilter != "" {
+		opts = opts.WithTagFilter(tagFilter)
 	}
 
 	resp, r, err := api.ListActiveMetrics(client.Context(), from, *opts)
@@ -645,14 +720,40 @@ func runMetricsList(cmd *cobra.Command, args []string) error {
 		if r != nil {
 			apiBody := extractAPIErrorBody(err)
 			if apiBody != "" {
-				return fmt.Errorf("failed to list metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Filter: %s\n- From: %s (Unix: %d)\n\nTroubleshooting:\n- Check that your filter pattern is valid\n- Verify you have permissions to list metrics",
+				filters := []string{}
+				if filterPattern != "" {
+					filters = append(filters, fmt.Sprintf("Name pattern: %s", filterPattern))
+				}
+				if tagFilter != "" {
+					filters = append(filters, fmt.Sprintf("Tag filter: %s", tagFilter))
+				}
+				filterInfo := strings.Join(filters, "\n- ")
+				if filterInfo == "" {
+					filterInfo = "None"
+				}
+
+				return fmt.Errorf("failed to list metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Filters:\n  %s\n- From: %s (Unix: %d)\n\nTroubleshooting:\n- For --filter, use metric name patterns (e.g., system.*, *.cpu.*)\n- For --tag-filter, use Datadog tags (e.g., env:prod,service:api)\n- Verify you have permissions to list metrics",
 					err, r.StatusCode, apiBody,
-					filterPattern,
+					filterInfo,
 					time.Unix(from, 0).Format(time.RFC3339), from)
 			}
 			return fmt.Errorf("failed to list metrics: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to list metrics: %w", err)
+	}
+
+	// Apply client-side name filtering if pattern is specified
+	if filterPattern != "" {
+		metrics, ok := resp.GetMetricsOk()
+		if ok && metrics != nil {
+			filtered := make([]string, 0)
+			for _, metric := range *metrics {
+				if matchMetricName(filterPattern, metric) {
+					filtered = append(filtered, metric)
+				}
+			}
+			resp.Metrics = filtered
+		}
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))

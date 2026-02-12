@@ -207,21 +207,38 @@ func TestRunMetricsList(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		filter         string
-		wantErr        bool
+		name            string
+		filter          string
+		tagFilterValue  string
+		wantErr         bool
 		wantErrContains string
 	}{
 		{
-			name:           "no filter",
-			filter:         "",
-			wantErr:        true,
+			name:            "no filter",
+			filter:          "",
+			tagFilterValue:  "",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 		{
-			name:           "with filter",
-			filter:         "system.*",
-			wantErr:        true,
+			name:            "with name filter",
+			filter:          "system.*",
+			tagFilterValue:  "",
+			wantErr:         true,
+			wantErrContains: "mock client",
+		},
+		{
+			name:            "with tag filter",
+			filter:          "",
+			tagFilterValue:  "env:prod",
+			wantErr:         true,
+			wantErrContains: "mock client",
+		},
+		{
+			name:            "with both filters",
+			filter:          "system.*",
+			tagFilterValue:  "env:prod",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 	}
@@ -229,6 +246,7 @@ func TestRunMetricsList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			filterPattern = tt.filter
+			tagFilter = tt.tagFilterValue
 
 			var buf bytes.Buffer
 			outputWriter = &buf
@@ -242,6 +260,210 @@ func TestRunMetricsList(t *testing.T) {
 
 			if tt.wantErrContains != "" && err != nil && !strings.Contains(err.Error(), tt.wantErrContains) {
 				t.Errorf("runMetricsList() error = %v, want error containing %q", err, tt.wantErrContains)
+			}
+		})
+	}
+}
+
+func TestMatchMetricName(t *testing.T) {
+	tests := []struct {
+		name    string
+		pattern string
+		metric  string
+		want    bool
+	}{
+		// Empty pattern
+		{
+			name:    "empty pattern matches all",
+			pattern: "",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		// Exact matches
+		{
+			name:    "exact match",
+			pattern: "system.cpu.user",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "exact mismatch",
+			pattern: "system.cpu.user",
+			metric:  "system.cpu.system",
+			want:    false,
+		},
+		// Prefix wildcards
+		{
+			name:    "prefix wildcard matches",
+			pattern: "system.*",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "prefix wildcard matches all system metrics",
+			pattern: "system.*",
+			metric:  "system.mem.used",
+			want:    true,
+		},
+		{
+			name:    "prefix wildcard no match",
+			pattern: "system.*",
+			metric:  "custom.cpu.user",
+			want:    false,
+		},
+		// Suffix wildcards
+		{
+			name:    "suffix wildcard matches",
+			pattern: "*.cpu.user",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "suffix wildcard matches different prefix",
+			pattern: "*.cpu.user",
+			metric:  "custom.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "suffix wildcard no match",
+			pattern: "*.cpu.user",
+			metric:  "system.mem.used",
+			want:    false,
+		},
+		// Middle wildcards
+		{
+			name:    "middle wildcard matches",
+			pattern: "system.*.user",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "middle wildcard matches multiple segments",
+			pattern: "system.*.user",
+			metric:  "system.foo.bar.user",
+			want:    true,
+		},
+		{
+			name:    "middle wildcard no match",
+			pattern: "system.*.user",
+			metric:  "system.cpu.system",
+			want:    false,
+		},
+		// Contains patterns
+		{
+			name:    "contains pattern matches",
+			pattern: "*cpu*",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "contains pattern matches middle",
+			pattern: "*request*",
+			metric:  "app.request.count",
+			want:    true,
+		},
+		{
+			name:    "contains pattern no match",
+			pattern: "*request*",
+			metric:  "system.cpu.user",
+			want:    false,
+		},
+		// Question mark wildcards
+		{
+			name:    "question mark matches single char",
+			pattern: "system.cpu.?ser",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "question mark matches any char",
+			pattern: "system.cpu.?ser",
+			metric:  "system.cpu.aser",
+			want:    true,
+		},
+		{
+			name:    "question mark no match multiple chars",
+			pattern: "system.cpu.?ser",
+			metric:  "system.cpu.abser",
+			want:    false,
+		},
+		{
+			name:    "question mark no match too short",
+			pattern: "system.cpu.?ser",
+			metric:  "system.cpu.ser",
+			want:    false,
+		},
+		// Complex patterns
+		{
+			name:    "multiple wildcards",
+			pattern: "*.cpu.*",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "multiple wildcards different segments",
+			pattern: "*.cpu.*",
+			metric:  "custom.app.cpu.load",
+			want:    true,
+		},
+		{
+			name:    "multiple wildcards no match",
+			pattern: "*.cpu.*",
+			metric:  "system.mem.used",
+			want:    false,
+		},
+		// Edge cases
+		{
+			name:    "only wildcard matches all",
+			pattern: "*",
+			metric:  "any.metric.name",
+			want:    true,
+		},
+		{
+			name:    "trailing wildcard",
+			pattern: "system.cpu.*",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		{
+			name:    "leading wildcard",
+			pattern: "*.user",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+		// Real-world examples from the issue
+		{
+			name:    "kafka_index prefix",
+			pattern: "kafka_index*",
+			metric:  "kafka_index.fetch.latency",
+			want:    true,
+		},
+		{
+			name:    "kafka_index wildcard",
+			pattern: "*kafka_index*",
+			metric:  "my.kafka_index.metric",
+			want:    true,
+		},
+		{
+			name:    "system.cpu exact",
+			pattern: "system.cpu",
+			metric:  "system.cpu",
+			want:    true,
+		},
+		{
+			name:    "system.cpu prefix",
+			pattern: "system.cpu*",
+			metric:  "system.cpu.user",
+			want:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := matchMetricName(tt.pattern, tt.metric)
+			if got != tt.want {
+				t.Errorf("matchMetricName(%q, %q) = %v, want %v",
+					tt.pattern, tt.metric, got, tt.want)
 			}
 		})
 	}
