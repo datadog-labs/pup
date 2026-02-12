@@ -169,7 +169,6 @@ func TestMetricsCommands(t *testing.T) {
 ## CI/CD Pipeline
 
 > **Note:** Pup uses Datadog CI products for enhanced monitoring and analytics.
-> See **[DATADOG_CI.md](DATADOG_CI.md)** for detailed setup and configuration.
 
 GitHub Actions workflow runs on all branches with 4 parallel jobs:
 
