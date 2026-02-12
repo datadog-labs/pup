@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -559,11 +558,11 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.QueryTimeseriesData(client.Context(), body)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to query metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s (Unix: %d)\n- To: %s (Unix: %d)\n\nTroubleshooting:\n- Verify your query syntax is correct (e.g., avg:metric.name{filter})\n- Check that the time range is valid\n- Ensure the metric exists and has data in the specified time range\n- Confirm you have proper permissions to access the metric",
-					err, r.StatusCode, string(bodyBytes),
+					err, r.StatusCode, apiBody,
 					queryString,
 					from.Format(time.RFC3339), from.Unix(),
 					to.Format(time.RFC3339), to.Unix())
@@ -604,11 +603,11 @@ func runMetricsSearch(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.QueryMetrics(client.Context(), from.Unix(), to.Unix(), queryString)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to search metrics: %w\nStatus: %d\nAPI Response: %s",
-					err, r.StatusCode, string(bodyBytes))
+					err, r.StatusCode, apiBody)
 			}
 			return fmt.Errorf("failed to search metrics: %w (status: %d)", err, r.StatusCode)
 		}
@@ -643,11 +642,11 @@ func runMetricsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListActiveMetrics(client.Context(), from, *opts)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to list metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Filter: %s\n- From: %s (Unix: %d)\n\nTroubleshooting:\n- Check that your filter pattern is valid\n- Verify you have permissions to list metrics",
-					err, r.StatusCode, string(bodyBytes),
+					err, r.StatusCode, apiBody,
 					filterPattern,
 					time.Unix(from, 0).Format(time.RFC3339), from)
 			}
@@ -677,11 +676,11 @@ func runMetricsMetadataGet(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.GetMetricMetadata(client.Context(), metricName)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to get metric metadata: %w\nStatus: %d\nAPI Response: %s\n\nMetric: %s\n\nTroubleshooting:\n- Verify the metric name is correct\n- Ensure the metric exists in your account\n- Check that you have permissions to view metadata",
-					err, r.StatusCode, string(bodyBytes), metricName)
+					err, r.StatusCode, apiBody, metricName)
 			}
 			return fmt.Errorf("failed to get metric metadata: %w (status: %d)", err, r.StatusCode)
 		}
@@ -733,11 +732,11 @@ func runMetricsMetadataUpdate(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.UpdateMetricMetadata(client.Context(), metricName, body)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to update metric metadata: %w\nStatus: %d\nAPI Response: %s\n\nMetric: %s\n\nTroubleshooting:\n- Verify the metric name is correct\n- Check that the metadata values are valid (unit, type, etc.)\n- Ensure you have permissions to update metadata",
-					err, r.StatusCode, string(bodyBytes), metricName)
+					err, r.StatusCode, apiBody, metricName)
 			}
 			return fmt.Errorf("failed to update metric metadata: %w (status: %d)", err, r.StatusCode)
 		}
@@ -833,11 +832,11 @@ func runMetricsSubmit(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.SubmitMetrics(client.Context(), body, *datadogV2.NewSubmitMetricsOptionalParameters())
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				return fmt.Errorf("failed to submit metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Metric: %s\n- Value: %f\n- Type: %s\n- Timestamp: %d\n- Tags: %v\n\nTroubleshooting:\n- Verify the metric name follows naming conventions (lowercase, dots/underscores)\n- Check that the metric type is valid (gauge, count, rate)\n- Ensure your API key has permission to submit metrics\n- Verify tags are in key:value format",
-					err, r.StatusCode, string(bodyBytes),
+					err, r.StatusCode, apiBody,
 					submitName, submitValue, submitType, timestamp, tags)
 			}
 			return fmt.Errorf("failed to submit metrics: %w (status: %d)", err, r.StatusCode)

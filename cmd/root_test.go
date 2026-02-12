@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/pup/pkg/config"
 )
 
@@ -316,5 +317,77 @@ func TestTestCmd_InvalidSite(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "DD_SITE") {
 		t.Errorf("testCmd.RunE() error should mention DD_SITE, got: %v", err)
+	}
+}
+
+func TestExtractAPIErrorBody(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{
+			name: "GenericOpenAPIError with body",
+			err: datadog.GenericOpenAPIError{
+				ErrorBody:    []byte(`{"errors":["Invalid query: avg:nonexistent.metric{*}"]}`),
+				ErrorMessage: "400 Bad Request",
+			},
+			want: `{"errors":["Invalid query: avg:nonexistent.metric{*}"]}`,
+		},
+		{
+			name: "GenericOpenAPIError with empty body",
+			err: datadog.GenericOpenAPIError{
+				ErrorBody:    []byte{},
+				ErrorMessage: "400 Bad Request",
+			},
+			want: "",
+		},
+		{
+			name: "GenericOpenAPIError with nil body",
+			err: datadog.GenericOpenAPIError{
+				ErrorBody:    nil,
+				ErrorMessage: "400 Bad Request",
+			},
+			want: "",
+		},
+		{
+			name: "non-GenericOpenAPIError",
+			err:  errors.New("some other error"),
+			want: "",
+		},
+		{
+			name: "nil error",
+			err:  nil,
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := extractAPIErrorBody(tt.err)
+			if got != tt.want {
+				t.Errorf("extractAPIErrorBody() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFormatAPIError_IncludesResponseBody(t *testing.T) {
+	// This test verifies that formatAPIError surfaces the API response body
+	// from GenericOpenAPIError, which was previously lost because the code
+	// tried to re-read the already-consumed http.Response.Body.
+	apiErr := datadog.GenericOpenAPIError{
+		ErrorBody:    []byte(`{"errors":["Query parse error: unknown metric"]}`),
+		ErrorMessage: "400 Bad Request",
+	}
+
+	err := formatAPIError("query metrics", apiErr, &mockHTTPResponse{statusCode: 400})
+	errMsg := err.Error()
+
+	if !strings.Contains(errMsg, "unknown metric") {
+		t.Errorf("formatAPIError() should include API response body, got: %q", errMsg)
+	}
+	if !strings.Contains(errMsg, "status: 400") {
+		t.Errorf("formatAPIError() should include status code, got: %q", errMsg)
 	}
 }
