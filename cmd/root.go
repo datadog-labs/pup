@@ -7,11 +7,13 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/pup/internal/version"
 	"github.com/DataDog/pup/pkg/client"
 	"github.com/DataDog/pup/pkg/config"
@@ -259,7 +261,26 @@ func readConfirmation() (string, error) {
 	return "", scanner.Err()
 }
 
-// formatAPIError creates user-friendly error messages for API errors
+// extractAPIErrorBody extracts the API response body from a
+// datadog.GenericOpenAPIError. The datadog-api-client-go library consumes
+// http.Response.Body during deserialization and stores the bytes in the error.
+// Callers that try to re-read http.Response.Body will always get empty data.
+func extractAPIErrorBody(err error) string {
+	if err == nil {
+		return ""
+	}
+	var apiErr datadog.GenericOpenAPIError
+	if errors.As(err, &apiErr) {
+		if body := apiErr.Body(); len(body) > 0 {
+			return string(body)
+		}
+	}
+	return ""
+}
+
+// formatAPIError creates user-friendly error messages for API errors.
+// It extracts the API response body from GenericOpenAPIError when available
+// and appends contextual guidance based on the HTTP status code.
 func formatAPIError(operation string, err error, response any) error {
 	type httpResponse interface {
 		StatusCode() int
@@ -268,6 +289,11 @@ func formatAPIError(operation string, err error, response any) error {
 	if r, ok := response.(httpResponse); ok && r != nil {
 		statusCode := r.StatusCode()
 		baseMsg := fmt.Sprintf("failed to %s: %v (status: %d)", operation, err, statusCode)
+
+		// Include API response body if available
+		if body := extractAPIErrorBody(err); body != "" {
+			baseMsg = fmt.Sprintf("failed to %s: %v (status: %d)\nAPI Response: %s", operation, err, statusCode, body)
+		}
 
 		switch {
 		case statusCode >= 500:

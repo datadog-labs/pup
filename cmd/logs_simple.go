@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 	"time"
@@ -789,13 +788,16 @@ func runLogsSearch(cmd *cobra.Command, args []string) error {
 	// Fetch first page
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		// These inline error handlers use extractAPIErrorBody directly instead of
+		// formatAPIError because they include domain-specific request details and
+		// troubleshooting context that the centralized helper does not support.
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				fromTimeObj := time.UnixMilli(fromTime).UTC()
 				toTimeObj := time.UnixMilli(toTime).UTC()
 				return fmt.Errorf("failed to search logs: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s UTC (parsed from: %s)\n- To: %s UTC (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your time range is valid\n- Check that your query syntax is correct\n- Ensure you have proper permissions",
-					err, r.StatusCode, string(bodyBytes),
+					err, r.StatusCode, apiBody,
 					logsQuery,
 					fromTimeObj.Format(time.RFC3339), logsFrom,
 					toTimeObj.Format(time.RFC3339), logsTo,
@@ -926,10 +928,10 @@ func runLogsList(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
-				return fmt.Errorf("failed to list logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, string(bodyBytes))
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
+				return fmt.Errorf("failed to list logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, apiBody)
 			}
 			return fmt.Errorf("failed to list logs: %w (status: %d)", err, r.StatusCode)
 		}
@@ -998,10 +1000,10 @@ func runLogsQuery(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.ListLogs(client.Context(), opts)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
-				return fmt.Errorf("failed to query logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, string(bodyBytes))
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
+				return fmt.Errorf("failed to query logs: %w\nStatus: %d\nAPI Response: %s", err, r.StatusCode, apiBody)
 			}
 			return fmt.Errorf("failed to query logs: %w (status: %d)", err, r.StatusCode)
 		}
@@ -1088,13 +1090,13 @@ func runLogsAggregate(cmd *cobra.Command, args []string) error {
 
 	resp, r, err := api.AggregateLogs(client.Context(), body)
 	if err != nil {
-		if r != nil && r.Body != nil {
-			bodyBytes, readErr := io.ReadAll(r.Body)
-			if readErr == nil && len(bodyBytes) > 0 {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
 				fromTimeObj := time.UnixMilli(fromTime).UTC()
 				toTimeObj := time.UnixMilli(toTime).UTC()
 				return fmt.Errorf("failed to aggregate logs: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- Compute: %s (parsed as: aggregation=%q, metric=%q)\n- Group By: %s\n- From: %s UTC (parsed from: %s)\n- To: %s UTC (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify the aggregation function is supported\n- Ensure the metric field exists in your logs (e.g., @duration, @bytes)\n- Check your query syntax\n- Verify your time range is valid",
-					err, r.StatusCode, string(bodyBytes),
+					err, r.StatusCode, apiBody,
 					logsQuery,
 					logsCompute, aggregation, metric,
 					logsGroupBy,
