@@ -72,13 +72,15 @@ jobs:
         run: |
           # Run tests on all packages with race detection
           # Use orchestrion to instrument tests for Datadog CI Visibility
+          # NOTE: Do NOT use -parallel N with orchestrion — it auto-injects t.Parallel()
+          # into subtests, which deadlocks table-driven tests when the parallel slot limit
+          # is lower than the number of subtests.
           if [ -n "$DD_API_KEY" ]; then
             echo "Running tests with Datadog CI Visibility enabled"
-            orchestrion go test -v -race -parallel 8 ./...
+            orchestrion go test -v -race ./...
             # Calculate coverage with orchestrion instrumentation
             # Use -count=1 to disable test caching and get accurate coverage
-            # Use -parallel 8 for faster execution (4.7x faster than sequential)
-            orchestrion go test -count=1 -parallel 8 -coverprofile=coverage.out -covermode=atomic ./pkg/...
+            orchestrion go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
           else
             echo "Running tests without Datadog CI Visibility (DD_API_KEY not set)"
             go test -v -race ./...
