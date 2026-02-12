@@ -250,7 +250,7 @@ var (
 
 func init() {
 	monitorsListCmd.Flags().StringVar(&monitorName, "name", "", "Filter monitors by name")
-	monitorsListCmd.Flags().StringVar(&monitorTags, "tags", "", "Filter monitors by tags (comma-separated)")
+	monitorsListCmd.Flags().StringVar(&monitorTags, "tags", "", "Filter by monitor tags (comma-separated, e.g., team:backend,env:prod)")
 	monitorsListCmd.Flags().Int32Var(&monitorLimit, "limit", 200, "Maximum number of monitors to return (default: 200, max: 1000)")
 
 	monitorsSearchCmd.Flags().StringVar(&searchQuery, "query", "", "Search query string")
@@ -279,7 +279,7 @@ func runMonitorsList(cmd *cobra.Command, args []string) error {
 		opts.WithName(monitorName)
 	}
 	if monitorTags != "" {
-		opts.WithTags(monitorTags)
+		opts.WithMonitorTags(monitorTags)
 	}
 
 	// Set limit for results (default 200, max 1000)
