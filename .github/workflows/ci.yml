@@ -28,11 +28,12 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Run tests on all packages with race detection
-          go test -v -race ./...
+          # Run tests on all packages with race detection and parallel execution
+          go test -v -race -parallel 8 ./...
           # Calculate coverage only for pkg/ (cmd/ is CLI code with lower test coverage)
           # Use -count=1 to disable test caching and get accurate coverage
-          go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
+          # Use -parallel 8 for faster execution (4.7x faster than sequential)
+          go test -count=1 -parallel 8 -coverprofile=coverage.out -covermode=atomic ./pkg/...
           go tool cover -html=coverage.out -o coverage.html
 
       - name: Calculate coverage
