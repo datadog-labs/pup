@@ -15,6 +15,7 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
+	t.Parallel()
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -45,6 +46,7 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestServer_Port(t *testing.T) {
+	t.Parallel()
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -70,6 +72,7 @@ func TestServer_Port(t *testing.T) {
 }
 
 func TestServer_RedirectURI(t *testing.T) {
+	t.Parallel()
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -96,6 +99,7 @@ func TestServer_RedirectURI(t *testing.T) {
 }
 
 func TestServer_StartStop(t *testing.T) {
+	// NOTE: Not parallel - binds to network port
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -131,6 +135,7 @@ func TestServer_StartStop(t *testing.T) {
 }
 
 func TestServer_Stop_WhenNotStarted(t *testing.T) {
+	t.Parallel()
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -143,6 +148,7 @@ func TestServer_Stop_WhenNotStarted(t *testing.T) {
 }
 
 func TestServer_WaitForCallback_Success(t *testing.T) {
+	// NOTE: Not parallel - binds to network port
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -185,6 +191,7 @@ func TestServer_WaitForCallback_Success(t *testing.T) {
 }
 
 func TestServer_WaitForCallback_Error(t *testing.T) {
+	// NOTE: Not parallel - binds to network port
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -227,6 +234,7 @@ func TestServer_WaitForCallback_Error(t *testing.T) {
 }
 
 func TestServer_WaitForCallback_Timeout(t *testing.T) {
+	// NOTE: Not parallel - binds to network port
 	server, err := NewServer()
 	if err != nil {
 		t.Fatalf("NewServer() error = %v", err)
@@ -248,6 +256,7 @@ func TestServer_WaitForCallback_Timeout(t *testing.T) {
 }
 
 func TestServer_HandleCallback_SuccessResponse(t *testing.T) {
+	t.Parallel()
 	server := &Server{
 		port:     8000,
 		resultCh: make(chan CallbackResult, 1),
@@ -287,6 +296,7 @@ func TestServer_HandleCallback_SuccessResponse(t *testing.T) {
 }
 
 func TestServer_HandleCallback_ErrorResponse(t *testing.T) {
+	t.Parallel()
 	server := &Server{
 		port:     8000,
 		resultCh: make(chan CallbackResult, 1),
@@ -326,6 +336,7 @@ func TestServer_HandleCallback_ErrorResponse(t *testing.T) {
 }
 
 func TestServer_RenderSuccess(t *testing.T) {
+	t.Parallel()
 	server := &Server{port: 8000}
 
 	w := httptest.NewRecorder()
@@ -353,6 +364,7 @@ func TestServer_RenderSuccess(t *testing.T) {
 }
 
 func TestServer_RenderError(t *testing.T) {
+	t.Parallel()
 	server := &Server{port: 8000}
 
 	w := httptest.NewRecorder()
@@ -386,6 +398,7 @@ func TestServer_RenderError(t *testing.T) {
 }
 
 func TestServer_RenderError_NoDescription(t *testing.T) {
+	t.Parallel()
 	server := &Server{port: 8000}
 
 	w := httptest.NewRecorder()
@@ -402,6 +415,7 @@ func TestServer_RenderError_NoDescription(t *testing.T) {
 }
 
 func TestDCRRedirectPorts(t *testing.T) {
+	t.Parallel()
 	// Verify DCRRedirectPorts matches TypeScript PR #84
 	expected := []int{8000, 8080, 8888, 9000}
 

@@ -12,10 +12,11 @@ import (
 )
 
 func TestToJSON(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
-		name      string
-		data      interface{}
-		wantError bool
+		name         string
+		data         interface{}
+		wantError    bool
 		wantContains []string
 	}{
 		{
@@ -24,7 +25,7 @@ func TestToJSON(t *testing.T) {
 				"foo": "bar",
 				"baz": 123,
 			},
-			wantError: false,
+			wantError:    false,
 			wantContains: []string{`"foo"`, `"bar"`, `"baz"`, `123`},
 		},
 		{
@@ -36,31 +37,32 @@ func TestToJSON(t *testing.T) {
 				Name: "Alice",
 				Age:  30,
 			},
-			wantError: false,
+			wantError:    false,
 			wantContains: []string{`"name"`, `"Alice"`, `"age"`, `30`},
 		},
 		{
-			name:      "array",
-			data:      []string{"a", "b", "c"},
-			wantError: false,
+			name:         "array",
+			data:         []string{"a", "b", "c"},
+			wantError:    false,
 			wantContains: []string{`"a"`, `"b"`, `"c"`},
 		},
 		{
-			name:      "nil",
-			data:      nil,
-			wantError: false,
+			name:         "nil",
+			data:         nil,
+			wantError:    false,
 			wantContains: []string{`null`},
 		},
 		{
-			name:      "empty map",
-			data:      map[string]interface{}{},
-			wantError: false,
+			name:         "empty map",
+			data:         map[string]interface{}{},
+			wantError:    false,
 			wantContains: []string{`{}`},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := ToJSON(tt.data)
 
 			if tt.wantError {
@@ -85,6 +87,7 @@ func TestToJSON(t *testing.T) {
 }
 
 func TestToTable(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		data         interface{}
@@ -287,6 +290,7 @@ func TestToTable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := ToTable(tt.data)
 
 			if tt.wantError {
@@ -311,6 +315,7 @@ func TestToTable(t *testing.T) {
 }
 
 func TestToYAML(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		data         interface{}
@@ -327,8 +332,8 @@ func TestToYAML(t *testing.T) {
 			wantContains: []string{"name:", "test", "value:", "42"},
 		},
 		{
-			name: "slice data",
-			data: []string{"a", "b", "c"},
+			name:         "slice data",
+			data:         []string{"a", "b", "c"},
 			wantError:    false,
 			wantContains: []string{"a", "b", "c"},
 		},
@@ -341,6 +346,7 @@ func TestToYAML(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := ToYAML(tt.data)
 
 			if tt.wantError {
@@ -365,6 +371,7 @@ func TestToYAML(t *testing.T) {
 }
 
 func TestFormatOutput(t *testing.T) {
+	t.Parallel()
 	data := map[string]string{"key": "value"}
 
 	tests := []struct {
@@ -401,6 +408,7 @@ func TestFormatOutput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := FormatOutput(data, tt.format)
 
 			if tt.wantError {
@@ -428,6 +436,7 @@ func TestFormatOutput(t *testing.T) {
 }
 
 func TestFormatError(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		err  error
@@ -447,6 +456,7 @@ func TestFormatError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := FormatError(tt.err)
 			if result != tt.want {
 				t.Errorf("FormatError() = %q, want %q", result, tt.want)
@@ -456,6 +466,7 @@ func TestFormatError(t *testing.T) {
 }
 
 func TestFormatSuccess(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		message      string
@@ -508,6 +519,7 @@ func TestFormatSuccess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := FormatSuccess(tt.message, tt.data)
 
 			if tt.wantError {
@@ -532,6 +544,7 @@ func TestFormatSuccess(t *testing.T) {
 }
 
 func TestOutputFormat_Constants(t *testing.T) {
+	t.Parallel()
 	// Verify format constants are correctly defined
 	if FormatJSON != "json" {
 		t.Errorf("FormatJSON = %q, want \"json\"", FormatJSON)
@@ -545,6 +558,7 @@ func TestOutputFormat_Constants(t *testing.T) {
 }
 
 func TestFormatTableValue(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		val  interface{}
@@ -644,6 +658,7 @@ func TestFormatTableValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := formatTableValue(tt.val)
 			if result != tt.want {
 				t.Errorf("formatTableValue(%v) = %q, want %q", tt.val, result, tt.want)
@@ -653,6 +668,7 @@ func TestFormatTableValue(t *testing.T) {
 }
 
 func TestToJSON_Error(t *testing.T) {
+	t.Parallel()
 	// Test with unmarshalable data (channels can't be marshaled to JSON)
 	ch := make(chan int)
 	_, err := ToJSON(ch)
@@ -669,6 +685,7 @@ func TestToJSON_Error(t *testing.T) {
 // by internal yaml library errors which are hard to simulate in a unit test.
 
 func TestToTable_EdgeCases(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		data         interface{}
@@ -676,9 +693,9 @@ func TestToTable_EdgeCases(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name: "slice of non-maps",
-			data: []interface{}{"string1", "string2", "string3"},
-			wantError: false,
+			name:         "slice of non-maps",
+			data:         []interface{}{"string1", "string2", "string3"},
+			wantError:    false,
 			wantContains: []string{"string1", "string2", "string3"},
 		},
 		{
@@ -731,9 +748,9 @@ func TestToTable_EdgeCases(t *testing.T) {
 			wantContains: []string{"incident-1", "Outage", "user-1,user-2,user-3"},
 		},
 		{
-			name: "unsupported type (fails at marshal)",
-			data: func() {},
-			wantError: true, // Functions can't be marshaled to JSON
+			name:         "unsupported type (fails at marshal)",
+			data:         func() {},
+			wantError:    true, // Functions can't be marshaled to JSON
 			wantContains: []string{},
 		},
 		{
@@ -748,6 +765,7 @@ func TestToTable_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result, err := ToTable(tt.data)
 
 			if tt.wantError {
@@ -772,6 +790,7 @@ func TestToTable_EdgeCases(t *testing.T) {
 }
 
 func TestFlattenJSONAPIObject(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		obj  map[string]interface{}
@@ -898,6 +917,7 @@ func TestFlattenJSONAPIObject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := flattenJSONAPIObject(tt.obj)
 
 			// Check all expected keys

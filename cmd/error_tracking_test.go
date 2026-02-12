@@ -170,5 +170,3 @@ func TestErrorTrackingCmd_CommandHierarchy(t *testing.T) {
 		}
 	}
 }
-
-

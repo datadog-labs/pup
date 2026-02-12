@@ -11,46 +11,48 @@ import (
 )
 
 func TestTokenSet_IsExpired(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
-		name     string
-		issuedAt int64
+		name      string
+		issuedAt  int64
 		expiresIn int64
-		expected bool
+		expected  bool
 	}{
 		{
-			name:     "token expired",
-			issuedAt: time.Now().Add(-2 * time.Hour).Unix(),
+			name:      "token expired",
+			issuedAt:  time.Now().Add(-2 * time.Hour).Unix(),
 			expiresIn: 3600, // 1 hour
-			expected: true,
+			expected:  true,
 		},
 		{
-			name:     "token valid - just issued",
-			issuedAt: time.Now().Unix(),
+			name:      "token valid - just issued",
+			issuedAt:  time.Now().Unix(),
 			expiresIn: 3600, // 1 hour
-			expected: false,
+			expected:  false,
 		},
 		{
-			name:     "token expiring soon (within 5 min buffer)",
-			issuedAt: time.Now().Add(-56 * time.Minute).Unix(), // 56 minutes ago
-			expiresIn: 3600, // expires in 4 minutes, within 5 min buffer
-			expected: true,
+			name:      "token expiring soon (within 5 min buffer)",
+			issuedAt:  time.Now().Add(-56 * time.Minute).Unix(), // 56 minutes ago
+			expiresIn: 3600,                                     // expires in 4 minutes, within 5 min buffer
+			expected:  true,
 		},
 		{
-			name:     "token valid - 10 minutes left",
-			issuedAt: time.Now().Add(-50 * time.Minute).Unix(),
+			name:      "token valid - 10 minutes left",
+			issuedAt:  time.Now().Add(-50 * time.Minute).Unix(),
 			expiresIn: 3600, // 10 minutes left
-			expected: false,
+			expected:  false,
 		},
 		{
-			name:     "token valid - long expiry",
-			issuedAt: time.Now().Unix(),
+			name:      "token valid - long expiry",
+			issuedAt:  time.Now().Unix(),
 			expiresIn: 86400, // 24 hours
-			expected: false,
+			expected:  false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			token := &TokenSet{
 				IssuedAt:  tt.issuedAt,
 				ExpiresIn: tt.expiresIn,
@@ -67,6 +69,7 @@ func TestTokenSet_IsExpired(t *testing.T) {
 }
 
 func TestOAuthError_String(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		err      OAuthError
@@ -107,6 +110,7 @@ func TestOAuthError_String(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := tt.err.String()
 			if result != tt.expected {
 				t.Errorf("String() = %q, want %q", result, tt.expected)
@@ -116,6 +120,7 @@ func TestOAuthError_String(t *testing.T) {
 }
 
 func TestDefaultScopes(t *testing.T) {
+	t.Parallel()
 	scopes := DefaultScopes()
 
 	// Verify we have all expected scopes (matching PR #84)
@@ -207,6 +212,7 @@ func TestDefaultScopes(t *testing.T) {
 }
 
 func TestTokenSet_JSONTags(t *testing.T) {
+	t.Parallel()
 	// Verify JSON tags are camelCase (matching PR #84)
 	token := TokenSet{
 		AccessToken:  "test-access",
@@ -229,6 +235,7 @@ func TestTokenSet_JSONTags(t *testing.T) {
 }
 
 func TestClientCredentials_Structure(t *testing.T) {
+	t.Parallel()
 	// Verify ClientCredentials structure matches PR #84
 	creds := ClientCredentials{
 		ClientID:     "test-id",

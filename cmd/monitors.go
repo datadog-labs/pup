@@ -239,13 +239,13 @@ EXAMPLES:
 }
 
 var (
-	monitorName    string
-	monitorTags    string
-	monitorLimit   int32
-	searchQuery    string
-	searchPage     int64
-	searchPerPage  int64
-	searchSort     string
+	monitorName   string
+	monitorTags   string
+	monitorLimit  int32
+	searchQuery   string
+	searchPage    int64
+	searchPerPage int64
+	searchSort    string
 )
 
 func init() {

@@ -15,6 +15,7 @@ import (
 )
 
 func TestGet_NoAgent(t *testing.T) {
+	// NOTE: Not parallel - modifies env vars
 	// Clear all agent environment variables
 	os.Unsetenv("CLAUDECODE")
 	os.Unsetenv("CLAUDE_CODE")
@@ -35,6 +36,7 @@ func TestGet_NoAgent(t *testing.T) {
 }
 
 func TestGet_WithClaudeCode(t *testing.T) {
+	// NOTE: Not parallel - modifies env vars
 	tests := []struct {
 		name    string
 		envVar  string

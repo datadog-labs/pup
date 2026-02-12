@@ -21,6 +21,7 @@ import (
 )
 
 func TestNew_WithAPIKeys(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -64,6 +65,7 @@ func TestNew_WithAPIKeys(t *testing.T) {
 }
 
 func TestNew_NoAuthentication(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "",
 		AppKey: "",
@@ -81,6 +83,7 @@ func TestNew_NoAuthentication(t *testing.T) {
 }
 
 func TestNew_MissingAPIKey(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "",
 		AppKey: "test-app-key",
@@ -98,6 +101,7 @@ func TestNew_MissingAPIKey(t *testing.T) {
 }
 
 func TestNew_MissingAppKey(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "",
@@ -115,6 +119,7 @@ func TestNew_MissingAppKey(t *testing.T) {
 }
 
 func TestNew_DifferentSites(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		site string
@@ -129,6 +134,7 @@ func TestNew_DifferentSites(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			cfg := &config.Config{
 				APIKey: "test-api-key",
 				AppKey: "test-app-key",
@@ -152,6 +158,7 @@ func TestNew_DifferentSites(t *testing.T) {
 }
 
 func TestClient_Context(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -180,6 +187,7 @@ func TestClient_Context(t *testing.T) {
 }
 
 func TestClient_V1(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -203,6 +211,7 @@ func TestClient_V1(t *testing.T) {
 }
 
 func TestClient_V2(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -226,6 +235,7 @@ func TestClient_V2(t *testing.T) {
 }
 
 func TestClient_API(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -254,6 +264,7 @@ func TestClient_API(t *testing.T) {
 }
 
 func TestClient_Config(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -280,6 +291,7 @@ func TestClient_Config(t *testing.T) {
 }
 
 func TestRawRequest_APIKeyAuth(t *testing.T) {
+	t.Parallel()
 	var gotHeaders http.Header
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotHeaders = r.Header
@@ -372,6 +384,7 @@ func TestRawRequest_APIKeyAuth(t *testing.T) {
 }
 
 func TestRawRequest_OAuth2Auth(t *testing.T) {
+	t.Parallel()
 	var gotHeaders http.Header
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotHeaders = r.Header
@@ -409,6 +422,7 @@ func TestRawRequest_OAuth2Auth(t *testing.T) {
 }
 
 func TestRawRequest_WithBody(t *testing.T) {
+	t.Parallel()
 	var gotBody string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyBytes, _ := io.ReadAll(r.Body)
@@ -442,6 +456,7 @@ func TestRawRequest_WithBody(t *testing.T) {
 }
 
 func TestRawRequest_NilBody(t *testing.T) {
+	t.Parallel()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"data":[]}`))
@@ -466,6 +481,7 @@ func TestRawRequest_NilBody(t *testing.T) {
 }
 
 func TestClient_APIConfiguration(t *testing.T) {
+	t.Parallel()
 	cfg := &config.Config{
 		APIKey: "test-api-key",
 		AppKey: "test-app-key",
@@ -494,6 +510,7 @@ func TestClient_APIConfiguration(t *testing.T) {
 }
 
 func TestGetUserAgent(t *testing.T) {
+	t.Parallel()
 	userAgent := useragent.Get()
 
 	// Check that it starts with "pup/"
@@ -540,6 +557,7 @@ func (c *captureTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 }
 
 func TestClient_IntegrationUserAgentInAPIClient(t *testing.T) {
+	t.Parallel()
 	// Integration test: verify User-Agent is automatically set by API client configuration
 	// This captures actual requests made through the Datadog API client
 

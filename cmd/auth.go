@@ -197,7 +197,7 @@ SCOPES REQUESTED:
   • Cases and usage data
 
   See: pup auth --help for complete scope list`,
-	RunE:  runAuthLogin,
+	RunE: runAuthLogin,
 }
 
 var authStatusCmd = &cobra.Command{
@@ -266,7 +266,7 @@ REFRESH TOKEN:
   The refresh token (valid for 30 days) is used to obtain new access tokens
   without requiring a new browser login. If the refresh token expires, you'll
   need to run 'pup auth login' again.`,
-	RunE:  runAuthStatus,
+	RunE: runAuthStatus,
 }
 
 var authLogoutCmd = &cobra.Command{

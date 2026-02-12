@@ -11,6 +11,7 @@ import (
 )
 
 func TestParseTimeParam(t *testing.T) {
+	t.Parallel()
 	now := time.Now()
 
 	tests := []struct {

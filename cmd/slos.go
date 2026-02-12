@@ -125,7 +125,7 @@ FILTERING:
   • Breaching SLOs: pup slos list | jq '.data[] | select(.status.state == "breaching")'
   • High error budget: pup slos list | jq '.data[] | select(.status.error_budget_remaining > 50)'
   • By tag: pup slos list | jq '.data[] | select(.tags[] | contains("team:backend"))'`,
-	RunE:  runSlosList,
+	RunE: runSlosList,
 }
 
 var slosGetCmd = &cobra.Command{
@@ -197,8 +197,8 @@ USE CASES:
   • Analyze historical SLO performance
   • Track error budget burn rate
   • Report on service reliability`,
-	Args:  cobra.ExactArgs(1),
-	RunE:  runSlosGet,
+	Args: cobra.ExactArgs(1),
+	RunE: runSlosGet,
 }
 
 var slosDeleteCmd = &cobra.Command{

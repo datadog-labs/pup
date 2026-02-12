@@ -17,9 +17,9 @@ import (
 
 // CallbackResult represents the result of the OAuth callback
 type CallbackResult struct {
-	Code  string
-	State string
-	Error string
+	Code             string
+	State            string
+	Error            string
 	ErrorDescription string
 }
 

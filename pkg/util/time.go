@@ -24,6 +24,7 @@ import (
 //   - Long: "1week", "1weeks"
 //   - With spaces: "5 minutes", "2 hours"
 //   - With minus prefix: "-5m", "-2h" (treated same as "5m", "2h")
+//
 // - ISO date strings (e.g., "2024-01-01T00:00:00Z")
 func ParseTimeParam(timeStr string) (time.Time, error) {
 	// Handle "now" (case-insensitive)

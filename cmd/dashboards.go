@@ -112,7 +112,7 @@ FILTERING:
 
 SORTING:
   Dashboards are returned sorted by popularity (most viewed first).`,
-	RunE:  runDashboardsList,
+	RunE: runDashboardsList,
 }
 
 var dashboardsGetCmd = &cobra.Command{
@@ -179,8 +179,8 @@ USE CASES:
   • Version control dashboard definitions
   • Programmatic dashboard generation
   • Extract widget configurations for reuse`,
-	Args:  cobra.ExactArgs(1),
-	RunE:  runDashboardsGet,
+	Args: cobra.ExactArgs(1),
+	RunE: runDashboardsGet,
 }
 
 var dashboardsDeleteCmd = &cobra.Command{

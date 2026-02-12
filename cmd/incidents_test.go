@@ -82,9 +82,9 @@ func TestRunIncidentsGet(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name        string
-		incidentID  string
-		wantErr     bool
+		name       string
+		incidentID string
+		wantErr    bool
 	}{
 		{
 			name:       "with valid incident ID",

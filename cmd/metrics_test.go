@@ -65,19 +65,19 @@ func TestRunMetricsSearch(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		query          string
-		from           string
-		to             string
-		wantErr        bool
+		name            string
+		query           string
+		from            string
+		to              string
+		wantErr         bool
 		wantErrContains string
 	}{
 		{
-			name:           "fails on client creation",
-			query:          "avg:system.cpu.user{*}",
-			from:           "1h",
-			to:             "now",
-			wantErr:        true,
+			name:            "fails on client creation",
+			query:           "avg:system.cpu.user{*}",
+			from:            "1h",
+			to:              "now",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 	}
@@ -110,19 +110,19 @@ func TestRunMetricsQuery(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		query          string
-		from           string
-		to             string
-		wantErr        bool
+		name            string
+		query           string
+		from            string
+		to              string
+		wantErr         bool
 		wantErrContains string
 	}{
 		{
-			name:           "fails on client creation",
-			query:          "avg:system.cpu.user{*}",
-			from:           "1h",
-			to:             "now",
-			wantErr:        true,
+			name:            "fails on client creation",
+			query:           "avg:system.cpu.user{*}",
+			from:            "1h",
+			to:              "now",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 	}
@@ -474,15 +474,15 @@ func TestRunMetricsMetadataGet(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		metricName     string
-		wantErr        bool
+		name            string
+		metricName      string
+		wantErr         bool
 		wantErrContains string
 	}{
 		{
-			name:           "fails on client creation",
-			metricName:     "system.cpu.user",
-			wantErr:        true,
+			name:            "fails on client creation",
+			metricName:      "system.cpu.user",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 	}
@@ -511,39 +511,39 @@ func TestRunMetricsMetadataUpdate(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		metricName     string
-		description    string
-		unit           string
-		metricType     string
-		wantErr        bool
+		name            string
+		metricName      string
+		description     string
+		unit            string
+		metricType      string
+		wantErr         bool
 		wantErrContains string
 	}{
 		{
-			name:           "update description",
-			metricName:     "system.cpu.user",
-			description:    "CPU user time",
-			unit:           "",
-			metricType:     "",
-			wantErr:        true,
+			name:            "update description",
+			metricName:      "system.cpu.user",
+			description:     "CPU user time",
+			unit:            "",
+			metricType:      "",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 		{
-			name:           "update multiple fields",
-			metricName:     "system.cpu.user",
-			description:    "CPU user time",
-			unit:           "percent",
-			metricType:     "gauge",
-			wantErr:        true,
+			name:            "update multiple fields",
+			metricName:      "system.cpu.user",
+			description:     "CPU user time",
+			unit:            "percent",
+			metricType:      "gauge",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 		{
-			name:           "no fields specified hits client error first",
-			metricName:     "system.cpu.user",
-			description:    "",
-			unit:           "",
-			metricType:     "",
-			wantErr:        true,
+			name:            "no fields specified hits client error first",
+			metricName:      "system.cpu.user",
+			description:     "",
+			unit:            "",
+			metricType:      "",
+			wantErr:         true,
 			wantErrContains: "mock client",
 		},
 	}

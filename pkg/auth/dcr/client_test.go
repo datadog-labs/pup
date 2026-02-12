@@ -30,6 +30,7 @@ func (m *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 	if client == nil {
 		t.Fatal("NewClient() returned nil")
@@ -45,6 +46,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestGetRedirectURIs(t *testing.T) {
+	t.Parallel()
 	uris := GetRedirectURIs()
 
 	expectedURIs := []string{
@@ -66,6 +68,7 @@ func TestGetRedirectURIs(t *testing.T) {
 }
 
 func TestClient_Register_Success(t *testing.T) {
+	t.Parallel()
 	// Create mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
@@ -142,6 +145,7 @@ func TestClient_Register_Success(t *testing.T) {
 }
 
 func TestClient_Register_HTTPError(t *testing.T) {
+	t.Parallel()
 	// Create mock server that returns error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -164,6 +168,7 @@ func TestClient_Register_HTTPError(t *testing.T) {
 }
 
 func TestClient_Register_OAuthError(t *testing.T) {
+	t.Parallel()
 	// Create mock server that returns OAuth error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		oauthErr := types.OAuthError{
@@ -190,6 +195,7 @@ func TestClient_Register_OAuthError(t *testing.T) {
 }
 
 func TestClient_ExchangeCode_Success(t *testing.T) {
+	t.Parallel()
 	// Create mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
@@ -275,6 +281,7 @@ func TestClient_ExchangeCode_Success(t *testing.T) {
 }
 
 func TestClient_ExchangeCode_Error(t *testing.T) {
+	t.Parallel()
 	// Create mock server that returns error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		oauthErr := types.OAuthError{
@@ -306,6 +313,7 @@ func TestClient_ExchangeCode_Error(t *testing.T) {
 }
 
 func TestClient_RefreshToken_Success(t *testing.T) {
+	t.Parallel()
 	// Create mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method
@@ -375,6 +383,7 @@ func TestClient_RefreshToken_Success(t *testing.T) {
 }
 
 func TestClient_RefreshToken_Error(t *testing.T) {
+	t.Parallel()
 	// Create mock server that returns error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		oauthErr := types.OAuthError{
@@ -406,6 +415,7 @@ func TestClient_RefreshToken_Error(t *testing.T) {
 }
 
 func TestClient_RequestTokens_NetworkError(t *testing.T) {
+	t.Parallel()
 	// Create client with invalid URL to simulate network error
 	client := NewClient("invalid.example.com")
 
@@ -421,6 +431,7 @@ func TestClient_RequestTokens_NetworkError(t *testing.T) {
 }
 
 func TestClient_RequestTokens_InvalidJSON(t *testing.T) {
+	t.Parallel()
 	// Create mock server that returns invalid JSON
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

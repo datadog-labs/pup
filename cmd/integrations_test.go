@@ -138,10 +138,10 @@ func TestIntegrationsWebhooksCmd(t *testing.T) {
 
 func TestIntegrationsCmd_CommandHierarchy(t *testing.T) {
 	tests := []struct {
-		name           string
-		parentCmd      *cobra.Command
-		parentUse      string
-		subcommandUse  string
+		name          string
+		parentCmd     *cobra.Command
+		parentUse     string
+		subcommandUse string
 	}{
 		{
 			name:          "Slack subcommand",

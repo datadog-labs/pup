@@ -13,6 +13,7 @@ import (
 )
 
 func TestGeneratePKCEChallenge(t *testing.T) {
+	t.Parallel()
 	challenge, err := GeneratePKCEChallenge()
 	if err != nil {
 		t.Fatalf("GeneratePKCEChallenge() error = %v", err)
@@ -55,6 +56,7 @@ func TestGeneratePKCEChallenge(t *testing.T) {
 }
 
 func TestGeneratePKCEChallenge_Uniqueness(t *testing.T) {
+	t.Parallel()
 	// Generate multiple challenges and ensure they're unique
 	challenges := make(map[string]bool)
 
@@ -76,6 +78,7 @@ func TestGeneratePKCEChallenge_Uniqueness(t *testing.T) {
 }
 
 func TestGenerateState(t *testing.T) {
+	t.Parallel()
 	state, err := GenerateState()
 	if err != nil {
 		t.Fatalf("GenerateState() error = %v", err)
@@ -94,6 +97,7 @@ func TestGenerateState(t *testing.T) {
 }
 
 func TestGenerateState_Uniqueness(t *testing.T) {
+	t.Parallel()
 	// Generate multiple states and ensure they're unique
 	states := make(map[string]bool)
 
@@ -115,6 +119,7 @@ func TestGenerateState_Uniqueness(t *testing.T) {
 }
 
 func TestPKCEChallenge_RFC7636Compliance(t *testing.T) {
+	t.Parallel()
 	// Test that PKCE implementation complies with RFC 7636
 	challenge, err := GeneratePKCEChallenge()
 	if err != nil {
@@ -147,6 +152,7 @@ func TestPKCEChallenge_RFC7636Compliance(t *testing.T) {
 }
 
 func TestGenerateRandomString(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		length int
@@ -160,6 +166,7 @@ func TestGenerateRandomString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			str, err := generateRandomString(tt.length)
 			if err != nil {
 				t.Fatalf("generateRandomString(%d) error = %v", tt.length, err)

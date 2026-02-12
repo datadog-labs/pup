@@ -16,6 +16,7 @@ import (
 )
 
 func TestFileStorage_TokenOperations(t *testing.T) {
+	t.Parallel()
 	// Create temporary directory for testing
 	tempDir := t.TempDir()
 
@@ -99,6 +100,7 @@ func TestFileStorage_TokenOperations(t *testing.T) {
 }
 
 func TestFileStorage_ClientCredentialOperations(t *testing.T) {
+	t.Parallel()
 	// Create temporary directory for testing
 	tempDir := t.TempDir()
 
@@ -181,6 +183,7 @@ func TestFileStorage_ClientCredentialOperations(t *testing.T) {
 }
 
 func TestFileStorage_GetBackendType(t *testing.T) {
+	t.Parallel()
 	storage := &FileStorage{baseDir: "/tmp"}
 
 	if storage.GetBackendType() != BackendFile {
@@ -189,6 +192,7 @@ func TestFileStorage_GetBackendType(t *testing.T) {
 }
 
 func TestFileStorage_GetStorageLocation(t *testing.T) {
+	t.Parallel()
 	baseDir := "/tmp/test"
 	storage := &FileStorage{baseDir: baseDir}
 
@@ -199,6 +203,7 @@ func TestFileStorage_GetStorageLocation(t *testing.T) {
 }
 
 func TestSanitizeSite(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		input    string
 		expected string
@@ -232,6 +237,7 @@ func TestSanitizeSite(t *testing.T) {
 }
 
 func TestNewFileStorage(t *testing.T) {
+	t.Parallel()
 	storage, err := NewFileStorage()
 	if err != nil {
 		t.Fatalf("NewFileStorage failed: %v", err)
@@ -262,6 +268,7 @@ func TestNewFileStorage(t *testing.T) {
 }
 
 func TestFileStorage_SaveTokens_InvalidJSON(t *testing.T) {
+	t.Parallel()
 	// This test verifies error handling, though JSON marshal rarely fails
 	// for standard types
 	tempDir := t.TempDir()
@@ -282,6 +289,7 @@ func TestFileStorage_SaveTokens_InvalidJSON(t *testing.T) {
 }
 
 func TestFileStorage_LoadTokens_InvalidJSON(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 
@@ -306,6 +314,7 @@ func TestFileStorage_LoadTokens_InvalidJSON(t *testing.T) {
 }
 
 func TestFileStorage_SaveClientCredentials_InvalidJSON(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 
@@ -325,6 +334,7 @@ func TestFileStorage_SaveClientCredentials_InvalidJSON(t *testing.T) {
 }
 
 func TestFileStorage_LoadClientCredentials_InvalidJSON(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 
@@ -349,6 +359,7 @@ func TestFileStorage_LoadClientCredentials_InvalidJSON(t *testing.T) {
 }
 
 func TestFileStorage_DeleteTokens_AlreadyDeleted(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 
@@ -368,6 +379,7 @@ func TestFileStorage_DeleteTokens_AlreadyDeleted(t *testing.T) {
 }
 
 func TestFileStorage_DeleteClientCredentials_AlreadyDeleted(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 
@@ -387,6 +399,7 @@ func TestFileStorage_DeleteClientCredentials_AlreadyDeleted(t *testing.T) {
 }
 
 func TestFileStorage_MultipleOperations(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	storage := &FileStorage{baseDir: tempDir}
 

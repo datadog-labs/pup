@@ -138,10 +138,10 @@ func TestCloudAzureCmd(t *testing.T) {
 
 func TestCloudCmd_CommandHierarchy(t *testing.T) {
 	tests := []struct {
-		name           string
-		parentCmd      *cobra.Command
-		parentUse      string
-		subcommandUse  string
+		name          string
+		parentCmd     *cobra.Command
+		parentUse     string
+		subcommandUse string
 	}{
 		{
 			name:          "AWS subcommand",

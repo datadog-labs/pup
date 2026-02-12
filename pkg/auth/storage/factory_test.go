@@ -11,6 +11,7 @@ import (
 )
 
 func TestGetStorage(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name              string
 		envValue          string
@@ -88,6 +89,7 @@ func TestGetStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			// Reset storage state
 			ResetStorage()
 
@@ -147,6 +149,7 @@ func TestGetStorage(t *testing.T) {
 }
 
 func TestGetActiveBackend(t *testing.T) {
+	t.Parallel()
 	// Reset storage state
 	ResetStorage()
 
@@ -171,6 +174,7 @@ func TestGetActiveBackend(t *testing.T) {
 }
 
 func TestIsUsingSecureStorage(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		backend  BackendType
@@ -190,6 +194,7 @@ func TestIsUsingSecureStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ResetStorage()
 
 			// Force the backend type we want to test
@@ -215,6 +220,7 @@ func TestIsUsingSecureStorage(t *testing.T) {
 }
 
 func TestGetStorageDescription(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Force file backend
@@ -240,6 +246,7 @@ func TestGetStorageDescription(t *testing.T) {
 }
 
 func TestResetStorage(t *testing.T) {
+	t.Parallel()
 	// Get storage to initialize state
 	_, err := GetStorage(&StorageOptions{ForceBackend: BackendFile})
 	if err != nil {
@@ -261,6 +268,7 @@ func TestResetStorage(t *testing.T) {
 }
 
 func TestGetStorageDescription_Keychain(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -287,6 +295,7 @@ func TestGetStorageDescription_Keychain(t *testing.T) {
 }
 
 func TestGetStorageDescription_File(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Force file backend
@@ -308,6 +317,7 @@ func TestGetStorageDescription_File(t *testing.T) {
 }
 
 func TestDetectBackend_AutoFallback(t *testing.T) {
+	t.Parallel()
 	// This tests the auto-detect fallback warning path
 	ResetStorage()
 
@@ -328,6 +338,7 @@ func TestDetectBackend_AutoFallback(t *testing.T) {
 }
 
 func TestDetectBackend_InvalidEnvValue(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Set invalid environment value
@@ -345,6 +356,7 @@ func TestDetectBackend_InvalidEnvValue(t *testing.T) {
 }
 
 func TestCreateStorage_UnknownBackend(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Try to create storage with unknown backend
@@ -359,6 +371,7 @@ func TestCreateStorage_UnknownBackend(t *testing.T) {
 }
 
 func TestGetStorage_CachedInstance(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Get storage first time
@@ -380,6 +393,7 @@ func TestGetStorage_CachedInstance(t *testing.T) {
 }
 
 func TestGetStorage_ForceBackendOverridesCache(t *testing.T) {
+	t.Parallel()
 	ResetStorage()
 
 	// Get file storage first

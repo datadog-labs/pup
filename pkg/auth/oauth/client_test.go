@@ -13,6 +13,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 	if client == nil {
 		t.Fatal("NewClient() returned nil")
@@ -20,6 +21,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClient_BuildAuthorizationURL(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 
 	challenge := &PKCEChallenge{
@@ -69,6 +71,7 @@ func TestClient_BuildAuthorizationURL(t *testing.T) {
 }
 
 func TestClient_BuildAuthorizationURL_DifferentSites(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		site         string
@@ -98,6 +101,7 @@ func TestClient_BuildAuthorizationURL_DifferentSites(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			client := NewClient(tt.site)
 			challenge := &PKCEChallenge{
 				Challenge: "test",
@@ -120,6 +124,7 @@ func TestClient_BuildAuthorizationURL_DifferentSites(t *testing.T) {
 }
 
 func TestClient_BuildAuthorizationURL_WithDefaultScopes(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 	challenge := &PKCEChallenge{
 		Challenge: "test-challenge",
@@ -141,6 +146,7 @@ func TestClient_BuildAuthorizationURL_WithDefaultScopes(t *testing.T) {
 }
 
 func TestClient_ValidateCallback(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 
 	tests := []struct {
@@ -186,6 +192,7 @@ func TestClient_ValidateCallback(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			err := client.ValidateCallback(tt.code, tt.state, tt.expectedState)
 
 			if tt.wantError {
@@ -206,6 +213,7 @@ func TestClient_ValidateCallback(t *testing.T) {
 }
 
 func TestClient_ParseCallbackError(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 
 	tests := []struct {
@@ -246,6 +254,7 @@ func TestClient_ParseCallbackError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			err := client.ParseCallbackError(tt.errorCode, tt.errorDescription)
 
 			if tt.wantError {
@@ -266,6 +275,7 @@ func TestClient_ParseCallbackError(t *testing.T) {
 }
 
 func TestClient_GetAuthConfig(t *testing.T) {
+	t.Parallel()
 	client := NewClient("datadoghq.com")
 
 	tests := []struct {
@@ -292,6 +302,7 @@ func TestClient_GetAuthConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			config := client.GetAuthConfig(tt.scopes)
 
 			if config == nil {

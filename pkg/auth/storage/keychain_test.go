@@ -16,6 +16,7 @@ import (
 )
 
 func TestKeychainStorage_GetBackendType(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -32,6 +33,7 @@ func TestKeychainStorage_GetBackendType(t *testing.T) {
 }
 
 func TestKeychainStorage_GetStorageLocation(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -65,6 +67,7 @@ func TestKeychainStorage_GetStorageLocation(t *testing.T) {
 }
 
 func TestKeychainStorage_TokenOperations(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -148,6 +151,7 @@ func TestKeychainStorage_TokenOperations(t *testing.T) {
 }
 
 func TestKeychainStorage_ClientCredentialOperations(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -230,6 +234,7 @@ func TestKeychainStorage_ClientCredentialOperations(t *testing.T) {
 }
 
 func TestIsKeychainAvailable(t *testing.T) {
+	t.Parallel()
 	// Just test that the function doesn't panic
 	available := IsKeychainAvailable()
 
@@ -243,6 +248,7 @@ func TestIsKeychainAvailable(t *testing.T) {
 }
 
 func TestNewKeychainStorage_Success(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -267,6 +273,7 @@ func TestNewKeychainStorage_Success(t *testing.T) {
 }
 
 func TestKeychainStorage_SaveTokens_MarshalError(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -295,6 +302,7 @@ func TestKeychainStorage_SaveTokens_MarshalError(t *testing.T) {
 }
 
 func TestKeychainStorage_LoadTokens_UnmarshalError(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -332,6 +340,7 @@ func TestKeychainStorage_LoadTokens_UnmarshalError(t *testing.T) {
 }
 
 func TestKeychainStorage_SaveClientCredentials_MarshalError(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -361,6 +370,7 @@ func TestKeychainStorage_SaveClientCredentials_MarshalError(t *testing.T) {
 }
 
 func TestKeychainStorage_LoadClientCredentials_UnmarshalError(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -398,6 +408,7 @@ func TestKeychainStorage_LoadClientCredentials_UnmarshalError(t *testing.T) {
 }
 
 func TestKeychainStorage_MultipleOperations(t *testing.T) {
+	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")

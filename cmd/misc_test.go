@@ -92,12 +92,12 @@ func TestMiscStatusCmd(t *testing.T) {
 
 func TestMiscCmd_CommandStructure(t *testing.T) {
 	tests := []struct {
-		name        string
-		cmd         *cobra.Command
-		wantUse     string
-		wantShort   bool
-		wantRunE    bool
-		wantArgs    bool
+		name      string
+		cmd       *cobra.Command
+		wantUse   string
+		wantShort bool
+		wantRunE  bool
+		wantArgs  bool
 	}{
 		{
 			name:      "ip-ranges command",

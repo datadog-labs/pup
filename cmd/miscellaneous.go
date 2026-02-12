@@ -76,7 +76,7 @@ func runMiscIPRanges(cmd *cobra.Command, args []string) error {
 
 func runMiscStatus(cmd *cobra.Command, args []string) error {
 	result := map[string]interface{}{
-		"status": "ok",
+		"status":  "ok",
 		"message": "API is operational",
 	}
 

@@ -959,4 +959,3 @@ func runMetricsTagsList(cmd *cobra.Command, args []string) error {
 	// NOTE: ListTagsByMetricName is not available in datadog-api-client-go v2.30.0
 	return fmt.Errorf("listing tags by metric name is not supported in the current API client version")
 }
-

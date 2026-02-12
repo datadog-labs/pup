@@ -205,8 +205,8 @@ func TestFormatAPIError_AllStatusCodes(t *testing.T) {
 		{502, true, "Datadog API is experiencing issues"},
 		{503, true, "Datadog API is experiencing issues"},
 		{504, true, "Datadog API is experiencing issues"},
-		{200, false, ""},  // Should just show basic error
-		{201, false, ""},  // Should just show basic error
+		{200, false, ""},               // Should just show basic error
+		{201, false, ""},               // Should just show basic error
 		{418, true, "Invalid request"}, // Other 4xx
 	}
 

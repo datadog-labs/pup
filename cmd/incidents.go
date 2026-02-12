@@ -133,7 +133,7 @@ FILTERING:
 
 SORTING:
   Incidents are returned sorted by creation time (most recent first).`,
-	RunE:  runIncidentsList,
+	RunE: runIncidentsList,
 }
 
 var incidentsGetCmd = &cobra.Command{

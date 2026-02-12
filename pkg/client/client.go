@@ -156,4 +156,3 @@ func (c *Client) RawRequest(method, path string, body io.Reader) (*http.Response
 
 	return resp, nil
 }
-

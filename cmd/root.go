@@ -35,7 +35,7 @@ var (
 	autoApprove  bool
 
 	// Dependency injection points for testing
-	clientFactory = defaultClientFactory
+	clientFactory           = defaultClientFactory
 	outputWriter  io.Writer = os.Stdout
 	inputReader   io.Reader = os.Stdin
 )

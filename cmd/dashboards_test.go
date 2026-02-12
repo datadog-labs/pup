@@ -109,9 +109,9 @@ func TestRunDashboardsGet(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name         string
-		dashboardID  string
-		wantErr      bool
+		name        string
+		dashboardID string
+		wantErr     bool
 	}{
 		{
 			name:        "with valid dashboard ID",
