@@ -120,7 +120,7 @@ jobs:
           DD_SITE: datadoghq.com
         run: |
           # Upload coverage reports to Datadog
-          datadog-ci coverage upload --format=go-cover coverage.out
+          datadog-ci coverage upload --format=go-coverprofile coverage.out
 
       - name: Check coverage threshold
         run: |
