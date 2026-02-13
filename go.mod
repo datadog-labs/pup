@@ -7,7 +7,7 @@ require (
 	github.com/DataDog/datadog-api-client-go/v2 v2.54.0
 	github.com/olekukonko/tablewriter v1.1.3
 	github.com/spf13/cobra v1.10.2
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
