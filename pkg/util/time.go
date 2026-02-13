@@ -89,11 +89,14 @@ func ParseTimeToUnix(timeStr string) (int64, error) {
 	return t.Unix(), nil
 }
 
-// ParseTimeToUnixMilli parses time string and returns Unix timestamp in milliseconds
+// ParseTimeToUnixMilli parses time string and returns Unix timestamp in milliseconds.
+// Uses Unix()*1000 instead of UnixMilli() to produce second-aligned timestamps.
+// time.Now() and duration arithmetic produce nanosecond precision, and UnixMilli()
+// preserves the sub-second component which some Datadog APIs reject or misinterpret.
 func ParseTimeToUnixMilli(timeStr string) (int64, error) {
 	t, err := ParseTimeParam(timeStr)
 	if err != nil {
 		return 0, err
 	}
-	return t.UnixMilli(), nil
+	return t.Unix() * 1000, nil
 }

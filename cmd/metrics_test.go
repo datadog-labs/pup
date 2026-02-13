@@ -824,3 +824,79 @@ func TestParseTimeParam_NowKeyword(t *testing.T) {
 		t.Errorf("util.ParseTimeParam(\"now\") = %v, too far from current time %v (diff: %v)", result, now, diff)
 	}
 }
+
+// TestV2TimeseriesTimestampConversion verifies that ParseTimeToUnixMilli
+// produces second-aligned millisecond timestamps suitable for Datadog APIs.
+func TestV2TimeseriesTimestampConversion(t *testing.T) {
+	tests := []struct {
+		name    string
+		timeStr string
+	}{
+		{"now keyword", "now"},
+		{"relative 1 hour", "1h"},
+		{"relative 30 minutes", "30m"},
+		{"relative 7 days", "7d"},
+		{"unix timestamp", "1700000000"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			msTimestamp, err := util.ParseTimeToUnixMilli(tt.timeStr)
+			if err != nil {
+				t.Fatalf("ParseTimeToUnixMilli(%q) unexpected error: %v", tt.timeStr, err)
+			}
+
+			if msTimestamp <= 0 {
+				t.Errorf("expected positive millisecond timestamp, got %d", msTimestamp)
+			}
+
+			// Must be on a second boundary (divisible by 1000)
+			if msTimestamp%1000 != 0 {
+				t.Errorf("timestamp %d is not on a second boundary (remainder: %d)", msTimestamp, msTimestamp%1000)
+			}
+
+			// Verify round-trip: converting back should produce a valid second
+			roundTripped := time.Unix(msTimestamp/1000, 0)
+			if roundTripped.Unix() != msTimestamp/1000 {
+				t.Errorf("round-trip failed: expected Unix=%d, got Unix=%d",
+					msTimestamp/1000, roundTripped.Unix())
+			}
+		})
+	}
+}
+
+// TestV2TimestampUnixMilliVsUnixTimes1000 demonstrates the difference between
+// UnixMilli() and Unix()*1000 when a time.Time has sub-second precision.
+// parseTimeParam("now") calls time.Now() which includes nanosecond precision,
+// and relative times are computed via time.Duration arithmetic that also
+// preserves nanosecond precision.
+func TestV2TimestampUnixMilliVsUnixTimes1000(t *testing.T) {
+	// Construct a time with known sub-second precision
+	// 2024-01-15 12:00:00.123456789 UTC
+	ts := time.Date(2024, 1, 15, 12, 0, 0, 123456789, time.UTC)
+
+	unixMilli := ts.UnixMilli()       // Includes millisecond component: ...123
+	unixTimes1000 := ts.Unix() * 1000 // Truncated to second boundary: ...000
+
+	// UnixMilli includes the sub-second milliseconds
+	if unixMilli%1000 == 0 {
+		t.Error("expected UnixMilli() to have sub-second component for a time with nanoseconds")
+	}
+
+	// Unix()*1000 is always on a second boundary
+	if unixTimes1000%1000 != 0 {
+		t.Errorf("expected Unix()*1000 to be on second boundary, got remainder %d", unixTimes1000%1000)
+	}
+
+	// The difference should be exactly the millisecond component (123ms)
+	diff := unixMilli - unixTimes1000
+	if diff != 123 {
+		t.Errorf("expected difference of 123ms, got %d", diff)
+	}
+
+	// Both should represent approximately the same point in time
+	// (within 1 second)
+	if diff < 0 || diff >= 1000 {
+		t.Errorf("timestamps diverged by more than 1 second: diff=%dms", diff)
+	}
+}

@@ -533,13 +533,13 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Parse time ranges
-	from, err := util.ParseTimeParam(fromTime)
+	// Parse time ranges as second-aligned millisecond timestamps
+	fromMs, err := util.ParseTimeToUnixMilli(fromTime)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
 	}
 
-	to, err := util.ParseTimeParam(toTime)
+	toMs, err := util.ParseTimeToUnixMilli(toTime)
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
@@ -560,8 +560,8 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 						Name:       datadog.PtrString("a"),
 					},
 				}},
-				From: from.UTC().UnixMilli(),
-				To:   to.UTC().UnixMilli(),
+				From: fromMs,
+				To:   toMs,
 			},
 			Type: datadogV2.TIMESERIESFORMULAREQUESTTYPE_TIMESERIES_REQUEST,
 		},
@@ -572,11 +572,11 @@ func runMetricsQuery(cmd *cobra.Command, args []string) error {
 		if r != nil {
 			apiBody := extractAPIErrorBody(err)
 			if apiBody != "" {
-				return fmt.Errorf("failed to query metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s (Unix: %d)\n- To: %s (Unix: %d)\n\nTroubleshooting:\n- Verify your query syntax is correct (e.g., avg:metric.name{filter})\n- Check that the time range is valid\n- Ensure the metric exists and has data in the specified time range\n- Confirm you have proper permissions to access the metric",
+				return fmt.Errorf("failed to query metrics: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %d\n- To: %d\n\nTroubleshooting:\n- Verify your query syntax is correct (e.g., avg:metric.name{filter})\n- Check that the time range is valid\n- Ensure the metric exists and has data in the specified time range\n- Confirm you have proper permissions to access the metric",
 					err, r.StatusCode, apiBody,
 					queryString,
-					from.Format(time.RFC3339), from.Unix(),
-					to.Format(time.RFC3339), to.Unix())
+					fromMs,
+					toMs)
 			}
 			return fmt.Errorf("failed to query metrics: %w (status: %d)", err, r.StatusCode)
 		}
