@@ -80,14 +80,17 @@ jobs:
           if [ -n "$DD_API_KEY" ]; then
             echo "Running tests with Datadog CI Visibility enabled"
             orchestrion go test -v -race -parallel 256 ./...
-            # Calculate coverage with orchestrion instrumentation
-            # Use -count=1 to disable test caching and get accurate coverage
-            orchestrion go test -count=1 -parallel 256 -coverprofile=coverage.out -covermode=atomic ./pkg/...
           else
             echo "Running tests without Datadog CI Visibility (DD_API_KEY not set)"
             go test -v -race ./...
-            go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
           fi
+
+          # Coverage collection: run WITHOUT orchestrion/ITR to ensure ALL tests execute.
+          # Intelligent Test Runner skips tests it deems unaffected by code changes,
+          # which breaks coverage on dependency-only PRs (e.g., go.mod updates).
+          # GOFLAGS is cleared to remove the '-toolexec=orchestrion toolexec' injected
+          # by test-visibility-github-action.
+          GOFLAGS="" go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
 
           # Generate HTML coverage report
           go tool cover -html=coverage.out -o coverage.html
