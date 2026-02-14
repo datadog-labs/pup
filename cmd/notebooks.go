@@ -56,6 +56,12 @@ var notebooksGetCmd = &cobra.Command{
 	RunE:  runNotebooksGet,
 }
 
+var notebooksCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new notebook",
+	RunE:  runNotebooksCreate,
+}
+
 var notebooksDeleteCmd = &cobra.Command{
 	Use:   "delete [notebook-id]",
 	Short: "Delete a notebook",
@@ -64,7 +70,12 @@ var notebooksDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksDeleteCmd)
+	notebooksCreateCmd.Flags().String("body", "", "JSON body (@filepath or - for stdin) (required)")
+	if err := notebooksCreateCmd.MarkFlagRequired("body"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+
+	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksCreateCmd, notebooksDeleteCmd)
 }
 
 // readBody reads JSON body content from a file (@path) or stdin (-).
@@ -93,6 +104,40 @@ func readBody(value string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func runNotebooksCreate(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	bodyFlag, _ := cmd.Flags().GetString("body")
+	data, err := readBody(bodyFlag)
+	if err != nil {
+		return err
+	}
+
+	var body datadogV1.NotebookCreateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse notebook create request: %w", err)
+	}
+
+	api := datadogV1.NewNotebooksApi(client.V1())
+	resp, r, err := api.CreateNotebook(client.Context(), body)
+	if err != nil {
+		if r != nil {
+			return fmt.Errorf("failed to create notebook: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to create notebook: %w", err)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runNotebooksList(cmd *cobra.Command, args []string) error {
