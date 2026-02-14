@@ -64,6 +64,13 @@ var endpointsWithoutOAuth = []EndpointAuthRequirement{
 	// Error Tracking API - OAuth not working in practice
 	{Path: "/api/v2/error_tracking/issues/search", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
 	{Path: "/api/v2/error_tracking/issues/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
+
+	// Notebooks API (V1) - missing OAuth scopes in spec
+	{Path: "/api/v1/notebooks", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
+	{Path: "/api/v1/notebooks", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
+	{Path: "/api/v1/notebooks/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
+	{Path: "/api/v1/notebooks/", Method: "PUT", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
+	{Path: "/api/v1/notebooks/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
 }
 
 // AuthType represents the type of authentication being used

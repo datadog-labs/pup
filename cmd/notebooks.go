@@ -119,7 +119,7 @@ func readBody(value string) ([]byte, error) {
 }
 
 func runNotebooksCreate(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("POST", "/api/v1/notebooks")
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func runNotebooksCreate(cmd *cobra.Command, args []string) error {
 }
 
 func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("PUT", "/api/v1/notebooks/")
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
 }
 
 func runNotebooksList(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("GET", "/api/v1/notebooks")
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func runNotebooksList(cmd *cobra.Command, args []string) error {
 }
 
 func runNotebooksGet(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("GET", "/api/v1/notebooks/")
 	if err != nil {
 		return err
 	}
@@ -236,7 +236,7 @@ func runNotebooksGet(cmd *cobra.Command, args []string) error {
 }
 
 func runNotebooksDelete(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("DELETE", "/api/v1/notebooks/")
 	if err != nil {
 		return err
 	}
