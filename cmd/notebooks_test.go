@@ -7,10 +7,16 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/DataDog/pup/pkg/client"
+	"github.com/DataDog/pup/pkg/config"
 )
 
 func TestNotebooksCmd(t *testing.T) {
@@ -32,7 +38,7 @@ func TestNotebooksCmd(t *testing.T) {
 }
 
 func TestNotebooksCmd_Subcommands(t *testing.T) {
-	expectedCommands := []string{"list", "get", "create", "update", "delete"}
+	expectedCommands := []string{"list", "get", "create", "update", "delete", "cells"}
 
 	commands := notebooksCmd.Commands()
 
@@ -264,5 +270,303 @@ func TestNotebooksCmd_ParentChild(t *testing.T) {
 		if cmd.Parent() != notebooksCmd {
 			t.Errorf("Command %s parent is not notebooksCmd", cmd.Use)
 		}
+	}
+}
+
+func setupNotebooksTestClient(t *testing.T) func() {
+	t.Helper()
+
+	origClient := ddClient
+	origCfg := cfg
+	origFactory := clientFactory
+	origAPIKeyFactory := apiKeyClientFactory
+
+	cfg = &config.Config{
+		Site:        "datadoghq.com",
+		APIKey:      "test-api-key-12345678",
+		AppKey:      "test-app-key-12345678",
+		AutoApprove: false,
+	}
+
+	clientFactory = func(c *config.Config) (*client.Client, error) {
+		return nil, fmt.Errorf("mock client: no real API connection in tests")
+	}
+
+	apiKeyClientFactory = func(c *config.Config) (*client.Client, error) {
+		return nil, fmt.Errorf("mock api-key client: no real API connection in tests")
+	}
+
+	ddClient = nil
+
+	return func() {
+		ddClient = origClient
+		cfg = origCfg
+		clientFactory = origFactory
+		apiKeyClientFactory = origAPIKeyFactory
+	}
+}
+
+func TestNotebooksCellsCmd(t *testing.T) {
+	if notebooksCellsCmd == nil {
+		t.Fatal("notebooksCellsCmd is nil")
+	}
+
+	if notebooksCellsCmd.Use != "cells" {
+		t.Errorf("Use = %s, want cells", notebooksCellsCmd.Use)
+	}
+
+	commands := notebooksCellsCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Name()] = true
+	}
+	if !commandMap["append"] {
+		t.Error("Missing subcommand: append")
+	}
+}
+
+func TestNotebooksCellsAppendCmd(t *testing.T) {
+	if notebooksCellsAppendCmd == nil {
+		t.Fatal("notebooksCellsAppendCmd is nil")
+	}
+
+	if notebooksCellsAppendCmd.Use != "append [notebook-id]" {
+		t.Errorf("Use = %s, want 'append [notebook-id]'", notebooksCellsAppendCmd.Use)
+	}
+
+	if notebooksCellsAppendCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if notebooksCellsAppendCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+
+	if notebooksCellsAppendCmd.Args == nil {
+		t.Error("Args validator is nil")
+	}
+
+	flags := notebooksCellsAppendCmd.Flags()
+	if flags.Lookup("body") == nil {
+		t.Error("Missing --body flag")
+	}
+}
+
+func TestNotebooksCellsAppendCmd_BodyRequired(t *testing.T) {
+	if err := notebooksCellsAppendCmd.ValidateRequiredFlags(); err == nil {
+		t.Error("expected --body to be required")
+	}
+}
+
+func TestRunNotebooksCellsAppend(t *testing.T) {
+	cleanup := setupNotebooksTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name        string
+		args        []string
+		body        string
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "valid markdown cell fails on client creation",
+			args:        []string{"12345"},
+			body:        `{"cells":[{"type":"markdown","data":"# Hello"}]}`,
+			wantErr:     true,
+			errContains: "no real API connection in tests",
+		},
+		{
+			name:        "valid metric cell fails on client creation",
+			args:        []string{"12345"},
+			body:        `{"cells":[{"type":"metric","data":"avg:system.cpu.user{*}","title":"CPU"}]}`,
+			wantErr:     true,
+			errContains: "no real API connection in tests",
+		},
+		{
+			name:        "valid logs cell fails on client creation",
+			args:        []string{"12345"},
+			body:        `{"cells":[{"type":"logs","data":"service:api","title":"API Logs"}]}`,
+			wantErr:     true,
+			errContains: "no real API connection in tests",
+		},
+		{
+			name:        "empty cells",
+			args:        []string{"12345"},
+			body:        `{"cells":[]}`,
+			wantErr:     true,
+			errContains: "no cells provided",
+		},
+		{
+			name:        "unknown cell type",
+			args:        []string{"12345"},
+			body:        `{"cells":[{"type":"unknown","data":"test"}]}`,
+			wantErr:     true,
+			errContains: "unknown cell type",
+		},
+		{
+			name:        "multiple cells fails on client creation",
+			args:        []string{"12345"},
+			body:        `{"cells":[{"type":"markdown","data":"# Title"},{"type":"metric","data":"avg:system.cpu.user{*}"}]}`,
+			wantErr:     true,
+			errContains: "no real API connection in tests",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			origReader := inputReader
+			inputReader = strings.NewReader(tt.body)
+			defer func() { inputReader = origReader }()
+
+			cmd := notebooksCellsAppendCmd
+			cmd.Flags().Set("body", "-")
+
+			err := runNotebooksCellsAppend(cmd, tt.args)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runNotebooksCellsAppend() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.errContains != "" && err != nil && !strings.Contains(err.Error(), tt.errContains) {
+				t.Errorf("error = %v, want to contain %q", err, tt.errContains)
+			}
+		})
+	}
+}
+
+func TestRunNotebooksCellsAppend_InvalidJSON(t *testing.T) {
+	cleanup := setupNotebooksTestClient(t)
+	defer cleanup()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	origReader := inputReader
+	inputReader = strings.NewReader("not json")
+	defer func() { inputReader = origReader }()
+
+	cmd := notebooksCellsAppendCmd
+	cmd.Flags().Set("body", "-")
+
+	err := runNotebooksCellsAppend(cmd, []string{"12345"})
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+	if !strings.Contains(err.Error(), "invalid JSON in body") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestBuildCellRequest_Markdown(t *testing.T) {
+	cell := simpleCell{Type: simpleCellMarkdown, Data: "# Hello World"}
+	result, err := buildCellRequest(cell)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.NotebookCellCreateRequest == nil {
+		t.Fatal("expected NotebookCellCreateRequest to be set")
+	}
+	if result.NotebookCellCreateRequest.Attributes.NotebookMarkdownCellAttributes == nil {
+		t.Fatal("expected markdown attributes to be set")
+	}
+	if result.NotebookCellCreateRequest.Attributes.NotebookMarkdownCellAttributes.Definition.Text != "# Hello World" {
+		t.Errorf("text = %q, want '# Hello World'", result.NotebookCellCreateRequest.Attributes.NotebookMarkdownCellAttributes.Definition.Text)
+	}
+}
+
+func TestBuildCellRequest_Metric(t *testing.T) {
+	cell := simpleCell{
+		Type:  simpleCellMetric,
+		Data:  "avg:system.cpu.user{*}",
+		Title: "CPU Usage",
+		Start: "2025-01-01T00:00:00Z",
+		End:   "2025-01-01T01:00:00Z",
+	}
+	result, err := buildCellRequest(cell)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.NotebookCellCreateRequest == nil {
+		t.Fatal("expected NotebookCellCreateRequest to be set")
+	}
+	if result.NotebookCellCreateRequest.Attributes.NotebookTimeseriesCellAttributes == nil {
+		t.Fatal("expected timeseries attributes to be set")
+	}
+
+	// Verify it marshals to valid JSON (can be sent to API)
+	data, err := json.Marshal(result)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+	if !json.Valid(data) {
+		t.Error("marshaled result is not valid JSON")
+	}
+}
+
+func TestBuildCellRequest_Logs(t *testing.T) {
+	cell := simpleCell{
+		Type:  simpleCellLogs,
+		Data:  "service:api status:error",
+		Title: "API Errors",
+	}
+	result, err := buildCellRequest(cell)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.NotebookCellCreateRequest == nil {
+		t.Fatal("expected NotebookCellCreateRequest to be set")
+	}
+	if result.NotebookCellCreateRequest.Attributes.NotebookLogStreamCellAttributes == nil {
+		t.Fatal("expected log stream attributes to be set")
+	}
+}
+
+func TestBuildCellRequest_LogsDefaultTitle(t *testing.T) {
+	cell := simpleCell{Type: simpleCellLogs, Data: "service:api"}
+	result, err := buildCellRequest(cell)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	title := result.NotebookCellCreateRequest.Attributes.NotebookLogStreamCellAttributes.Definition.Title
+	if title == nil || *title != "logs" {
+		t.Errorf("default title = %v, want 'logs'", title)
+	}
+}
+
+func TestBuildCellRequest_UnknownType(t *testing.T) {
+	cell := simpleCell{Type: "invalid", Data: "test"}
+	_, err := buildCellRequest(cell)
+	if err == nil {
+		t.Fatal("expected error for unknown cell type")
+	}
+	if !strings.Contains(err.Error(), "unknown cell type") {
+		t.Errorf("error = %v, want to contain 'unknown cell type'", err)
+	}
+}
+
+func TestParseCellTimes_Defaults(t *testing.T) {
+	start, end := parseCellTimes("", "")
+	if end.Before(start) {
+		t.Error("end should not be before start")
+	}
+	diff := end.Sub(start)
+	if diff < 59*time.Minute || diff > 61*time.Minute {
+		t.Errorf("default time range = %v, want ~1h", diff)
+	}
+}
+
+func TestParseCellTimes_Custom(t *testing.T) {
+	start, end := parseCellTimes("2025-01-01T00:00:00Z", "2025-01-01T02:00:00Z")
+	if start.Year() != 2025 || start.Month() != 1 || start.Day() != 1 {
+		t.Errorf("start = %v, want 2025-01-01", start)
+	}
+	if end.Sub(start) != 2*time.Hour {
+		t.Errorf("duration = %v, want 2h", end.Sub(start))
 	}
 }

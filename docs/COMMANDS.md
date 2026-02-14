@@ -40,7 +40,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | infrastructure | hosts (list, get) | cmd/infrastructure.go | ✅ |
 | synthetics | tests, locations | cmd/synthetics.go | ✅ |
 | users | list, get, roles | cmd/users.go | ✅ |
-| notebooks | list, get, delete | cmd/notebooks.go | ✅ |
+| notebooks | list, get, create, update, delete, cells (append) | cmd/notebooks.go | ✅ |
 | security | rules, signals, findings (search) | cmd/security.go | ✅ |
 | organizations | get, list | cmd/organizations.go | ✅ |
 | service-catalog | list, get | cmd/service_catalog.go | ✅ |
@@ -117,7 +117,7 @@ pup infrastructure hosts list
 - **dashboards** - Dashboard management (list, get, delete, url)
 - **slos** - Service Level Objectives (list, get, create, update, delete)
 - **synthetics** - Synthetic monitoring (tests, locations)
-- **notebooks** - Investigation notebooks (list, get, delete)
+- **notebooks** - Investigation notebooks (list, get, create, update, delete, cells append)
 - **downtime** - Monitor downtime (list, get, cancel)
 
 ### Infrastructure & Performance
