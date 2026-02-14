@@ -62,6 +62,13 @@ var notebooksCreateCmd = &cobra.Command{
 	RunE:  runNotebooksCreate,
 }
 
+var notebooksUpdateCmd = &cobra.Command{
+	Use:   "update [notebook-id]",
+	Short: "Update a notebook",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runNotebooksUpdate,
+}
+
 var notebooksDeleteCmd = &cobra.Command{
 	Use:   "delete [notebook-id]",
 	Short: "Delete a notebook",
@@ -75,7 +82,12 @@ func init() {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
 
-	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksCreateCmd, notebooksDeleteCmd)
+	notebooksUpdateCmd.Flags().String("body", "", "JSON body (@filepath or - for stdin) (required)")
+	if err := notebooksUpdateCmd.MarkFlagRequired("body"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+
+	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksCreateCmd, notebooksUpdateCmd, notebooksDeleteCmd)
 }
 
 // readBody reads JSON body content from a file (@path) or stdin (-).
@@ -130,6 +142,42 @@ func runNotebooksCreate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to create notebook: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to create notebook: %w", err)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
+}
+
+func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	notebookID := parseInt64(args[0])
+
+	bodyFlag, _ := cmd.Flags().GetString("body")
+	data, err := readBody(bodyFlag)
+	if err != nil {
+		return err
+	}
+
+	var body datadogV1.NotebookUpdateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse notebook update request: %w", err)
+	}
+
+	api := datadogV1.NewNotebooksApi(client.V1())
+	resp, r, err := api.UpdateNotebook(client.Context(), notebookID, body)
+	if err != nil {
+		if r != nil {
+			return fmt.Errorf("failed to update notebook: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to update notebook: %w", err)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
