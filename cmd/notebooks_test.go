@@ -187,6 +187,46 @@ func TestReadBody_EmptyValue(t *testing.T) {
 	}
 }
 
+func TestNotebooksCreateCmd(t *testing.T) {
+	if notebooksCreateCmd == nil {
+		t.Fatal("notebooksCreateCmd is nil")
+	}
+
+	if notebooksCreateCmd.Use != "create" {
+		t.Errorf("Use = %s, want create", notebooksCreateCmd.Use)
+	}
+
+	if notebooksCreateCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if notebooksCreateCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+
+	flags := notebooksCreateCmd.Flags()
+	if flags.Lookup("body") == nil {
+		t.Error("Missing --body flag")
+	}
+}
+
+func TestNotebooksCreateCmd_BodyRequired(t *testing.T) {
+	flag := notebooksCreateCmd.Flags().Lookup("body")
+	if flag == nil {
+		t.Fatal("--body flag not found")
+	}
+
+	// Check that the flag annotation marks it as required
+	annotations := notebooksCreateCmd.Flags().Lookup("body").Annotations
+	if _, ok := annotations["cobra_annotation_bash_completion_one_required_flag"]; !ok {
+		// Alternative check: try running without the flag
+		err := notebooksCreateCmd.ValidateRequiredFlags()
+		if err == nil {
+			t.Error("expected --body to be required")
+		}
+	}
+}
+
 func TestNotebooksCmd_ParentChild(t *testing.T) {
 	commands := notebooksCmd.Commands()
 
