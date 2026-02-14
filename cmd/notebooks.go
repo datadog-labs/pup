@@ -40,7 +40,8 @@ EXAMPLES:
   pup notebooks get notebook-id
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication or API keys.`,
+  Requires API key authentication (DD_API_KEY + DD_APP_KEY).
+  OAuth2 is not supported for this endpoint.`,
 }
 
 var notebooksListCmd = &cobra.Command{
@@ -207,7 +208,7 @@ func runNotebooksList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -231,7 +232,7 @@ func runNotebooksGet(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	printOutput("%s\n", output)
 	return nil
 }
 
@@ -243,16 +244,16 @@ func runNotebooksDelete(cmd *cobra.Command, args []string) error {
 
 	notebookID := parseInt64(args[0])
 	if !cfg.AutoApprove {
-		fmt.Printf("⚠️  WARNING: This will permanently delete notebook %d\n", notebookID)
-		fmt.Print("Are you sure you want to continue? (y/N): ")
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
-			// User cancelled or error reading input
-			fmt.Println("\nOperation cancelled")
+		printOutput("⚠️  WARNING: This will permanently delete notebook %d\n", notebookID)
+		printOutput("Are you sure you want to continue? (y/N): ")
+
+		response, err := readConfirmation()
+		if err != nil {
+			printOutput("\nOperation cancelled\n")
 			return nil
 		}
 		if response != "y" && response != "Y" {
-			fmt.Println("Operation cancelled")
+			printOutput("Operation cancelled\n")
 			return nil
 		}
 	}
@@ -266,6 +267,6 @@ func runNotebooksDelete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to delete notebook: %w", err)
 	}
 
-	fmt.Printf("Successfully deleted notebook %d\n", notebookID)
+	printOutput("Successfully deleted notebook %d\n", notebookID)
 	return nil
 }

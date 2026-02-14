@@ -211,19 +211,12 @@ func TestNotebooksCreateCmd(t *testing.T) {
 }
 
 func TestNotebooksCreateCmd_BodyRequired(t *testing.T) {
-	flag := notebooksCreateCmd.Flags().Lookup("body")
-	if flag == nil {
+	if notebooksCreateCmd.Flags().Lookup("body") == nil {
 		t.Fatal("--body flag not found")
 	}
 
-	// Check that the flag annotation marks it as required
-	annotations := notebooksCreateCmd.Flags().Lookup("body").Annotations
-	if _, ok := annotations["cobra_annotation_bash_completion_one_required_flag"]; !ok {
-		// Alternative check: try running without the flag
-		err := notebooksCreateCmd.ValidateRequiredFlags()
-		if err == nil {
-			t.Error("expected --body to be required")
-		}
+	if err := notebooksCreateCmd.ValidateRequiredFlags(); err == nil {
+		t.Error("expected --body to be required")
 	}
 }
 
