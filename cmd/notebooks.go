@@ -39,6 +39,18 @@ EXAMPLES:
   # Get notebook details
   pup notebooks get notebook-id
 
+  # Create a notebook from file
+  pup notebooks create --body @notebook.json
+
+  # Create from stdin
+  cat notebook.json | pup notebooks create --body -
+
+  # Update a notebook
+  pup notebooks update 12345 --body @updated.json
+
+  # Delete a notebook
+  pup notebooks delete 12345
+
 AUTHENTICATION:
   Requires API key authentication (DD_API_KEY + DD_APP_KEY).
   OAuth2 is not supported for this endpoint.`,
@@ -139,10 +151,7 @@ func runNotebooksCreate(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.CreateNotebook(client.Context(), body)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to create notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to create notebook: %w", err)
+		return formatAPIError("create notebook", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -175,10 +184,7 @@ func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.UpdateNotebook(client.Context(), notebookID, body)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to update notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to update notebook: %w", err)
+		return formatAPIError("update notebook", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -198,10 +204,7 @@ func runNotebooksList(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.ListNotebooks(client.Context())
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to list notebooks: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to list notebooks: %w", err)
+		return formatAPIError("list notebooks", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -222,10 +225,7 @@ func runNotebooksGet(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.GetNotebook(client.Context(), notebookID)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to get notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to get notebook: %w", err)
+		return formatAPIError("get notebook", err, r)
 	}
 
 	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
@@ -261,10 +261,7 @@ func runNotebooksDelete(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	r, err := api.DeleteNotebook(client.Context(), notebookID)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to delete notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to delete notebook: %w", err)
+		return formatAPIError("delete notebook", err, r)
 	}
 
 	printOutput("Successfully deleted notebook %d\n", notebookID)

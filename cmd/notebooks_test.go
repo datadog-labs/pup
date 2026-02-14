@@ -220,6 +220,16 @@ func TestNotebooksCreateCmd_BodyRequired(t *testing.T) {
 	}
 }
 
+func TestNotebooksUpdateCmd_BodyRequired(t *testing.T) {
+	if notebooksUpdateCmd.Flags().Lookup("body") == nil {
+		t.Fatal("--body flag not found")
+	}
+
+	if err := notebooksUpdateCmd.ValidateRequiredFlags(); err == nil {
+		t.Error("expected --body to be required")
+	}
+}
+
 func TestNotebooksUpdateCmd(t *testing.T) {
 	if notebooksUpdateCmd == nil {
 		t.Fatal("notebooksUpdateCmd is nil")
