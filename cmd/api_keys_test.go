@@ -157,6 +157,7 @@ func setupTestClient(t *testing.T) func() {
 	origClient := ddClient
 	origCfg := cfg
 	origFactory := clientFactory
+	origAPIKeyFactory := apiKeyClientFactory
 
 	// Create test config
 	cfg = &config.Config{
@@ -166,10 +167,12 @@ func setupTestClient(t *testing.T) func() {
 		AutoApprove: false,
 	}
 
-	// Mock the client factory to return an error immediately
-	clientFactory = func(c *config.Config) (*client.Client, error) {
+	// Mock the client factories to return an error immediately
+	mockErr := func(c *config.Config) (*client.Client, error) {
 		return nil, fmt.Errorf("mock client: no real API connection in tests")
 	}
+	clientFactory = mockErr
+	apiKeyClientFactory = mockErr
 
 	ddClient = nil
 
@@ -178,6 +181,7 @@ func setupTestClient(t *testing.T) func() {
 		ddClient = origClient
 		cfg = origCfg
 		clientFactory = origFactory
+		apiKeyClientFactory = origAPIKeyFactory
 	}
 }
 

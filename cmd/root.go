@@ -28,6 +28,14 @@ func defaultClientFactory(cfg *config.Config) (*client.Client, error) {
 	return client.New(cfg)
 }
 
+// defaultAPIKeyClientFactory forces API key authentication
+func defaultAPIKeyClientFactory(cfg *config.Config) (*client.Client, error) {
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	return client.NewWithAPIKeys(cfg)
+}
+
 var (
 	cfg          *config.Config
 	ddClient     *client.Client
@@ -36,6 +44,7 @@ var (
 
 	// Dependency injection points for testing
 	clientFactory           = defaultClientFactory
+	apiKeyClientFactory     = defaultAPIKeyClientFactory
 	outputWriter  io.Writer = os.Stdout
 	inputReader   io.Reader = os.Stdin
 )
@@ -261,13 +270,8 @@ func getClientForEndpoint(method, path string) (*client.Client, error) {
 			)
 		}
 
-		// Try to use the mocked factory if in test mode (allows test to fail intentionally)
-		// This respects the clientFactory mock in tests
-		c, err := clientFactory(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return c, nil
+		// Force API key authentication for endpoints without OAuth support
+		return apiKeyClientFactory(cfg)
 	}
 
 	// Endpoint supports OAuth, use standard client
