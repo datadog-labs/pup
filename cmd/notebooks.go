@@ -6,7 +6,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/pup/pkg/formatter"
@@ -61,6 +65,34 @@ var notebooksDeleteCmd = &cobra.Command{
 
 func init() {
 	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksDeleteCmd)
+}
+
+// readBody reads JSON body content from a file (@path) or stdin (-).
+func readBody(value string) ([]byte, error) {
+	var data []byte
+	var err error
+
+	switch {
+	case value == "-":
+		data, err = io.ReadAll(inputReader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read body from stdin: %w", err)
+		}
+	case strings.HasPrefix(value, "@"):
+		path := strings.TrimPrefix(value, "@")
+		data, err = os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read body file: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("body must be @filepath or - for stdin")
+	}
+
+	if !json.Valid(data) {
+		return nil, fmt.Errorf("invalid JSON in body")
+	}
+
+	return data, nil
 }
 
 func runNotebooksList(cmd *cobra.Command, args []string) error {
