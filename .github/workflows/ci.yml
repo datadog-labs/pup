@@ -41,12 +41,14 @@ jobs:
           cache: true
 
       - name: Get Datadog credentials
+        if: github.ref == 'refs/heads/main'
         id: dd-sts # Needed to be able to reference this step's output later
         uses: DataDog/dd-sts-action@main # Pin to the main branch to get auto updates for free, or to a specific commit hash if you want stability
         with:
           policy: public-datadog-pup-sts
 
       - name: Configure Datadog Test Optimization
+        if: github.ref == 'refs/heads/main'
         uses: datadog/test-visibility-github-action@v2
         with:
           languages: go
@@ -54,6 +56,7 @@ jobs:
           site: datadoghq.com
 
       - name: Install Datadog CI tools
+        if: github.ref == 'refs/heads/main'
         run: |
           # Install orchestrion for Go test instrumentation
           go install github.com/DataDog/orchestrion@latest
@@ -117,7 +120,7 @@ jobs:
           go tool cover -func=coverage.out | tail -1 >> coverage_report.txt
 
       - name: Upload coverage to Datadog
-        if: env.DD_API_KEY != ''
+        if: github.ref == 'refs/heads/main'
         env:
           DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
           DD_SITE: datadoghq.com
