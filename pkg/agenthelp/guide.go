@@ -21,20 +21,44 @@ func GetGuide() string {
 // GetGuideSection returns a specific domain section from the guide.
 // Returns the full guide if the domain is not found.
 func GetGuideSection(domain string) string {
-	// Try capitalized version first (e.g., "## Logs")
-	capitalized := strings.ToUpper(domain[:1]) + domain[1:]
-	heading := "## " + capitalized
-	idx := strings.Index(guideContent, heading)
-	if idx == -1 {
-		// Try exact case
-		heading = "## " + domain
-		idx = strings.Index(guideContent, heading)
-		if idx == -1 {
-			return guideContent
+	// Try multiple casing strategies to find the section heading
+	candidates := []string{
+		"## " + strings.ToUpper(domain[:1]) + domain[1:], // "## Logs"
+		"## " + strings.ToUpper(domain),                   // "## APM"
+		"## " + domain,                                    // "## logs" (exact)
+	}
+
+	var idx int = -1
+	var heading string
+	for _, candidate := range candidates {
+		idx = strings.Index(guideContent, candidate)
+		if idx != -1 {
+			heading = candidate
+			break
 		}
 	}
 
-	// Find the next ## heading
+	// Fall back to case-insensitive line scan
+	if idx == -1 {
+		lowerDomain := strings.ToLower(domain)
+		for i, line := range strings.Split(guideContent, "\n") {
+			if strings.HasPrefix(line, "## ") && strings.Contains(strings.ToLower(line), lowerDomain) {
+				// Reconstruct idx from line number
+				idx = 0
+				for _, l := range strings.Split(guideContent, "\n")[:i] {
+					idx += len(l) + 1
+				}
+				heading = line
+				break
+			}
+		}
+	}
+
+	if idx == -1 {
+		return guideContent
+	}
+
+	// Find the next ## heading after this one
 	rest := guideContent[idx+len(heading):]
 	nextSection := strings.Index(rest, "\n## ")
 	if nextSection == -1 {

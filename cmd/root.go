@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -432,12 +433,22 @@ func extractAPIErrorBody(err error) string {
 // and appends contextual guidance based on the HTTP status code.
 // In agent mode, returns a structured JSON error.
 func formatAPIError(operation string, err error, response any) error {
-	type httpResponse interface {
-		StatusCode() int
+	// Extract status code from the response.
+	// The datadog API client returns *http.Response (field) for some APIs
+	// and types with StatusCode() method for others.
+	statusCode := 0
+	switch r := response.(type) {
+	case *http.Response:
+		if r != nil {
+			statusCode = r.StatusCode
+		}
+	case interface{ StatusCode() int }:
+		if r != nil {
+			statusCode = r.StatusCode()
+		}
 	}
 
-	if r, ok := response.(httpResponse); ok && r != nil {
-		statusCode := r.StatusCode()
+	if statusCode > 0 {
 		apiBody := extractAPIErrorBody(err)
 
 		// In agent mode, return structured JSON error

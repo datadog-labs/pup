@@ -37,6 +37,7 @@ func TestGetGuideSection(t *testing.T) {
 		{"logs", "## Logs"},
 		{"metrics", "## Metrics"},
 		{"monitors", "## Monitors"},
+		{"apm", "## APM"},
 		{"Logs", "## Logs"},
 	}
 
