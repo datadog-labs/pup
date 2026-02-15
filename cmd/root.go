@@ -102,17 +102,22 @@ func hasFlag(args []string, flag string) bool {
 
 // handleHlpArgs processes --hlp by finding the first non-flag arg as subtree name.
 func handleHlpArgs(args []string) error {
-	var subtree string
+	return printHlpSchema(firstNonFlagArg(args))
+}
+
+// handleHelpAsSchema converts --help/-h to JSON schema output in agent mode.
+func handleHelpAsSchema(args []string) error {
+	return printHlpSchema(firstNonFlagArg(args))
+}
+
+// firstNonFlagArg returns the first argument that isn't a flag.
+func firstNonFlagArg(args []string) string {
 	for _, a := range args {
-		if a == "--hlp" {
-			continue
-		}
 		if !isFlag(a) {
-			subtree = a
-			break
+			return a
 		}
 	}
-	return printHlpSchema(subtree)
+	return ""
 }
 
 // printHlpSchema generates and prints the JSON schema for the given subtree.
@@ -143,6 +148,14 @@ func ExecuteWithArgs(args []string) error {
 	// have no RunE and cobra would show help text instead of invoking PersistentPreRunE.
 	if hasFlag(args, "--hlp") {
 		return handleHlpArgs(args)
+	}
+
+	// In agent mode, intercept --help/-h and return structured JSON schema instead
+	// of cobra's human-oriented help text. This lets agents run the natural
+	// "pup --help" or "pup logs --help" and get the machine-readable schema
+	// without needing to know about --hlp.
+	if (hasFlag(args, "--help") || hasFlag(args, "-h")) && useragent.IsAgentMode() {
+		return handleHelpAsSchema(args)
 	}
 
 	// IMPORTANT: Aliases are checked LAST to prevent overriding built-in commands.

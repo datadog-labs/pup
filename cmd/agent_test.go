@@ -272,3 +272,112 @@ func TestAgentModeFlagOverride(t *testing.T) {
 		t.Error("AutoApprove should be true when --agent flag is set")
 	}
 }
+
+func TestHelpReturnsSchemaInAgentMode(t *testing.T) {
+	origWriter := outputWriter
+	origCfg := cfg
+	origClient := ddClient
+	defer func() {
+		outputWriter = origWriter
+		cfg = origCfg
+		ddClient = origClient
+		os.Unsetenv("CLAUDECODE")
+	}()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	cfg = &config.Config{Site: "datadoghq.com"}
+	ddClient = nil
+
+	// Set agent env var so --help is intercepted
+	os.Setenv("CLAUDECODE", "1")
+
+	err := ExecuteWithArgs([]string{"--help"})
+	if err != nil {
+		t.Fatalf("--help in agent mode error: %v", err)
+	}
+
+	output := buf.String()
+
+	var schema agenthelp.Schema
+	if err := json.Unmarshal([]byte(output), &schema); err != nil {
+		t.Fatalf("--help in agent mode should return valid JSON schema, got: %s", output[:200])
+	}
+
+	if len(schema.Commands) == 0 {
+		t.Error("--help schema should have commands")
+	}
+}
+
+func TestHelpReturnsSchemaSubtreeInAgentMode(t *testing.T) {
+	origWriter := outputWriter
+	origCfg := cfg
+	origClient := ddClient
+	defer func() {
+		outputWriter = origWriter
+		cfg = origCfg
+		ddClient = origClient
+		os.Unsetenv("CLAUDECODE")
+	}()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	cfg = &config.Config{Site: "datadoghq.com"}
+	ddClient = nil
+
+	os.Setenv("CLAUDECODE", "1")
+
+	err := ExecuteWithArgs([]string{"logs", "--help"})
+	if err != nil {
+		t.Fatalf("logs --help in agent mode error: %v", err)
+	}
+
+	output := buf.String()
+
+	var schema agenthelp.Schema
+	if err := json.Unmarshal([]byte(output), &schema); err != nil {
+		t.Fatalf("logs --help in agent mode should return valid JSON schema, got: %s", output[:200])
+	}
+
+	if len(schema.Commands) != 1 {
+		t.Errorf("logs --help should have 1 command, got %d", len(schema.Commands))
+	}
+	if schema.Commands[0].Name != "logs" {
+		t.Errorf("logs --help command = %q, want 'logs'", schema.Commands[0].Name)
+	}
+}
+
+func TestHelpUnchangedInHumanMode(t *testing.T) {
+	origWriter := outputWriter
+	origCfg := cfg
+	origClient := ddClient
+	defer func() {
+		outputWriter = origWriter
+		cfg = origCfg
+		ddClient = origClient
+		// Clear any agent env vars
+		os.Unsetenv("CLAUDECODE")
+		os.Unsetenv("CLAUDE_CODE")
+		os.Unsetenv("DD_AGENT_MODE")
+	}()
+
+	// Ensure no agent env vars are set
+	os.Unsetenv("CLAUDECODE")
+	os.Unsetenv("CLAUDE_CODE")
+	os.Unsetenv("DD_AGENT_MODE")
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	cfg = &config.Config{Site: "datadoghq.com"}
+	ddClient = nil
+
+	// --help in human mode should NOT return JSON
+	_ = ExecuteWithArgs([]string{"--help"})
+
+	output := buf.String()
+
+	// Human mode help should contain "Usage:" not JSON
+	if strings.Contains(output, `"version"`) {
+		t.Error("--help in human mode should not return JSON schema")
+	}
+}
