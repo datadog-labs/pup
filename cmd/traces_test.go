@@ -6,7 +6,13 @@
 package cmd
 
 import (
+	"bytes"
+	"fmt"
+	"os"
 	"testing"
+
+	"github.com/DataDog/pup/pkg/client"
+	"github.com/DataDog/pup/pkg/config"
 )
 
 func TestTracesCmd(t *testing.T) {
@@ -65,6 +71,86 @@ func TestTracesSearchFlags(t *testing.T) {
 		t.Error("search command missing --limit flag")
 	} else if limitFlag.DefValue != "50" {
 		t.Errorf("--limit default = %q, want %q", limitFlag.DefValue, "50")
+	}
+}
+
+func setupTracesTestClient(t *testing.T) func() {
+	t.Helper()
+
+	origClient := ddClient
+	origCfg := cfg
+	origFactory := clientFactory
+
+	cfg = &config.Config{
+		Site:   "datadoghq.com",
+		APIKey: "test-api-key-12345678",
+		AppKey: "test-app-key-12345678",
+	}
+
+	clientFactory = func(c *config.Config) (*client.Client, error) {
+		return nil, fmt.Errorf("mock client: no real API connection in tests")
+	}
+
+	ddClient = nil
+
+	return func() {
+		ddClient = origClient
+		cfg = origCfg
+		clientFactory = origFactory
+	}
+}
+
+func TestRunTracesSearch(t *testing.T) {
+	cleanup := setupTracesTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name    string
+		query   string
+		from    string
+		to      string
+		limit   int
+		sort    string
+		wantErr bool
+	}{
+		{
+			name:    "valid query returns error from mock client",
+			query:   "service:web-server",
+			from:    "1h",
+			to:      "now",
+			limit:   50,
+			sort:    "-timestamp",
+			wantErr: true,
+		},
+		{
+			name:    "invalid from time",
+			query:   "*",
+			from:    "invalid-time",
+			to:      "now",
+			limit:   50,
+			sort:    "-timestamp",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tracesQuery = tt.query
+			tracesFrom = tt.from
+			tracesTo = tt.to
+			tracesLimit = tt.limit
+			tracesSort = tt.sort
+
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runTracesSearch(tracesSearchCmd, []string{})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runTracesSearch() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 

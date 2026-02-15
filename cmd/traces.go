@@ -7,7 +7,11 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
+	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/DataDog/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -166,7 +170,135 @@ func init() {
 }
 
 func runTracesSearch(cmd *cobra.Command, args []string) error {
-	return fmt.Errorf("traces search: not yet implemented")
+	fromTime, err := util.ParseTimeToUnixMilli(tracesFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w", err)
+	}
+
+	toTime, err := util.ParseTimeToUnixMilli(tracesTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSpansApi(client.V2())
+
+	query := tracesQuery
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
+	pageLimit := int32(tracesLimit)
+	if pageLimit > 1000 {
+		pageLimit = 1000
+	}
+	sort := datadogV2.SpansSort(tracesSort)
+
+	body := datadogV2.SpansListRequest{
+		Data: &datadogV2.SpansListRequestData{
+			Attributes: &datadogV2.SpansListRequestAttributes{
+				Filter: &datadogV2.SpansQueryFilter{
+					Query: &query,
+					From:  &from,
+					To:    &to,
+				},
+				Page: &datadogV2.SpansListRequestPage{
+					Limit: &pageLimit,
+				},
+				Sort: &sort,
+			},
+			Type: datadogV2.SPANSLISTREQUESTTYPE_SEARCH_REQUEST.Ptr(),
+		},
+	}
+
+	// Fetch first page
+	resp, r, err := api.ListSpans(client.Context(), body)
+	if err != nil {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
+				fromTimeObj := time.UnixMilli(fromTime).UTC()
+				toTimeObj := time.UnixMilli(toTime).UTC()
+				return fmt.Errorf("failed to search spans: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- From: %s UTC (parsed from: %s)\n- To: %s UTC (parsed from: %s)\n- Limit: %d\n\nTroubleshooting:\n- Verify your query follows span search syntax\n- Check that your time range is valid\n- Ensure you have the apm_read OAuth scope or valid API keys",
+					err, r.StatusCode, apiBody,
+					tracesQuery,
+					fromTimeObj.Format(time.RFC3339), tracesFrom,
+					toTimeObj.Format(time.RFC3339), tracesTo,
+					tracesLimit)
+			}
+			return fmt.Errorf("failed to search spans: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to search spans: %w", err)
+	}
+
+	// Collect spans with pagination
+	allSpans := resp.GetData()
+	pageCount := 1
+
+	for tracesLimit > 0 && len(allSpans) < tracesLimit {
+		meta, ok := resp.GetMetaOk()
+		if !ok || meta == nil {
+			break
+		}
+		page, ok := meta.GetPageOk()
+		if !ok || page == nil {
+			break
+		}
+		cursor, ok := page.GetAfterOk()
+		if !ok || cursor == nil || *cursor == "" {
+			break
+		}
+
+		remaining := tracesLimit - len(allSpans)
+		if remaining <= 0 {
+			break
+		}
+		remainingLimit := int32(remaining)
+		if remainingLimit > 1000 {
+			remainingLimit = 1000
+		}
+		body.Data.Attributes.Page.Limit = &remainingLimit
+		body.Data.Attributes.Page.Cursor = cursor
+
+		resp, r, err = api.ListSpans(client.Context(), body)
+		if err != nil {
+			printOutput("Warning: Failed to fetch page %d: %v\n", pageCount+1, err)
+			break
+		}
+
+		allSpans = append(allSpans, resp.GetData()...)
+		pageCount++
+	}
+
+	if tracesLimit > 0 && len(allSpans) > tracesLimit {
+		allSpans = allSpans[:tracesLimit]
+	}
+
+	if len(allSpans) == 0 {
+		printOutput("No spans found matching your query.\n\n")
+		printOutput("Tips:\n")
+		printOutput("- Try a broader time range (e.g., --from=\"24h\")\n")
+		printOutput("- Verify the service name exists in your traces\n")
+		printOutput("- Check your query syntax: https://docs.datadoghq.com/tracing/trace_explorer/search/\n")
+		printOutput("- Try a simpler query like --query=\"*\" to see any spans\n")
+		return nil
+	}
+
+	finalResp := resp
+	if pageCount > 1 {
+		finalResp.SetData(allSpans)
+		printOutput("Fetched %d spans across %d pages\n\n", len(allSpans), pageCount)
+	}
+
+	output, err := formatter.FormatOutput(finalResp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+
+	printOutput("%s\n", output)
+	return nil
 }
 
 func runTracesAggregate(cmd *cobra.Command, args []string) error {
