@@ -154,6 +154,75 @@ func TestRunTracesSearch(t *testing.T) {
 	}
 }
 
+func TestRunTracesAggregate(t *testing.T) {
+	cleanup := setupTracesTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name    string
+		query   string
+		from    string
+		to      string
+		compute string
+		groupBy string
+		wantErr bool
+	}{
+		{
+			name:    "count aggregation returns error from mock client",
+			query:   "service:web-server",
+			from:    "1h",
+			to:      "now",
+			compute: "count",
+			wantErr: true,
+		},
+		{
+			name:    "avg with metric returns error from mock client",
+			query:   "*",
+			from:    "1h",
+			to:      "now",
+			compute: "avg(@duration)",
+			groupBy: "service",
+			wantErr: true,
+		},
+		{
+			name:    "invalid compute format",
+			query:   "*",
+			from:    "1h",
+			to:      "now",
+			compute: "",
+			wantErr: true,
+		},
+		{
+			name:    "invalid from time",
+			query:   "*",
+			from:    "invalid-time",
+			to:      "now",
+			compute: "count",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tracesQuery = tt.query
+			tracesFrom = tt.from
+			tracesTo = tt.to
+			tracesCompute = tt.compute
+			tracesGroupBy = tt.groupBy
+
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runTracesAggregate(tracesAggregateCmd, []string{})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runTracesAggregate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestTracesAggregateFlags(t *testing.T) {
 	flags := tracesAggregateCmd.Flags()
 

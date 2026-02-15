@@ -302,5 +302,89 @@ func runTracesSearch(cmd *cobra.Command, args []string) error {
 }
 
 func runTracesAggregate(cmd *cobra.Command, args []string) error {
-	return fmt.Errorf("traces aggregate: not yet implemented")
+	// Parse compute string (reuse parseComputeString from logs_simple.go)
+	aggregation, metric, err := parseComputeString(tracesCompute)
+	if err != nil {
+		return fmt.Errorf("invalid --compute value: %w", err)
+	}
+
+	fromTime, err := util.ParseTimeToUnixMilli(tracesFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w", err)
+	}
+
+	toTime, err := util.ParseTimeToUnixMilli(tracesTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSpansApi(client.V2())
+
+	// Build compute
+	compute := datadogV2.SpansCompute{
+		Aggregation: datadogV2.SpansAggregationFunction(aggregation),
+	}
+	if metric != "" {
+		compute.Metric = &metric
+	}
+
+	query := tracesQuery
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
+
+	body := datadogV2.SpansAggregateRequest{
+		Data: &datadogV2.SpansAggregateData{
+			Attributes: &datadogV2.SpansAggregateRequestAttributes{
+				Compute: []datadogV2.SpansCompute{compute},
+				Filter: &datadogV2.SpansQueryFilter{
+					Query: &query,
+					From:  &from,
+					To:    &to,
+				},
+			},
+			Type: datadogV2.SPANSAGGREGATEREQUESTTYPE_AGGREGATE_REQUEST.Ptr(),
+		},
+	}
+
+	// Add group by if specified
+	if tracesGroupBy != "" {
+		body.Data.Attributes.GroupBy = []datadogV2.SpansGroupBy{
+			{
+				Facet: tracesGroupBy,
+			},
+		}
+	}
+
+	resp, r, err := api.AggregateSpans(client.Context(), body)
+	if err != nil {
+		if r != nil {
+			apiBody := extractAPIErrorBody(err)
+			if apiBody != "" {
+				fromTimeObj := time.UnixMilli(fromTime).UTC()
+				toTimeObj := time.UnixMilli(toTime).UTC()
+				return fmt.Errorf("failed to aggregate spans: %w\nStatus: %d\nAPI Response: %s\n\nRequest Details:\n- Query: %s\n- Compute: %s (parsed as: aggregation=%q, metric=%q)\n- Group By: %s\n- From: %s UTC (parsed from: %s)\n- To: %s UTC (parsed from: %s)\n\nTroubleshooting:\n- Verify the aggregation function is supported\n- Ensure the metric field exists in your spans (e.g., @duration)\n- Check your query syntax\n- Ensure you have the apm_read OAuth scope or valid API keys",
+					err, r.StatusCode, apiBody,
+					tracesQuery,
+					tracesCompute, aggregation, metric,
+					tracesGroupBy,
+					fromTimeObj.Format(time.RFC3339), tracesFrom,
+					toTimeObj.Format(time.RFC3339), tracesTo)
+			}
+			return fmt.Errorf("failed to aggregate spans: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to aggregate spans: %w", err)
+	}
+
+	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+
+	printOutput("%s\n", output)
+	return nil
 }
