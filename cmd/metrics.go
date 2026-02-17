@@ -829,9 +829,21 @@ func runMetricsMetadataUpdate(cmd *cobra.Command, args []string) error {
 
 // runMetricsSubmit executes the metrics submit command
 func runMetricsSubmit(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	// The metrics intake API requires an API key (DD_API_KEY).
+	// OAuth2 bearer tokens are not supported for metric submission.
+	if cfg.APIKey == "" {
+		return fmt.Errorf(
+			"metrics submit requires a Datadog API key.\n\n" +
+				"Set the DD_API_KEY environment variable:\n" +
+				"  export DD_API_KEY=\"your-api-key\"\n\n" +
+				"You can find your API key at https://app.datadoghq.com/organization-settings/api-keys\n\n" +
+				"Note: OAuth2 authentication (pup auth login) is not supported for metric submission.",
+		)
+	}
+
+	client, err := apiKeyClientFactory(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create client: %w", err)
 	}
 
 	// Parse timestamp

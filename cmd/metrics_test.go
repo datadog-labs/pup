@@ -39,6 +39,7 @@ func setupMetricsTestClient(t *testing.T) func() {
 	origClient := ddClient
 	origCfg := cfg
 	origFactory := clientFactory
+	origAPIKeyFactory := apiKeyClientFactory
 
 	cfg = &config.Config{
 		Site:        "datadoghq.com",
@@ -47,8 +48,12 @@ func setupMetricsTestClient(t *testing.T) func() {
 		AutoApprove: false,
 	}
 
+	mockErr := fmt.Errorf("mock client: no real API connection in tests")
 	clientFactory = func(c *config.Config) (*client.Client, error) {
-		return nil, fmt.Errorf("mock client: no real API connection in tests")
+		return nil, mockErr
+	}
+	apiKeyClientFactory = func(c *config.Config) (*client.Client, error) {
+		return nil, mockErr
 	}
 
 	ddClient = nil
@@ -57,6 +62,7 @@ func setupMetricsTestClient(t *testing.T) func() {
 		ddClient = origClient
 		cfg = origCfg
 		clientFactory = origFactory
+		apiKeyClientFactory = origAPIKeyFactory
 	}
 }
 
@@ -578,40 +584,44 @@ func TestRunMetricsSubmit(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name       string
-		metricName string
-		value      float64
-		timestamp  string
-		tags       string
-		metricType string
-		wantErr    bool
+		name            string
+		metricName      string
+		value           float64
+		timestamp       string
+		tags            string
+		metricType      string
+		wantErr         bool
+		wantErrContains string
 	}{
 		{
-			name:       "submit gauge",
-			metricName: "custom.metric",
-			value:      123.45,
-			timestamp:  "now",
-			tags:       "env:prod,team:backend",
-			metricType: "gauge",
-			wantErr:    true, // Mock client error
+			name:            "submit gauge",
+			metricName:      "custom.metric",
+			value:           123.45,
+			timestamp:       "now",
+			tags:            "env:prod,team:backend",
+			metricType:      "gauge",
+			wantErr:         true, // Mock client error
+			wantErrContains: "mock client",
 		},
 		{
-			name:       "submit count",
-			metricName: "custom.count",
-			value:      100,
-			timestamp:  "now",
-			tags:       "",
-			metricType: "count",
-			wantErr:    true,
+			name:            "submit count",
+			metricName:      "custom.count",
+			value:           100,
+			timestamp:       "now",
+			tags:            "",
+			metricType:      "count",
+			wantErr:         true,
+			wantErrContains: "mock client",
 		},
 		{
-			name:       "invalid metric type",
-			metricName: "custom.metric",
-			value:      123,
-			timestamp:  "now",
-			tags:       "",
-			metricType: "invalid",
-			wantErr:    true, // Will error on invalid type validation
+			name:            "invalid metric type",
+			metricName:      "custom.metric",
+			value:           123,
+			timestamp:       "now",
+			tags:            "",
+			metricType:      "invalid",
+			wantErr:         true,
+			wantErrContains: "mock client",
 		},
 	}
 
@@ -634,16 +644,52 @@ func TestRunMetricsSubmit(t *testing.T) {
 				t.Errorf("runMetricsSubmit() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			// Check for specific error on invalid type
-			// Note: Invalid type validation happens after client creation,
-			// but with mock client, client creation fails first
-			if tt.metricType == "invalid" && err != nil {
-				// Accept either "invalid metric type" or "mock client" error
-				if !strings.Contains(err.Error(), "invalid metric type") && !strings.Contains(err.Error(), "mock client") {
-					t.Errorf("runMetricsSubmit() error = %v, want 'invalid metric type' or 'mock client' error", err)
-				}
+			if tt.wantErrContains != "" && err != nil && !strings.Contains(err.Error(), tt.wantErrContains) {
+				t.Errorf("runMetricsSubmit() error = %v, want error containing %q", err, tt.wantErrContains)
 			}
 		})
+	}
+}
+
+func TestRunMetricsSubmit_RequiresAPIKey(t *testing.T) {
+	origClient := ddClient
+	origCfg := cfg
+	origFactory := apiKeyClientFactory
+	defer func() {
+		ddClient = origClient
+		cfg = origCfg
+		apiKeyClientFactory = origFactory
+	}()
+
+	// Set config with NO API key to trigger the pre-emptive check
+	cfg = &config.Config{
+		Site:   "datadoghq.com",
+		APIKey: "",
+		AppKey: "",
+	}
+	ddClient = nil
+
+	submitName = "custom.metric"
+	submitValue = 42.0
+	submitTimestamp = "now"
+	submitTags = ""
+	submitType = "gauge"
+	submitInterval = 0
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runMetricsSubmit(metricsSubmitCmd, []string{})
+	if err == nil {
+		t.Fatal("expected error when DD_API_KEY is not set")
+	}
+
+	if !strings.Contains(err.Error(), "DD_API_KEY") {
+		t.Errorf("error should mention DD_API_KEY, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "metrics submit requires") {
+		t.Errorf("error should explain the requirement, got: %v", err)
 	}
 }
 
