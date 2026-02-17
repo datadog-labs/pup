@@ -82,6 +82,17 @@ func TestLoad(t *testing.T) {
 			wantSite:    "datadoghq.com",
 			wantApprove: false,
 		},
+		{
+			name: "on-call domain via DD_SITE",
+			envVars: map[string]string{
+				"DD_API_KEY": "key",
+				"DD_APP_KEY": "app",
+				"DD_SITE":    "navy.oncall.datadoghq.com",
+			},
+			wantAPIKey: "key",
+			wantAppKey: "app",
+			wantSite:   "navy.oncall.datadoghq.com",
+		},
 	}
 
 	for _, tt := range tests {
@@ -176,6 +187,36 @@ func TestConfig_Validate(t *testing.T) {
 	}
 }
 
+func TestIsOnCallSite(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		site string
+		want bool
+	}{
+		// Standard sites — not on-call
+		{name: "US1", site: "datadoghq.com", want: false},
+		{name: "EU", site: "datadoghq.eu", want: false},
+		{name: "US3", site: "us3.datadoghq.com", want: false},
+		{name: "Gov", site: "ddog-gov.com", want: false},
+
+		// On-call domains
+		{name: "on-call navy", site: "navy.oncall.datadoghq.com", want: true},
+		{name: "on-call army", site: "army.oncall.datadoghq.com", want: true},
+		{name: "on-call staging", site: "test.oncall.datad0g.com", want: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := IsOnCallSite(tt.site)
+			if got != tt.want {
+				t.Errorf("IsOnCallSite(%q) = %v, want %v", tt.site, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestConfig_GetAPIURL(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -218,6 +259,11 @@ func TestConfig_GetAPIURL(t *testing.T) {
 			site: "datad0g.com",
 			want: "https://api.datad0g.com",
 		},
+		{
+			name: "on-call domain used as-is",
+			site: "navy.oncall.datadoghq.com",
+			want: "https://navy.oncall.datadoghq.com",
+		},
 	}
 
 	for _, tt := range tests {
@@ -227,6 +273,32 @@ func TestConfig_GetAPIURL(t *testing.T) {
 			got := cfg.GetAPIURL()
 			if got != tt.want {
 				t.Errorf("GetAPIURL() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConfig_GetAPIHost(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		site string
+		want string
+	}{
+		{name: "US1", site: "datadoghq.com", want: "api.datadoghq.com"},
+		{name: "EU", site: "datadoghq.eu", want: "api.datadoghq.eu"},
+		{name: "US3", site: "us3.datadoghq.com", want: "api.us3.datadoghq.com"},
+		{name: "Gov", site: "ddog-gov.com", want: "api.ddog-gov.com"},
+		{name: "on-call", site: "navy.oncall.datadoghq.com", want: "navy.oncall.datadoghq.com"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			cfg := &Config{Site: tt.site}
+			got := cfg.GetAPIHost()
+			if got != tt.want {
+				t.Errorf("GetAPIHost() = %q, want %q", got, tt.want)
 			}
 		})
 	}

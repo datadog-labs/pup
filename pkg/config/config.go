@@ -8,6 +8,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 // Config holds the application configuration
@@ -41,9 +42,26 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// GetAPIURL returns the full API URL for the configured site
+// IsOnCallSite returns true if the site is an on-call domain (contains "oncall").
+// On-call domains like navy.oncall.datadoghq.com are already fully-qualified
+// and should not have "api." prepended.
+func IsOnCallSite(site string) bool {
+	return strings.Contains(site, "oncall")
+}
+
+// GetAPIURL returns the full API URL for the configured site.
+// On-call domains are used as-is; all other sites get "https://api.{site}".
 func (c *Config) GetAPIURL() string {
-	return fmt.Sprintf("https://api.%s", c.Site)
+	return "https://" + c.GetAPIHost()
+}
+
+// GetAPIHost returns the host portion of the API URL (without scheme).
+// On-call domains are returned as-is; all other sites get "api.{site}".
+func (c *Config) GetAPIHost() string {
+	if IsOnCallSite(c.Site) {
+		return c.Site
+	}
+	return fmt.Sprintf("api.%s", c.Site)
 }
 
 // getEnvWithDefault returns environment variable value or default if not set

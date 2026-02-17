@@ -105,7 +105,7 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 
 	// Configure the API client
 	configuration := datadog.NewConfiguration()
-	configuration.Host = fmt.Sprintf("api.%s", cfg.Site)
+	configuration.Host = cfg.GetAPIHost()
 
 	// Set custom user agent to identify requests as coming from pup CLI
 	configuration.UserAgent = useragent.Get()
@@ -175,7 +175,7 @@ func (c *Client) RawRequest(method, path string, body io.Reader) (*http.Response
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://api.%s%s", c.config.Site, path)
+	url := fmt.Sprintf("https://%s%s", c.config.GetAPIHost(), path)
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
