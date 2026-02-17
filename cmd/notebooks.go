@@ -6,7 +6,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/spf13/cobra"
@@ -34,8 +38,21 @@ EXAMPLES:
   # Get notebook details
   pup notebooks get notebook-id
 
+  # Create a notebook from file
+  pup notebooks create --body @notebook.json
+
+  # Create from stdin
+  cat notebook.json | pup notebooks create --body -
+
+  # Update a notebook
+  pup notebooks update 12345 --body @updated.json
+
+  # Delete a notebook
+  pup notebooks delete 12345
+
 AUTHENTICATION:
-  Requires either OAuth2 authentication or API keys.`,
+  Requires API key authentication (DD_API_KEY + DD_APP_KEY).
+  OAuth2 is not supported for this endpoint.`,
 }
 
 var notebooksListCmd = &cobra.Command{
@@ -51,6 +68,19 @@ var notebooksGetCmd = &cobra.Command{
 	RunE:  runNotebooksGet,
 }
 
+var notebooksCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new notebook",
+	RunE:  runNotebooksCreate,
+}
+
+var notebooksUpdateCmd = &cobra.Command{
+	Use:   "update [notebook-id]",
+	Short: "Update a notebook",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runNotebooksUpdate,
+}
+
 var notebooksDeleteCmd = &cobra.Command{
 	Use:   "delete [notebook-id]",
 	Short: "Delete a notebook",
@@ -59,11 +89,103 @@ var notebooksDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksDeleteCmd)
+	notebooksCreateCmd.Flags().String("body", "", "JSON body (@filepath or - for stdin) (required)")
+	if err := notebooksCreateCmd.MarkFlagRequired("body"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+
+	notebooksUpdateCmd.Flags().String("body", "", "JSON body (@filepath or - for stdin) (required)")
+	if err := notebooksUpdateCmd.MarkFlagRequired("body"); err != nil {
+		panic(fmt.Errorf("failed to mark flag as required: %w", err))
+	}
+
+	notebooksCmd.AddCommand(notebooksListCmd, notebooksGetCmd, notebooksCreateCmd, notebooksUpdateCmd, notebooksDeleteCmd)
+}
+
+// readBody reads JSON body content from a file (@path) or stdin (-).
+func readBody(value string) ([]byte, error) {
+	var data []byte
+	var err error
+
+	switch {
+	case value == "-":
+		data, err = io.ReadAll(inputReader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read body from stdin: %w", err)
+		}
+	case strings.HasPrefix(value, "@"):
+		path := strings.TrimPrefix(value, "@")
+		data, err = os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read body file: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("body must be @filepath or - for stdin")
+	}
+
+	if !json.Valid(data) {
+		return nil, fmt.Errorf("invalid JSON in body")
+	}
+
+	return data, nil
+}
+
+func runNotebooksCreate(cmd *cobra.Command, args []string) error {
+	client, err := getClientForEndpoint("POST", "/api/v1/notebooks")
+	if err != nil {
+		return err
+	}
+
+	bodyFlag, _ := cmd.Flags().GetString("body")
+	data, err := readBody(bodyFlag)
+	if err != nil {
+		return err
+	}
+
+	var body datadogV1.NotebookCreateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse notebook create request: %w", err)
+	}
+
+	api := datadogV1.NewNotebooksApi(client.V1())
+	resp, r, err := api.CreateNotebook(client.Context(), body)
+	if err != nil {
+		return formatAPIError("create notebook", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
+	client, err := getClientForEndpoint("PUT", "/api/v1/notebooks/")
+	if err != nil {
+		return err
+	}
+
+	notebookID := parseInt64(args[0])
+
+	bodyFlag, _ := cmd.Flags().GetString("body")
+	data, err := readBody(bodyFlag)
+	if err != nil {
+		return err
+	}
+
+	var body datadogV1.NotebookUpdateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse notebook update request: %w", err)
+	}
+
+	api := datadogV1.NewNotebooksApi(client.V1())
+	resp, r, err := api.UpdateNotebook(client.Context(), notebookID, body)
+	if err != nil {
+		return formatAPIError("update notebook", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksList(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("GET", "/api/v1/notebooks")
 	if err != nil {
 		return err
 	}
@@ -71,17 +193,14 @@ func runNotebooksList(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.ListNotebooks(client.Context())
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to list notebooks: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to list notebooks: %w", err)
+		return formatAPIError("list notebooks", err, r)
 	}
 
 	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksGet(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("GET", "/api/v1/notebooks/")
 	if err != nil {
 		return err
 	}
@@ -90,33 +209,30 @@ func runNotebooksGet(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	resp, r, err := api.GetNotebook(client.Context(), notebookID)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to get notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to get notebook: %w", err)
+		return formatAPIError("get notebook", err, r)
 	}
 
 	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksDelete(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	client, err := getClientForEndpoint("DELETE", "/api/v1/notebooks/")
 	if err != nil {
 		return err
 	}
 
 	notebookID := parseInt64(args[0])
 	if !cfg.AutoApprove {
-		fmt.Printf("⚠️  WARNING: This will permanently delete notebook %d\n", notebookID)
-		fmt.Print("Are you sure you want to continue? (y/N): ")
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
-			// User cancelled or error reading input
-			fmt.Println("\nOperation cancelled")
+		printOutput("⚠️  WARNING: This will permanently delete notebook %d\n", notebookID)
+		printOutput("Are you sure you want to continue? (y/N): ")
+
+		response, err := readConfirmation()
+		if err != nil {
+			printOutput("\nOperation cancelled\n")
 			return nil
 		}
 		if response != "y" && response != "Y" {
-			fmt.Println("Operation cancelled")
+			printOutput("Operation cancelled\n")
 			return nil
 		}
 	}
@@ -124,12 +240,9 @@ func runNotebooksDelete(cmd *cobra.Command, args []string) error {
 	api := datadogV1.NewNotebooksApi(client.V1())
 	r, err := api.DeleteNotebook(client.Context(), notebookID)
 	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to delete notebook: %w (status: %d)", err, r.StatusCode)
-		}
-		return fmt.Errorf("failed to delete notebook: %w", err)
+		return formatAPIError("delete notebook", err, r)
 	}
 
-	fmt.Printf("Successfully deleted notebook %d\n", notebookID)
+	printOutput("Successfully deleted notebook %d\n", notebookID)
 	return nil
 }
