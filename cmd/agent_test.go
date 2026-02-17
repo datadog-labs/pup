@@ -146,7 +146,7 @@ func TestAgentGuideDomain(t *testing.T) {
 	}
 }
 
-func TestHlpFlag(t *testing.T) {
+func TestForceAgentModeHelp(t *testing.T) {
 	origWriter := outputWriter
 	origCfg := cfg
 	origClient := ddClient
@@ -154,6 +154,7 @@ func TestHlpFlag(t *testing.T) {
 		outputWriter = origWriter
 		cfg = origCfg
 		ddClient = origClient
+		os.Unsetenv("FORCE_AGENT_MODE")
 	}()
 
 	var buf bytes.Buffer
@@ -161,24 +162,26 @@ func TestHlpFlag(t *testing.T) {
 	cfg = &config.Config{Site: "datadoghq.com"}
 	ddClient = nil
 
-	err := ExecuteWithArgs([]string{"--hlp"})
+	os.Setenv("FORCE_AGENT_MODE", "1")
+
+	err := ExecuteWithArgs([]string{"--help"})
 	if err != nil {
-		t.Fatalf("--hlp error: %v", err)
+		t.Fatalf("--help with FORCE_AGENT_MODE error: %v", err)
 	}
 
 	output := buf.String()
 
 	var schema agenthelp.Schema
 	if err := json.Unmarshal([]byte(output), &schema); err != nil {
-		t.Fatalf("--hlp output is not valid JSON: %v", err)
+		t.Fatalf("--help with FORCE_AGENT_MODE should return JSON schema: %v", err)
 	}
 
 	if len(schema.Commands) == 0 {
-		t.Error("--hlp schema commands should not be empty")
+		t.Error("schema commands should not be empty")
 	}
 }
 
-func TestHlpFlagSubtree(t *testing.T) {
+func TestForceAgentModeHelpSubtree(t *testing.T) {
 	origWriter := outputWriter
 	origCfg := cfg
 	origClient := ddClient
@@ -186,6 +189,7 @@ func TestHlpFlagSubtree(t *testing.T) {
 		outputWriter = origWriter
 		cfg = origCfg
 		ddClient = origClient
+		os.Unsetenv("FORCE_AGENT_MODE")
 	}()
 
 	var buf bytes.Buffer
@@ -193,23 +197,25 @@ func TestHlpFlagSubtree(t *testing.T) {
 	cfg = &config.Config{Site: "datadoghq.com"}
 	ddClient = nil
 
-	err := ExecuteWithArgs([]string{"monitors", "--hlp"})
+	os.Setenv("FORCE_AGENT_MODE", "1")
+
+	err := ExecuteWithArgs([]string{"monitors", "--help"})
 	if err != nil {
-		t.Fatalf("monitors --hlp error: %v", err)
+		t.Fatalf("monitors --help with FORCE_AGENT_MODE error: %v", err)
 	}
 
 	output := buf.String()
 
 	var schema agenthelp.Schema
 	if err := json.Unmarshal([]byte(output), &schema); err != nil {
-		t.Fatalf("monitors --hlp output is not valid JSON: %v", err)
+		t.Fatalf("monitors --help with FORCE_AGENT_MODE should return JSON: %v", err)
 	}
 
 	if len(schema.Commands) != 1 {
-		t.Errorf("monitors --hlp should have 1 command, got %d", len(schema.Commands))
+		t.Errorf("monitors --help should have 1 command, got %d", len(schema.Commands))
 	}
 	if schema.Commands[0].Name != "monitors" {
-		t.Errorf("monitors --hlp command name = %q, want 'monitors'", schema.Commands[0].Name)
+		t.Errorf("monitors --help command name = %q, want 'monitors'", schema.Commands[0].Name)
 	}
 }
 
@@ -358,13 +364,13 @@ func TestHelpUnchangedInHumanMode(t *testing.T) {
 		// Clear any agent env vars
 		os.Unsetenv("CLAUDECODE")
 		os.Unsetenv("CLAUDE_CODE")
-		os.Unsetenv("DD_AGENT_MODE")
+		os.Unsetenv("FORCE_AGENT_MODE")
 	}()
 
 	// Ensure no agent env vars are set
 	os.Unsetenv("CLAUDECODE")
 	os.Unsetenv("CLAUDE_CODE")
-	os.Unsetenv("DD_AGENT_MODE")
+	os.Unsetenv("FORCE_AGENT_MODE")
 
 	var buf bytes.Buffer
 	outputWriter = &buf

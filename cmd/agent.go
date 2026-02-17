@@ -20,8 +20,11 @@ var agentCmd = &cobra.Command{
 	Short: "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
 	Long: `Commands for AI coding assistants to interact with pup efficiently.
 
+In agent mode (auto-detected or via --agent / FORCE_AGENT_MODE=1),
+--help returns structured JSON schema instead of human-readable text.
+
 COMMANDS:
-  schema    Output the complete command schema as JSON (same as --hlp)
+  schema    Output the complete command schema as JSON
   guide     Output the comprehensive steering guide
 
 EXAMPLES:
@@ -43,8 +46,9 @@ var agentSchemaCmd = &cobra.Command{
 	Short: "Output command schema as JSON",
 	Long: `Output the complete pup command schema as structured JSON.
 
-This is the same output as 'pup --hlp' and includes all commands, flags,
-query syntax, time formats, workflows, best practices, and anti-patterns.
+Includes all commands, flags, query syntax, time formats, workflows,
+best practices, and anti-patterns. This is the same output returned
+by --help when running in agent mode.
 
 FLAGS:
   --compact    Output minimal schema (command names and flags only)
@@ -108,34 +112,3 @@ func runAgentGuide(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// HandleHlpFlag processes the --hlp flag on any command.
-// It generates the schema for the full tree or a subtree and exits.
-// Returns true if --hlp was handled (caller should return).
-func HandleHlpFlag(cmd *cobra.Command) (bool, error) {
-	if !hlpFlag {
-		return false, nil
-	}
-
-	root := cmd.Root()
-
-	var data interface{}
-	// If --hlp is on a subcommand, generate subtree schema
-	if cmd != root && cmd.Parent() == root {
-		schema := agenthelp.GenerateSubtreeSchema(root, cmd.Name())
-		if schema != nil {
-			data = schema
-		} else {
-			data = agenthelp.GenerateSchema(root)
-		}
-	} else {
-		data = agenthelp.GenerateSchema(root)
-	}
-
-	out, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return true, fmt.Errorf("failed to marshal schema: %w", err)
-	}
-
-	printOutput("%s\n", string(out))
-	return true, nil
-}

@@ -66,9 +66,9 @@ func Get() string {
 	return base + ")"
 }
 
-// IsAgentMode returns true if any AI agent is detected or DD_AGENT_MODE=1 is set.
+// IsAgentMode returns true if any AI agent is detected or FORCE_AGENT_MODE=1 is set.
 func IsAgentMode() bool {
-	if isEnvTruthy("DD_AGENT_MODE") {
+	if isEnvTruthy("FORCE_AGENT_MODE") {
 		return true
 	}
 	return detectAgent() != ""

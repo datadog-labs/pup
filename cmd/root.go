@@ -39,7 +39,6 @@ var (
 	outputFormat string
 	autoApprove  bool
 	agentFlag    bool
-	hlpFlag      bool
 
 	// Dependency injection points for testing
 	clientFactory           = defaultClientFactory
@@ -55,39 +54,11 @@ var rootCmd = &cobra.Command{
 with Datadog APIs. It supports both API key and OAuth2 authentication.`,
 	Version:      version.Version,
 	SilenceUsage: true, // Don't show usage on errors, only on --help or invalid args
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		handled, err := HandleHlpFlag(cmd)
-		if err != nil {
-			return err
-		}
-		if handled {
-			cmd.SilenceErrors = true
-			return errHlpHandled
-		}
-		return nil
-	},
-	// RunE is needed so that 'pup --hlp' (no subcommand) invokes the PersistentPreRunE.
-	// Without RunE, cobra shows help text instead.
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Help()
-	},
 }
-
-// errHlpHandled is a sentinel error returned after --hlp output to stop execution.
-// Execute/ExecuteWithArgs checks for this and treats it as a success exit.
-var errHlpHandled = errors.New("hlp handled")
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() error {
-	return suppressHlpError(ExecuteWithArgs(os.Args[1:]))
-}
-
-// suppressHlpError converts the --hlp sentinel error to nil so callers see success.
-func suppressHlpError(err error) error {
-	if errors.Is(err, errHlpHandled) {
-		return nil
-	}
-	return err
+	return ExecuteWithArgs(os.Args[1:])
 }
 
 // hasFlag checks if a flag is present in the args.
@@ -100,16 +71,6 @@ func hasFlag(args []string, flag string) bool {
 	return false
 }
 
-// handleHlpArgs processes --hlp by finding the first non-flag arg as subtree name.
-func handleHlpArgs(args []string) error {
-	return printHlpSchema(firstNonFlagArg(args))
-}
-
-// handleHelpAsSchema converts --help/-h to JSON schema output in agent mode.
-func handleHelpAsSchema(args []string) error {
-	return printHlpSchema(firstNonFlagArg(args))
-}
-
 // firstNonFlagArg returns the first argument that isn't a flag.
 func firstNonFlagArg(args []string) string {
 	for _, a := range args {
@@ -120,8 +81,8 @@ func firstNonFlagArg(args []string) string {
 	return ""
 }
 
-// printHlpSchema generates and prints the JSON schema for the given subtree.
-func printHlpSchema(subtree string) error {
+// printAgentSchema generates and prints the JSON schema for the given subtree.
+func printAgentSchema(subtree string) error {
 	var data interface{}
 	if subtree != "" {
 		schema := agenthelp.GenerateSubtreeSchema(rootCmd, subtree)
@@ -144,18 +105,12 @@ func printHlpSchema(subtree string) error {
 
 // ExecuteWithArgs executes the root command with the given arguments
 func ExecuteWithArgs(args []string) error {
-	// Handle --hlp before cobra processes args, because group commands (e.g. "logs")
-	// have no RunE and cobra would show help text instead of invoking PersistentPreRunE.
-	if hasFlag(args, "--hlp") {
-		return handleHlpArgs(args)
-	}
-
 	// In agent mode, intercept --help/-h and return structured JSON schema instead
 	// of cobra's human-oriented help text. This lets agents run the natural
 	// "pup --help" or "pup logs --help" and get the machine-readable schema
-	// without needing to know about --hlp.
+	// without needing to know about a special flag.
 	if (hasFlag(args, "--help") || hasFlag(args, "-h")) && useragent.IsAgentMode() {
-		return handleHelpAsSchema(args)
+		return printAgentSchema(firstNonFlagArg(args))
 	}
 
 	// IMPORTANT: Aliases are checked LAST to prevent overriding built-in commands.
@@ -173,13 +128,13 @@ func ExecuteWithArgs(args []string) error {
 			// Expand the alias by replacing args[0] with the alias command
 			expandedArgs := expandAlias(aliasCommand, args[1:])
 			rootCmd.SetArgs(expandedArgs)
-			return suppressHlpError(rootCmd.Execute())
+			return rootCmd.Execute()
 		}
 	}
 
 	// Not an alias or is a built-in command, execute normally
 	rootCmd.SetArgs(args)
-	return suppressHlpError(rootCmd.Execute())
+	return rootCmd.Execute()
 }
 
 // expandAlias expands an alias command and appends additional arguments
@@ -270,7 +225,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "json", "Output format (json, table, yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&autoApprove, "yes", "y", false, "Skip confirmation prompts (auto-approve all operations)")
 	rootCmd.PersistentFlags().BoolVar(&agentFlag, "agent", false, "Enable agent mode (auto-detected for AI coding assistants)")
-	rootCmd.PersistentFlags().BoolVar(&hlpFlag, "hlp", false, "Output complete command schema as JSON (for AI agents)")
 
 	// Add subcommands
 	rootCmd.AddCommand(versionCmd)

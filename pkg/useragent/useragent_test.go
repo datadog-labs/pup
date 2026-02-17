@@ -14,9 +14,9 @@ import (
 	"github.com/DataDog/pup/internal/version"
 )
 
-// allAgentEnvVars returns all env vars used by agent detectors plus DD_AGENT_MODE.
+// allAgentEnvVars returns all env vars used by agent detectors plus FORCE_AGENT_MODE.
 func allAgentEnvVars() []string {
-	vars := []string{"DD_AGENT_MODE"}
+	vars := []string{"FORCE_AGENT_MODE"}
 	for _, d := range agentDetectors {
 		vars = append(vars, d.EnvVars...)
 	}
@@ -155,9 +155,9 @@ func TestIsAgentMode(t *testing.T) {
 		want   bool
 	}{
 		{"no env", "", "", false},
-		{"DD_AGENT_MODE=1", "DD_AGENT_MODE", "1", true},
-		{"DD_AGENT_MODE=true", "DD_AGENT_MODE", "true", true},
-		{"DD_AGENT_MODE=false", "DD_AGENT_MODE", "false", false},
+		{"FORCE_AGENT_MODE=1", "FORCE_AGENT_MODE", "1", true},
+		{"FORCE_AGENT_MODE=true", "FORCE_AGENT_MODE", "true", true},
+		{"FORCE_AGENT_MODE=false", "FORCE_AGENT_MODE", "false", false},
 		{"CLAUDECODE=1", "CLAUDECODE", "1", true},
 		{"CURSOR_AGENT=1", "CURSOR_AGENT", "1", true},
 		{"AIDER=1", "AIDER", "1", true},

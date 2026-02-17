@@ -11,11 +11,11 @@ pup auth login
 # Or use API keys
 export DD_API_KEY="your-key" DD_APP_KEY="your-key" DD_SITE="datadoghq.com"
 
-# Get the full command schema (recommended first step)
-pup --hlp
+# Get the full command schema (recommended first step for agents)
+pup --help
 
 # Get schema for a specific domain
-pup logs --hlp
+pup logs --help
 ```
 
 ## Authentication
@@ -307,7 +307,7 @@ Agent mode is auto-detected when running inside AI coding assistants (Claude Cod
 pup --agent monitors list
 
 # Environment variable
-DD_AGENT_MODE=1 pup monitors list
+FORCE_AGENT_MODE=1 pup monitors list
 
 # Auto-detected from: CLAUDECODE, CLAUDE_CODE, CURSOR_AGENT, CODEX, AIDER, etc.
 ```

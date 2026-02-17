@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// Schema is the top-level structure returned by --hlp.
+// Schema is the top-level structure returned by --help in agent mode or 'pup agent schema'.
 type Schema struct {
 	Version       string            `json:"version"`
 	Description   string            `json:"description"`
