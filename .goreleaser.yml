@@ -33,9 +33,8 @@ builds:
     ldflags:
       - -s -w
       - -X github.com/DataDog/pup/internal/version.Version={{.Version}}
-      - -X github.com/DataDog/pup/internal/version.Commit={{.Commit}}
-      - -X github.com/DataDog/pup/internal/version.Date={{.Date}}
-      - -X github.com/DataDog/pup/internal/version.BuiltBy=goreleaser
+      - -X github.com/DataDog/pup/internal/version.GitCommit={{.Commit}}
+      - -X github.com/DataDog/pup/internal/version.BuildDate={{.Date}}
 
 archives:
   - id: pup

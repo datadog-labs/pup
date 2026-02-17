@@ -56,6 +56,18 @@ func TestRunSyntheticsTestsGet(t *testing.T) {
 	}
 }
 
+func TestRunSyntheticsTestsSearch(t *testing.T) {
+	cleanup := setupSyntheticsTestClient(t)
+	defer cleanup()
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+	err := runSyntheticsTestsSearch(syntheticsTestsSearchCmd, []string{})
+	if err == nil {
+		t.Error("Expected error with mock client")
+	}
+}
+
 func TestRunSyntheticsLocationsList(t *testing.T) {
 	cleanup := setupSyntheticsTestClient(t)
 	defer cleanup()

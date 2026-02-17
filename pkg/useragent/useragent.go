@@ -14,6 +14,34 @@ import (
 	"github.com/DataDog/pup/internal/version"
 )
 
+// AgentInfo contains information about a detected AI coding agent.
+type AgentInfo struct {
+	Name     string
+	Detected bool
+}
+
+// agentDetector defines how to detect a specific AI coding agent.
+type agentDetector struct {
+	Name    string
+	EnvVars []string
+}
+
+// agentDetectors is a table-driven registry of known AI coding agents.
+// Order matters: first match wins when multiple agents are detected.
+var agentDetectors = []agentDetector{
+	{Name: "claude-code", EnvVars: []string{"CLAUDECODE", "CLAUDE_CODE"}},
+	{Name: "cursor", EnvVars: []string{"CURSOR_AGENT"}},
+	{Name: "codex", EnvVars: []string{"CODEX", "OPENAI_CODEX"}},
+	{Name: "opencode", EnvVars: []string{"OPENCODE"}},
+	{Name: "aider", EnvVars: []string{"AIDER"}},
+	{Name: "cline", EnvVars: []string{"CLINE"}},
+	{Name: "windsurf", EnvVars: []string{"WINDSURF_AGENT"}},
+	{Name: "github-copilot", EnvVars: []string{"GITHUB_COPILOT"}},
+	{Name: "amazon-q", EnvVars: []string{"AMAZON_Q", "AWS_Q_DEVELOPER"}},
+	{Name: "gemini-code", EnvVars: []string{"GEMINI_CODE_ASSIST"}},
+	{Name: "sourcegraph-cody", EnvVars: []string{"SRC_CODY"}},
+}
+
 // Get returns the user agent string for pup CLI with optional AI agent detection.
 //
 // Format without agent:
@@ -23,12 +51,6 @@ import (
 // Format with agent:
 //
 //	pup/v0.1.0 (go go1.25.0; os darwin; arch arm64; ai-agent claude-code)
-//
-// AI agents are detected via environment variables:
-//   - CLAUDECODE=1 or CLAUDE_CODE=1 → adds "ai-agent claude-code"
-//   - CURSOR_AGENT=true or CURSOR_AGENT=1 → adds "ai-agent cursor"
-//
-// If multiple agents are detected, CLAUDECODE takes precedence.
 func Get() string {
 	base := fmt.Sprintf(
 		"pup/%s (go %s; os %s; arch %s",
@@ -44,19 +66,38 @@ func Get() string {
 	return base + ")"
 }
 
+// IsAgentMode returns true if any AI agent is detected or FORCE_AGENT_MODE=1 is set.
+func IsAgentMode() bool {
+	if isEnvTruthy("FORCE_AGENT_MODE") {
+		return true
+	}
+	return detectAgent() != ""
+}
+
+// DetectAgentInfo returns information about the detected AI coding agent.
+func DetectAgentInfo() AgentInfo {
+	agent := detectAgent()
+	if agent == "" {
+		return AgentInfo{}
+	}
+	return AgentInfo{Name: agent, Detected: true}
+}
+
 // detectAgent detects AI coding assistant from environment variables.
 // Returns empty string if no agent is detected.
 func detectAgent() string {
-	// Check Claude Code (CLAUDECODE or CLAUDE_CODE)
-	if os.Getenv("CLAUDECODE") == "1" || os.Getenv("CLAUDE_CODE") == "1" {
-		return "claude-code"
+	for _, d := range agentDetectors {
+		for _, envVar := range d.EnvVars {
+			if isEnvTruthy(envVar) {
+				return d.Name
+			}
+		}
 	}
-
-	// Check Cursor (CURSOR_AGENT=true or CURSOR_AGENT=1)
-	cursorAgent := strings.ToLower(os.Getenv("CURSOR_AGENT"))
-	if cursorAgent == "true" || cursorAgent == "1" {
-		return "cursor"
-	}
-
 	return ""
+}
+
+// isEnvTruthy checks if an environment variable is set to a truthy value.
+func isEnvTruthy(key string) bool {
+	val := strings.ToLower(os.Getenv(key))
+	return val == "1" || val == "true"
 }

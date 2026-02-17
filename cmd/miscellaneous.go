@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -66,12 +65,7 @@ func runMiscIPRanges(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get IP ranges: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runMiscStatus(cmd *cobra.Command, args []string) error {
@@ -80,10 +74,5 @@ func runMiscStatus(cmd *cobra.Command, args []string) error {
 		"message": "API is operational",
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }

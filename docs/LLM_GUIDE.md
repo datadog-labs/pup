@@ -1,462 +1,355 @@
 # LLM Agent Guide for Pup CLI
 
-This guide helps AI agents (LLMs) understand and effectively use the Pup CLI tool.
+This guide helps AI coding agents understand and effectively use the Pup CLI tool. It covers the agent operability system, discovery commands, query syntax, and common workflows.
 
-## Quick Reference
+For the runtime version of this guide (embedded in the binary), run `pup agent guide`.
 
-### Discovery Commands
+## Agent Mode
+
+Pup auto-detects AI coding agents and switches to **agent mode**, which changes how the CLI behaves. Agent mode is triggered by any of:
+
+| Method | Example |
+|--------|---------|
+| Auto-detect | `CLAUDECODE=1`, `CLAUDE_CODE=1`, `CURSOR_AGENT=1`, `CODEX=1`, `OPENAI_CODEX=1`, `OPENCODE=1`, `AIDER=1`, `CLINE=1`, `WINDSURF_AGENT=1`, `GITHUB_COPILOT=1`, `AMAZON_Q=1`, `AWS_Q_DEVELOPER=1`, `GEMINI_CODE_ASSIST=1`, `SRC_CODY=1` |
+| Explicit flag | `pup --agent <command>` |
+| Environment override | `FORCE_AGENT_MODE=1` |
+
+### What changes in agent mode
+
+| Behavior | Human Mode | Agent Mode |
+|----------|-----------|------------|
+| `--help` output | Cobra text help | Structured JSON schema |
+| Confirmation prompts | Interactive stdin | Auto-approved (no hangs) |
+| Error format | Human text with suggestions | Structured JSON with error codes |
+| API response wrapping | Raw API response | Envelope with metadata (count, truncation, warnings) |
+
+### Verifying agent mode
 
 ```bash
-# See all available commands
+# This should return JSON schema (not text) when agent is detected
 pup --help
 
-# Get detailed help for any command
-pup <command> --help
-pup <command> <subcommand> --help
+# Force agent mode for testing
+FORCE_AGENT_MODE=1 pup --help
 
-# Examples
-pup monitors --help
-pup monitors list --help
-pup auth login --help
+# Subtree schema (only logs commands + logs query syntax)
+FORCE_AGENT_MODE=1 pup logs --help
 ```
 
-### Authentication
+## Discovery Commands (Recommended First Steps)
+
+### 1. Get full command schema
+
+In agent mode, `--help` returns the complete JSON schema with all commands, flags, query syntax, workflows, best practices, and anti-patterns in a single call:
 
 ```bash
-# OAuth2 (Recommended)
-pup auth login     # Browser-based login
-pup auth status    # Check auth status
-pup auth refresh   # Refresh token
-pup auth logout    # Logout
-
-# API Keys (Legacy)
-export DD_API_KEY="..."
-export DD_APP_KEY="..."
+pup --help
+# Returns: { version, auth, global_flags, commands[], query_syntax, time_formats, workflows, best_practices, anti_patterns }
 ```
 
-## Command Patterns
-
-### List Resources
+### 2. Get domain-specific schema
 
 ```bash
-# General pattern
-pup <resource> list [--filters]
-
-# Examples
-pup monitors list
-pup monitors list --name="CPU"
-pup monitors list --tags="env:production"
-
-pup dashboards list
-pup slos list
-pup incidents list
+pup logs --help      # Only logs commands + logs query syntax
+pup monitors --help  # Only monitors commands
+pup metrics --help   # Only metrics commands
 ```
 
-### Get Resource Details
+### 3. Explicit schema commands (work regardless of agent mode)
 
 ```bash
-# General pattern
-pup <resource> get <id>
-
-# Examples
-pup monitors get 12345678
-pup dashboards get abc-def-123
-pup slos get abc-123-def
-pup incidents get abc-123-def
+pup agent schema              # Full JSON schema
+pup agent schema --compact    # Minimal schema (names + flags only, fewer tokens)
+pup agent guide               # Full steering guide (markdown)
+pup agent guide logs          # Domain-specific guide section
 ```
 
-### Delete Resources
+## Authentication
 
 ```bash
-# General pattern (requires confirmation)
-pup <resource> delete <id>
+# OAuth2 (recommended) — opens browser for secure login
+pup auth login
 
-# With auto-approve (no confirmation)
-pup <resource> delete <id> --yes
-
-# Examples
-pup monitors delete 12345678 --yes
-pup dashboards delete abc-def-123 --yes
-pup slos delete abc-123-def --yes
-```
-
-## Parsing Output
-
-All commands output JSON by default. Use `jq` for parsing:
-
-```bash
-# Get monitor names
-pup monitors list | jq '.[] | .name'
-
-# Filter by field
-pup monitors list | jq '.[] | select(.overall_state == "Alert")'
-
-# Extract specific fields
-pup monitors get 12345678 | jq '{name: .name, state: .overall_state}'
-
-# Count resources
-pup dashboards list | jq '.dashboards | length'
-```
-
-## Common Tasks
-
-### Monitor Management
-
-```bash
-# Find all critical monitors
-pup monitors list | jq '.[] | select(.overall_state == "Alert")'
-
-# Get monitor by name pattern
-pup monitors list --name="CPU" | jq '.[0] | .id'
-
-# Check monitor status
-pup monitors get 12345678 | jq '.overall_state'
-
-# List production monitors
-pup monitors list --tags="env:production"
-```
-
-### Dashboard Management
-
-```bash
-# Find dashboard by name
-pup dashboards list | jq '.dashboards[] | select(.title | contains("API"))'
-
-# Get dashboard ID
-pup dashboards list | jq '.dashboards[0] | .id'
-
-# Backup dashboard
-pup dashboards get abc-def-123 > dashboard-backup.json
-
-# Export all dashboards
-pup dashboards list | jq -r '.dashboards[].id' | \
-  xargs -I {} pup dashboards get {} > dashboards-{}.json
-```
-
-### SLO Monitoring
-
-```bash
-# Find breaching SLOs
-pup slos list | jq '.data[] | select(.status.state == "breaching")'
-
-# Check error budget
-pup slos get abc-123 | jq '.data.error_budget_remaining'
-
-# List all SLO statuses
-pup slos list | jq '.data[] | {name: .name, state: .status.state, budget: .status.error_budget_remaining}'
-```
-
-### Incident Response
-
-```bash
-# Find active incidents
-pup incidents list | jq '.data[] | select(.state == "active")'
-
-# Find SEV-1 incidents
-pup incidents list | jq '.data[] | select(.severity == "SEV-1")'
-
-# Get incident timeline
-pup incidents get abc-123 | jq '.data.timeline'
-
-# Check customer impact
-pup incidents list | jq '.data[] | select(.customer_impacted == true)'
-```
-
-## Help Text Structure
-
-Each command provides structured help with these sections:
-
-1. **CAPABILITIES**: What the command can do
-2. **EXAMPLES**: Real-world usage examples
-3. **OUTPUT FIELDS**: Description of output structure
-4. **FILTERS**: Available filtering options
-5. **AUTHENTICATION**: Auth requirements
-
-### Example Help Output
-
-```bash
-$ pup monitors list --help
-
-FILTERS:
-  --name      Filter by monitor name (substring match)
-  --tags      Filter by tags (comma-separated)
-
-EXAMPLES:
-  pup monitors list
-  pup monitors list --name="CPU"
-  pup monitors list --tags="env:production"
-
-OUTPUT FIELDS:
-  • id: Monitor ID
-  • name: Monitor name
-  • type: Monitor type
-  • query: Monitor query
-  • overall_state: Current state
-```
-
-## Error Handling
-
-```bash
-# Commands return non-zero exit codes on error
-pup monitors get 99999999
-echo $?  # Non-zero
-
-# Capture errors
-if ! pup monitors get 99999999 2>&1; then
-  echo "Monitor not found"
-fi
-
-# Parse error messages
-pup monitors get 99999999 2>&1 | grep "Error"
-```
-
-## Automation Patterns
-
-### Confirmation Bypass
-
-```bash
-# Method 1: --yes flag
-pup monitors delete 12345678 --yes
-
-# Method 2: Environment variable
-DD_AUTO_APPROVE=true pup monitors delete 12345678
-
-# Method 3: Global flag
-pup monitors delete 12345678 -y
-```
-
-### Multi-Site Operations
-
-```bash
-# Operate on different sites
-DD_SITE=datadoghq.com pup monitors list
-DD_SITE=datadoghq.eu pup monitors list
-DD_SITE=us3.datadoghq.com pup monitors list
-```
-
-### Batch Operations
-
-```bash
-# Delete multiple monitors
-for id in 111 222 333; do
-  pup monitors delete $id --yes
-done
-
-# Backup all dashboards
-pup dashboards list | jq -r '.dashboards[].id' | while read id; do
-  pup dashboards get "$id" > "dashboard-$id.json"
-done
-```
-
-## LLM-Specific Tips
-
-### 1. Always Check Help First
-
-Before using any command, check its help text:
-
-```bash
-pup <command> --help
-pup <command> <subcommand> --help
-```
-
-### 2. Use Structured Output
-
-All commands output JSON. Parse with jq:
-
-```bash
-pup <command> <subcommand> | jq '.'
-```
-
-### 3. Understand Authentication
-
-Check if authenticated before running commands:
-
-```bash
-pup auth status
-```
-
-### 4. Filter with jq, Not Grep
-
-Use jq for structured filtering:
-
-```bash
-# Good
-pup monitors list | jq '.[] | select(.name | contains("CPU"))'
-
-# Less good
-pup monitors list | grep "CPU"
-```
-
-### 5. Save Output for Analysis
-
-Save command output to files for later analysis:
-
-```bash
-pup monitors list > monitors.json
-jq '.[] | select(.overall_state == "Alert")' monitors.json
-```
-
-## Resource Types
-
-### Monitors
-- **ID Format**: Numeric (e.g., 12345678)
-- **List Command**: `pup monitors list`
-- **Get Command**: `pup monitors get <id>`
-- **Filter By**: name, tags
-
-### Dashboards
-- **ID Format**: UUID-like (e.g., abc-def-123)
-- **List Command**: `pup dashboards list`
-- **Get Command**: `pup dashboards get <id>`
-- **Filter By**: None (use jq)
-
-### SLOs
-- **ID Format**: UUID-like (e.g., abc-123-def)
-- **List Command**: `pup slos list`
-- **Get Command**: `pup slos get <id>`
-- **Filter By**: None (use jq)
-
-### Incidents
-- **ID Format**: UUID-like (e.g., abc-123-def)
-- **List Command**: `pup incidents list`
-- **Get Command**: `pup incidents get <id>`
-- **Filter By**: None (use jq)
-
-## Output Format
-
-### JSON (Default)
-
-```bash
-pup monitors list
-# Returns: JSON array or object
-```
-
-### Table (Future)
-
-```bash
-pup monitors list --output=table
-# Returns: Formatted table
-```
-
-### YAML (Future)
-
-```bash
-pup monitors list --output=yaml
-# Returns: YAML format
-```
-
-## Troubleshooting
-
-### Authentication Issues
-
-```bash
 # Check auth status
 pup auth status
 
-# Re-authenticate
-pup auth login
-
-# Check API keys (legacy)
-echo $DD_API_KEY
-echo $DD_APP_KEY
+# API keys (legacy) — set environment variables
+export DD_API_KEY="your-key"
+export DD_APP_KEY="your-key"
+export DD_SITE="datadoghq.com"
 ```
 
-### Rate Limiting
+- OAuth2 tokens are stored in the OS keychain and refresh automatically
+- Some endpoints require API keys even with OAuth2 (e.g., logs search v1)
+- In agent mode, if auth fails, the error JSON includes `suggestions` with remediation steps
 
-If you encounter rate limits:
-- Reduce request frequency
-- Use filters to limit data retrieved
-- Cache responses when possible
+## Command Patterns
 
-### Invalid IDs
+All commands follow `pup <domain> <action> [flags]` or `pup <domain> <subgroup> <action> [flags]`.
+
+### CRUD operations
 
 ```bash
-# Verify resource exists
-pup monitors list | jq '.[] | .id'
+pup <resource> list [--filters]          # List/search resources
+pup <resource> get <id>                  # Get details by ID
+pup <resource> delete <id> [--yes]       # Delete (--yes to skip confirmation)
+pup <resource> create [--body=file.json] # Create from JSON
+pup <resource> update <id> [--body=...]  # Update resource
+```
 
-# Then get specific resource
-pup monitors get <valid-id>
+### Output formats
+
+```bash
+pup monitors list --output=json   # JSON (default, recommended for agents)
+pup monitors list --output=table  # Human-readable table
+pup monitors list --output=yaml   # YAML
+```
+
+## Query Syntax by Domain
+
+### Logs
+
+```
+status:error                    # Filter by status
+service:web-app                 # Filter by service
+@user.id:12345                  # Custom attribute (@ prefix)
+host:i-*                        # Wildcard matching
+"exact error message"           # Exact phrase matching
+status:error AND service:web    # Boolean AND (implicit or explicit)
+status:error OR status:warn     # Boolean OR
+-status:info                    # Negation
+@http.status_code:[400 TO 599] # Numeric range
+```
+
+```bash
+# Search logs
+pup logs search --query="status:error AND service:api" --from=1h --limit=100
+
+# Aggregate logs (counting, statistics)
+pup logs aggregate --query="*" --from=1h --compute="count" --group-by="service"
+
+# Storage tiers
+pup logs search --query="*" --from=30d --storage="flex"
+```
+
+### Metrics
+
+```
+<aggregation>:<metric_name>{<filter>} by {<group>}
+
+avg:system.cpu.user{env:prod} by {host}         # CPU by host
+sum:trace.servlet.request.hits{service:web}      # Request count
+max:system.mem.used{*} by {host}                 # Max memory
+```
+
+```bash
+pup metrics query --query="avg:system.cpu.user{env:prod} by {host}" --from=1h
+pup metrics list --query="system.cpu"
+```
+
+### APM / Traces
+
+**CRITICAL: Durations are in NANOSECONDS**
+- 1ms = 1,000,000 ns
+- 1s = 1,000,000,000 ns
+
+```
+service:<name>                  # Filter by service
+resource_name:<path>            # Filter by endpoint
+@duration:>5000000000           # Duration > 5s (nanoseconds!)
+status:error                    # Error spans only
+env:production                  # Filter by environment
+```
+
+```bash
+pup traces search --query="service:api AND @duration:>1000000000" --from=1h
+pup apm services list
+```
+
+### Monitors
+
+```bash
+pup monitors list --tags="env:production" --name="CPU"  # Filter by tags/name
+pup monitors search --query="status:Alert"               # Full-text search
+pup monitors get 12345678                                 # Get by ID
+```
+
+### RUM
+
+```
+@type:error                     # Error events
+@type:view                      # Page views
+@view.loading_time:>3000        # Slow pages (milliseconds)
+@session.type:user              # Real users (not synthetic)
+```
+
+### Incidents
+
+```bash
+pup incidents list --query="status:active"
+pup incidents get <incident-id>
+```
+
+## Time Ranges
+
+All `--from` and `--to` flags accept:
+
+| Format | Example |
+|--------|---------|
+| Relative short | `1h`, `30m`, `7d`, `5s`, `1w` |
+| Relative long | `5min`, `2hours`, `3days` |
+| With spaces | `"5 minutes"`, `"2 hours"` |
+| RFC3339 | `2024-01-01T00:00:00Z` |
+| Unix ms | `1704067200000` |
+| Keyword | `now` |
+
+## Common Workflows
+
+### Error investigation
+
+```bash
+# 1. Get error counts by service
+pup logs aggregate --query="status:error" --from=1h --compute="count" --group-by="service"
+
+# 2. Drill into affected service
+pup logs search --query="status:error AND service:<name>" --from=1h --limit=20
+
+# 3. Check monitors for that service
+pup monitors list --tags="service:<name>"
+
+# 4. Check recent events
+pup events list --from=4h
+```
+
+### Performance investigation
+
+```bash
+# 1. Check service latency
+pup metrics query --query="avg:trace.servlet.request.duration{service:<name>} by {resource_name}" --from=1h
+
+# 2. Find slow traces (>5 seconds)
+pup traces search --query="service:<name> AND @duration:>5000000000" --from=1h
+
+# 3. Check resource utilization
+pup metrics query --query="avg:system.cpu.user{service:<name>} by {host}" --from=1h
+```
+
+### Service health overview
+
+```bash
+pup slos list
+pup monitors list --tags="team:<team_name>"
+pup incidents list --query="status:active"
+```
+
+## Agent Envelope (Agent Mode Output)
+
+In agent mode, command output is wrapped in a metadata envelope:
+
+```json
+{
+  "status": "success",
+  "data": [ ... ],
+  "metadata": {
+    "count": 42,
+    "truncated": false,
+    "command": "monitors list",
+    "warnings": []
+  }
+}
+```
+
+Error responses in agent mode:
+
+```json
+{
+  "status": "error",
+  "error_code": 401,
+  "error_message": "Authentication failed",
+  "operation": "list monitors",
+  "suggestions": [
+    "Run 'pup auth login' to re-authenticate",
+    "Or set DD_API_KEY and DD_APP_KEY environment variables"
+  ]
+}
 ```
 
 ## Best Practices
 
-1. **Always authenticate first**
-   ```bash
-   pup auth login
-   ```
+1. **Always specify `--from`** — most commands default to 1h but be explicit
+2. **Start narrow, widen later** — begin with 1h, expand to 24h/7d only if needed
+3. **Filter at the API level** — use `--tags`, `--query`, `--name` instead of fetching everything and parsing locally
+4. **Use `aggregate` for counts** — don't fetch all logs and count them yourself
+5. **APM durations are in nanoseconds** — 1s = 1,000,000,000
+6. **Use `--yes` for automation** — or rely on agent mode auto-approval
+7. **Check `pup agent schema`** when unsure about a command's flags
+8. **Chain queries** — aggregate first to find patterns, then search for specifics
 
-2. **Use filters to reduce data**
-   ```bash
-   pup monitors list --tags="env:production"
-   ```
+## Anti-Patterns
 
-3. **Save responses for reuse**
-   ```bash
-   pup monitors list > monitors.json
-   ```
+1. **Don't omit `--from`** on time-series queries — you'll get unexpected ranges or errors
+2. **Don't use `--limit=1000` as a first step** — start small and refine
+3. **Don't list all monitors without filters** in large orgs (>10k monitors)
+4. **Don't assume durations are in seconds** — APM uses nanoseconds
+5. **Don't fetch raw logs to count them** — use `pup logs aggregate --compute=count`
+6. **Don't retry 401/403 errors** — re-authenticate or check permissions instead
+7. **Don't use `--from=30d`** unless you specifically need a month of data
 
-4. **Check help for each command**
-   ```bash
-   pup <command> --help
-   ```
+## Error Reference
 
-5. **Use jq for parsing**
-   ```bash
-   pup monitors list | jq '.[] | .name'
-   ```
+| Status | Meaning | Suggested Action |
+|--------|---------|------------------|
+| 401 | Authentication failed | `pup auth login` or check DD_API_KEY/DD_APP_KEY |
+| 403 | Insufficient permissions | Verify API/App key scopes |
+| 404 | Resource not found | Check the resource ID |
+| 429 | Rate limited | Wait and retry with backoff |
+| 5xx | Server error | Retry after a short delay; check https://status.datadoghq.com/ |
 
-6. **Auto-approve for automation**
-   ```bash
-   pup monitors delete <id> --yes
-   ```
+## Architecture Reference
 
-## Example Workflows
+### Agent detection
 
-### Morning Health Check
+- Implementation: `pkg/useragent/useragent.go`
+- Table-driven detector registry; first match wins
+- `IsAgentMode()` checks `FORCE_AGENT_MODE` first, then agent env vars
+- `DetectAgentInfo()` returns `AgentInfo{Name, Detected}`
 
-```bash
-# Check authentication
-pup auth status
+### Schema generation
 
-# Check for alerts
-pup monitors list | jq '.[] | select(.overall_state == "Alert")'
+- Implementation: `pkg/agenthelp/agenthelp.go`
+- Walks the Cobra command tree via `rootCmd.Commands()` recursion
+- Schema stays in sync automatically as commands are added
+- Subtree schemas filter to a single domain + relevant query syntax
 
-# Check active incidents
-pup incidents list | jq '.data[] | select(.state == "active")'
+### Output envelope
 
-# Check SLO breaches
-pup slos list | jq '.data[] | select(.status.state == "breaching")'
-```
+- Implementation: `pkg/formatter/envelope.go`
+- `WrapForAgent(data, metadata)` wraps responses in `AgentEnvelope`
+- `FormatAgentError(operation, statusCode, message, apiBody)` formats structured errors
+- Only activated when `cfg.AgentMode == true`
 
-### Dashboard Backup
+### Steering content
 
-```bash
-# List all dashboards
-pup dashboards list > dashboard-list.json
+- Query syntax, time formats, workflows, best practices, anti-patterns: `pkg/agenthelp/steering.go`
+- Embedded guide document: `pkg/agenthelp/guide.md` (loaded via `go:embed`)
+- Guide sections retrievable by domain: `agenthelp.GetGuideSection("logs")`
 
-# Backup each dashboard
-cat dashboard-list.json | jq -r '.dashboards[].id' | while read id; do
-  pup dashboards get "$id" > "backups/dashboard-$id.json"
-  echo "Backed up dashboard $id"
-done
-```
+### Help interception
 
-### Monitor Audit
+- `cmd/root.go:ExecuteWithArgs()` intercepts `--help`/`-h` before Cobra processes args
+- When `useragent.IsAgentMode()` is true, calls `printAgentSchema()` instead of Cobra help
+- `firstNonFlagArg()` extracts the domain name for subtree schemas
 
-```bash
-# Find untagged monitors
-pup monitors list | jq '.[] | select(.tags | length == 0)'
+## File Map
 
-# Find monitors without notifications
-pup monitors list | jq '.[] | select(.message | contains("@") | not)'
-
-# Find monitors in Alert state
-pup monitors list | jq '.[] | select(.overall_state == "Alert")'
-```
-
-## Additional Resources
-
-- **Main Docs**: README.md
-- **OAuth2 Guide**: docs/OAUTH2.md
-- **Developer Guide**: CLAUDE.md
-- **Implementation**: SUMMARY.md
+| File | Purpose |
+|------|---------|
+| `pkg/useragent/useragent.go` | Agent detection (11 agents + FORCE_AGENT_MODE) |
+| `pkg/agenthelp/agenthelp.go` | Schema generation (Cobra tree walker) |
+| `pkg/agenthelp/steering.go` | Query syntax, workflows, best practices |
+| `pkg/agenthelp/guide.go` | Embedded guide document (`go:embed`) |
+| `pkg/agenthelp/guide.md` | Runtime steering guide content |
+| `pkg/formatter/envelope.go` | Agent envelope and structured errors |
+| `pkg/config/config.go` | `AgentMode` field on Config |
+| `cmd/root.go` | `--agent` flag, help interception, `formatAndPrint()`, `formatAPIError()` |
+| `cmd/agent.go` | `pup agent schema`, `pup agent guide` commands |

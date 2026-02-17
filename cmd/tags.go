@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -95,12 +94,7 @@ func runTagsList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list host tags: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runTagsGet(cmd *cobra.Command, args []string) error {
@@ -119,12 +113,7 @@ func runTagsGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get host tags: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runTagsAdd(cmd *cobra.Command, args []string) error {
@@ -149,12 +138,7 @@ func runTagsAdd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to add host tags: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runTagsUpdate(cmd *cobra.Command, args []string) error {
@@ -179,12 +163,7 @@ func runTagsUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to update host tags: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runTagsDelete(cmd *cobra.Command, args []string) error {

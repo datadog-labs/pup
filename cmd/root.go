@@ -7,16 +7,21 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/pup/internal/version"
+	"github.com/DataDog/pup/pkg/agenthelp"
 	"github.com/DataDog/pup/pkg/client"
 	"github.com/DataDog/pup/pkg/config"
+	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/DataDog/pup/pkg/useragent"
 	"github.com/spf13/cobra"
 )
 
@@ -41,6 +46,7 @@ var (
 	ddClient     *client.Client
 	outputFormat string
 	autoApprove  bool
+	agentFlag    bool
 
 	// Dependency injection points for testing
 	clientFactory           = defaultClientFactory
@@ -64,8 +70,58 @@ func Execute() error {
 	return ExecuteWithArgs(os.Args[1:])
 }
 
+// hasFlag checks if a flag is present in the args.
+func hasFlag(args []string, flag string) bool {
+	for _, a := range args {
+		if a == flag {
+			return true
+		}
+	}
+	return false
+}
+
+// firstNonFlagArg returns the first argument that isn't a flag.
+func firstNonFlagArg(args []string) string {
+	for _, a := range args {
+		if !isFlag(a) {
+			return a
+		}
+	}
+	return ""
+}
+
+// printAgentSchema generates and prints the JSON schema for the given subtree.
+func printAgentSchema(subtree string) error {
+	var data interface{}
+	if subtree != "" {
+		schema := agenthelp.GenerateSubtreeSchema(rootCmd, subtree)
+		if schema != nil {
+			data = schema
+		}
+	}
+	if data == nil {
+		s := agenthelp.GenerateSchema(rootCmd)
+		data = &s
+	}
+
+	out, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal schema: %w", err)
+	}
+	printOutput("%s\n", string(out))
+	return nil
+}
+
 // ExecuteWithArgs executes the root command with the given arguments
 func ExecuteWithArgs(args []string) error {
+	// In agent mode, intercept --help/-h and return structured JSON schema instead
+	// of cobra's human-oriented help text. This lets agents run the natural
+	// "pup --help" or "pup logs --help" and get the machine-readable schema
+	// without needing to know about a special flag.
+	if (hasFlag(args, "--help") || hasFlag(args, "-h")) && useragent.IsAgentMode() {
+		return printAgentSchema(firstNonFlagArg(args))
+	}
+
 	// IMPORTANT: Aliases are checked LAST to prevent overriding built-in commands.
 	// This ensures that no alias can shadow an existing pup command, even if validation
 	// is bypassed or a new command is added that conflicts with an existing alias.
@@ -177,6 +233,7 @@ func init() {
 	// Global flags
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "json", "Output format (json, table, yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&autoApprove, "yes", "y", false, "Skip confirmation prompts (auto-approve all operations)")
+	rootCmd.PersistentFlags().BoolVar(&agentFlag, "agent", false, "Enable agent mode (auto-detected for AI coding assistants)")
 
 	// Add subcommands
 	rootCmd.AddCommand(versionCmd)
@@ -221,6 +278,7 @@ func init() {
 	rootCmd.AddCommand(productAnalyticsCmd)
 	rootCmd.AddCommand(casesCmd)
 	rootCmd.AddCommand(apmCmd)
+	rootCmd.AddCommand(agentCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -239,6 +297,17 @@ func initConfig() {
 			fmt.Fprintf(os.Stderr, "Warning: failed to set DD_CLI_AUTO_APPROVE: %v\n", err)
 		}
 	}
+
+	// Determine agent mode: explicit flag takes precedence, then auto-detect
+	if agentFlag || useragent.IsAgentMode() {
+		cfg.AgentMode = true
+		cfg.AutoApprove = true
+	}
+}
+
+// isAgentMode returns true if the current session is in agent mode.
+func isAgentMode() bool {
+	return cfg != nil && cfg.AgentMode
 }
 
 // getClient returns a configured Datadog client
@@ -283,6 +352,27 @@ func printOutput(format string, a ...any) {
 	_, _ = fmt.Fprintf(outputWriter, format, a...)
 }
 
+// formatAndPrint formats data with optional agent envelope and prints it.
+// In agent mode, data is wrapped in an AgentEnvelope with metadata.
+// In human mode, data is formatted using the standard formatter.
+func formatAndPrint(data interface{}, meta *formatter.Metadata) error {
+	if isAgentMode() {
+		output, err := formatter.WrapForAgent(data, meta)
+		if err != nil {
+			return err
+		}
+		printOutput("%s\n", output)
+		return nil
+	}
+
+	output, err := formatter.FormatOutput(data, formatter.OutputFormat(outputFormat))
+	if err != nil {
+		return err
+	}
+	printOutput("%s\n", output)
+	return nil
+}
+
 // readConfirmation reads user confirmation from input
 func readConfirmation() (string, error) {
 	scanner := bufio.NewScanner(inputReader)
@@ -312,38 +402,53 @@ func extractAPIErrorBody(err error) string {
 // formatAPIError creates user-friendly error messages for API errors.
 // It extracts the API response body from GenericOpenAPIError when available
 // and appends contextual guidance based on the HTTP status code.
+// In agent mode, returns a structured JSON error.
 func formatAPIError(operation string, err error, response any) error {
-	type httpResponse interface {
-		StatusCode() int
+	// Extract status code from the response.
+	// The datadog API client returns *http.Response (field) for some APIs
+	// and types with StatusCode() method for others.
+	statusCode := 0
+	switch r := response.(type) {
+	case *http.Response:
+		if r != nil {
+			statusCode = r.StatusCode
+		}
+	case interface{ StatusCode() int }:
+		if r != nil {
+			statusCode = r.StatusCode()
+		}
 	}
 
-	if r, ok := response.(httpResponse); ok && r != nil {
-		statusCode := r.StatusCode()
+	if statusCode > 0 {
+		apiBody := extractAPIErrorBody(err)
+
+		// In agent mode, return structured JSON error
+		if isAgentMode() {
+			jsonErr, fmtErr := formatter.FormatAgentError(operation, statusCode, err.Error(), apiBody)
+			if fmtErr == nil {
+				return fmt.Errorf("%s", jsonErr)
+			}
+		}
+
 		baseMsg := fmt.Sprintf("failed to %s: %v (status: %d)", operation, err, statusCode)
 
 		// Include API response body if available
-		if body := extractAPIErrorBody(err); body != "" {
-			baseMsg = fmt.Sprintf("failed to %s: %v (status: %d)\nAPI Response: %s", operation, err, statusCode, body)
+		if apiBody != "" {
+			baseMsg = fmt.Sprintf("failed to %s: %v (status: %d)\nAPI Response: %s", operation, err, statusCode, apiBody)
 		}
 
 		switch {
 		case statusCode >= 500:
-			// 5xx Server errors
 			return fmt.Errorf("%s\n\nThe Datadog API is experiencing issues. Please try again later or check https://status.datadoghq.com/", baseMsg)
 		case statusCode == 429:
-			// Rate limiting
 			return fmt.Errorf("%s\n\nYou are being rate limited. Please wait a moment and try again.", baseMsg)
 		case statusCode == 403:
-			// Forbidden
 			return fmt.Errorf("%s\n\nAccess denied. Verify your API/App keys have the required permissions.", baseMsg)
 		case statusCode == 401:
-			// Unauthorized
 			return fmt.Errorf("%s\n\nAuthentication failed. Run 'pup auth login' or verify your DD_API_KEY and DD_APP_KEY.", baseMsg)
 		case statusCode == 404:
-			// Not found
 			return fmt.Errorf("%s\n\nResource not found. Verify the ID or check if the resource was deleted.", baseMsg)
 		case statusCode >= 400:
-			// Other 4xx client errors
 			return fmt.Errorf("%s\n\nInvalid request. Check your parameters and try again.", baseMsg)
 		default:
 			return fmt.Errorf("%s", baseMsg)

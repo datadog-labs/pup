@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -166,12 +165,7 @@ func runCICDPipelinesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list pipelines: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCICDPipelinesGet(cmd *cobra.Command, args []string) error {
@@ -200,12 +194,7 @@ func runCICDPipelinesGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get pipeline: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCICDEventsSearch(cmd *cobra.Command, args []string) error {
@@ -248,12 +237,7 @@ func runCICDEventsSearch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to search events: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCICDEventsAggregate(cmd *cobra.Command, args []string) error {
@@ -302,12 +286,7 @@ func runCICDEventsAggregate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to aggregate events: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func buildComputeAggregation(compute string) (*datadogV2.CIAppCompute, error) {

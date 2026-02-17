@@ -12,7 +12,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -117,12 +116,7 @@ func runInvestigationsTrigger(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to trigger investigation: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runInvestigationsGet(cmd *cobra.Command, args []string) error {
@@ -143,12 +137,7 @@ func runInvestigationsGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get investigation: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runInvestigationsList(cmd *cobra.Command, args []string) error {
@@ -173,12 +162,7 @@ func runInvestigationsList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list investigations: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func buildTriggerRequestBody() (map[string]any, error) {

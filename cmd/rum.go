@@ -11,7 +11,6 @@ import (
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/DataDog/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -402,12 +401,7 @@ func runRumAppsList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list RUM applications: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumAppsGet(cmd *cobra.Command, args []string) error {
@@ -426,12 +420,7 @@ func runRumAppsGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get RUM application: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumAppsCreate(cmd *cobra.Command, args []string) error {
@@ -465,12 +454,7 @@ func runRumAppsCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create RUM application: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumAppsUpdate(cmd *cobra.Command, args []string) error {
@@ -508,12 +492,7 @@ func runRumAppsUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to update RUM application: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumAppsDelete(cmd *cobra.Command, args []string) error {
@@ -563,12 +542,7 @@ func runRumMetricsList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list RUM metrics", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumMetricsGet(cmd *cobra.Command, args []string) error {
@@ -584,12 +558,7 @@ func runRumMetricsGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get RUM metric", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumMetricsCreate(cmd *cobra.Command, args []string) error {
@@ -617,12 +586,7 @@ func runRumRetentionFiltersList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list RUM retention filters", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumRetentionFiltersGet(cmd *cobra.Command, args []string) error {
@@ -638,12 +602,7 @@ func runRumRetentionFiltersGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get RUM retention filter", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumRetentionFiltersCreate(cmd *cobra.Command, args []string) error {
@@ -700,12 +659,7 @@ func runRumSessionsList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list RUM sessions: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
@@ -749,12 +703,7 @@ func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to search RUM sessions: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 // RUM Playlists (Placeholder)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
+	"github.com/DataDog/pup/pkg/auth/dcr"
 	"github.com/DataDog/pup/pkg/auth/storage"
 	"github.com/DataDog/pup/pkg/config"
 	"github.com/DataDog/pup/pkg/useragent"
@@ -24,6 +25,12 @@ type Client struct {
 	ctx    context.Context
 	api    *datadog.APIClient
 }
+
+// Test hooks — overridden in tests to inject fakes
+var (
+	getStorageFunc   = func() (storage.Storage, error) { return storage.GetStorage(nil) }
+	newDCRClientFunc = func(site string) *dcr.Client { return dcr.NewClient(site) }
+)
 
 // New creates a new Datadog API client
 // Authentication priority:
@@ -45,16 +52,31 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 
 	if !forceAPIKeys {
 		// Try OAuth2 tokens first (preferred method)
-		store, err := storage.GetStorage(nil)
+		store, err := getStorageFunc()
 		if err == nil {
 			tokens, err := store.LoadTokens(cfg.Site)
-			if err == nil && tokens != nil && !tokens.IsExpired() {
-				// Use OAuth2 Bearer token authentication
-				ctx = context.WithValue(
-					context.Background(),
-					datadog.ContextAccessToken,
-					tokens.AccessToken,
-				)
+			if err == nil && tokens != nil {
+				// Auto-refresh: if token is expired but refresh token is available, refresh it
+				if tokens.IsExpired() && tokens.RefreshToken != "" {
+					creds, credsErr := store.LoadClientCredentials(cfg.Site)
+					if credsErr == nil && creds != nil {
+						dcrClient := newDCRClientFunc(cfg.Site)
+						newTokens, refreshErr := dcrClient.RefreshToken(tokens.RefreshToken, creds)
+						if refreshErr == nil {
+							_ = store.SaveTokens(cfg.Site, newTokens)
+							tokens = newTokens
+						}
+					}
+				}
+
+				if !tokens.IsExpired() {
+					// Use OAuth2 Bearer token authentication
+					ctx = context.WithValue(
+						context.Background(),
+						datadog.ContextAccessToken,
+						tokens.AccessToken,
+					)
+				}
 			}
 		}
 	}
@@ -83,7 +105,7 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 
 	// Configure the API client
 	configuration := datadog.NewConfiguration()
-	configuration.Host = fmt.Sprintf("api.%s", cfg.Site)
+	configuration.Host = cfg.GetAPIHost()
 
 	// Set custom user agent to identify requests as coming from pup CLI
 	configuration.UserAgent = useragent.Get()
@@ -153,7 +175,7 @@ func (c *Client) RawRequest(method, path string, body io.Reader) (*http.Response
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://api.%s%s", c.config.Site, path)
+	url := fmt.Sprintf("https://%s%s", c.config.GetAPIHost(), path)
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
