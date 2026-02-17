@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -72,10 +71,5 @@ func runDataGovernanceScannerRulesList(cmd *cobra.Command, args []string) error 
 		return fmt.Errorf("failed to list scanning rules: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }

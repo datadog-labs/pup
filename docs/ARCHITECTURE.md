@@ -137,22 +137,34 @@ Based on [RFC 6749](https://tools.ietf.org/html/rfc6749) and [RFC 7636](https://
 **Fallback:**
 - If refresh fails, prompt user to re-authenticate
 
-## User Agent
+## User Agent & Agent Mode
 
 Custom user agent identifies pup CLI and detects AI coding assistants:
 
 **Format:**
 ```
-pup/v0.1.0 (go go1.25.0; os darwin; arch arm64)              # Without agent
-pup/v0.1.0 (go go1.25.0; os darwin; arch arm64) claude-code  # With agent
+pup/v0.1.0 (go go1.25.0; os darwin; arch arm64)                        # Without agent
+pup/v0.1.0 (go go1.25.0; os darwin; arch arm64; ai-agent claude-code)  # With agent
 ```
 
-**AI Agent Detection:**
-- `CLAUDECODE=1` or `CLAUDE_CODE=1` → appends `claude-code`
-- `CURSOR_AGENT=true` or `CURSOR_AGENT=1` → appends `cursor`
-- Precedence: CLAUDECODE > CURSOR_AGENT
+**AI Agent Detection** (`pkg/useragent`):
 
-**Implementation:** `pkg/useragent` - Separate package for reusability and testing.
+Table-driven registry detecting 11 agents via environment variables. First match wins:
+- Claude Code (`CLAUDECODE`, `CLAUDE_CODE`), Cursor (`CURSOR_AGENT`), Codex (`CODEX`, `OPENAI_CODEX`), OpenCode (`OPENCODE`), Aider (`AIDER`), Cline (`CLINE`), Windsurf (`WINDSURF_AGENT`), GitHub Copilot (`GITHUB_COPILOT`), Amazon Q (`AMAZON_Q`, `AWS_Q_DEVELOPER`), Gemini Code Assist (`GEMINI_CODE_ASSIST`), Sourcegraph Cody (`SRC_CODY`)
+- Manual override: `FORCE_AGENT_MODE=1` or `--agent` flag
+
+**Agent Mode Behavior** (when detected):
+- `--help` returns structured JSON schema instead of Cobra text
+- Confirmation prompts auto-approved (prevents stdin hangs)
+- API responses wrapped in metadata envelope (count, truncation, warnings)
+- Errors returned as structured JSON with suggestions
+
+**Agent Operability Packages:**
+- `pkg/agenthelp/` — Schema generation (Cobra tree walker), steering content, embedded guide
+- `pkg/formatter/envelope.go` — Agent envelope and structured error formatting
+- `cmd/agent.go` — `pup agent schema`, `pup agent guide` commands
+
+See [LLM_GUIDE.md](docs/LLM_GUIDE.md) for the complete agent guide.
 
 ## API Client Wrapper
 

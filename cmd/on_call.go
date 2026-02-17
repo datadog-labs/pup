@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -312,12 +311,7 @@ func runOnCallTeamsList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list teams", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsGet(cmd *cobra.Command, args []string) error {
@@ -333,12 +327,7 @@ func runOnCallTeamsGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get team", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsCreate(cmd *cobra.Command, args []string) error {
@@ -369,12 +358,7 @@ func runOnCallTeamsCreate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("create team", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsUpdate(cmd *cobra.Command, args []string) error {
@@ -407,12 +391,7 @@ func runOnCallTeamsUpdate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("update team", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsDelete(cmd *cobra.Command, args []string) error {
@@ -479,12 +458,7 @@ func runOnCallTeamsMembershipsList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list team memberships", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsMembershipsAdd(cmd *cobra.Command, args []string) error {
@@ -524,12 +498,7 @@ func runOnCallTeamsMembershipsAdd(cmd *cobra.Command, args []string) error {
 		return formatAPIError("add team member", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsMembershipsUpdate(cmd *cobra.Command, args []string) error {
@@ -558,12 +527,7 @@ func runOnCallTeamsMembershipsUpdate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("update team membership", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runOnCallTeamsMembershipsRemove(cmd *cobra.Command, args []string) error {

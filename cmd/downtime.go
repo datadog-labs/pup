@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -81,12 +80,7 @@ func runDowntimeList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list downtimes: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runDowntimeGet(cmd *cobra.Command, args []string) error {
@@ -105,12 +99,7 @@ func runDowntimeGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get downtime: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runDowntimeCancel(cmd *cobra.Command, args []string) error {

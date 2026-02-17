@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -132,12 +131,7 @@ func runAppKeysList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list app key registrations", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runAppKeysGet(cmd *cobra.Command, args []string) error {
@@ -154,12 +148,7 @@ func runAppKeysGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get app key registration", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runAppKeysRegister(cmd *cobra.Command, args []string) error {
@@ -176,12 +165,7 @@ func runAppKeysRegister(cmd *cobra.Command, args []string) error {
 		return formatAPIError("register app key", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runAppKeysUnregister(cmd *cobra.Command, args []string) error {

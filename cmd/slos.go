@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -230,13 +229,7 @@ func runSlosList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list SLOs: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runSlosGet(cmd *cobra.Command, args []string) error {
@@ -256,13 +249,7 @@ func runSlosGet(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get SLO: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runSlosDelete(cmd *cobra.Command, args []string) error {
@@ -300,11 +287,5 @@ func runSlosDelete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to delete SLO: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }

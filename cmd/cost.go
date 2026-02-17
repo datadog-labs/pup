@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -142,13 +141,7 @@ func runCostProjected(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get projected cost", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCostAttribution(cmd *cobra.Command, args []string) error {
@@ -183,13 +176,7 @@ func runCostAttribution(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get cost attribution", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCostByOrg(cmd *cobra.Command, args []string) error {
@@ -253,11 +240,5 @@ func runCostByOrg(cmd *cobra.Command, args []string) error {
 		return formatAPIError(fmt.Sprintf("get %s cost by org", costView), err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }

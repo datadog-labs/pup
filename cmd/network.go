@@ -6,9 +6,7 @@
 package cmd
 
 import (
-	"fmt"
 
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -73,12 +71,7 @@ func runNetworkFlowsList(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runNetworkDevicesList(cmd *cobra.Command, args []string) error {
@@ -89,10 +82,5 @@ func runNetworkDevicesList(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	fmt.Println(output)
-	return nil
+	return formatAndPrint(result, nil)
 }

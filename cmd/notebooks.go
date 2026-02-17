@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -154,12 +153,7 @@ func runNotebooksCreate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("create notebook", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
@@ -187,12 +181,7 @@ func runNotebooksUpdate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("update notebook", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksList(cmd *cobra.Command, args []string) error {
@@ -207,12 +196,7 @@ func runNotebooksList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list notebooks", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksGet(cmd *cobra.Command, args []string) error {
@@ -228,12 +212,7 @@ func runNotebooksGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get notebook", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runNotebooksDelete(cmd *cobra.Command, args []string) error {

@@ -6,6 +6,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
@@ -282,8 +284,11 @@ func runMonitorsList(cmd *cobra.Command, args []string) error {
 		opts.WithMonitorTags(monitorTags)
 	}
 
-	// Set limit for results (default 200, max 1000)
-	// Users can increase limit or use filters to find specific monitors
+	// In agent mode, use a larger default limit (500) unless explicitly set
+	if isAgentMode() && !cmd.Flags().Changed("limit") {
+		monitorLimit = 500
+	}
+
 	if monitorLimit > 1000 {
 		monitorLimit = 1000
 	}
@@ -316,18 +321,26 @@ func runMonitorsList(cmd *cobra.Command, args []string) error {
 		resp = resp[:monitorLimit]
 	}
 
-	// Convert to interface{} to ensure compatibility with formatter
-	var data interface{} = resp
+	count := len(resp)
+	truncated := originalCount > int(monitorLimit)
+	var meta *formatter.Metadata
+	if isAgentMode() {
+		meta = &formatter.Metadata{
+			Count:     &count,
+			Truncated: truncated,
+			Command:   "monitors list",
+		}
+		if truncated {
+			meta.NextAction = fmt.Sprintf("Use --limit=%d or refine with --tags/--name filters", min(int(monitorLimit)*2, 1000))
+		}
+	}
 
-	output, err := formatter.FormatOutput(data, formatter.OutputFormat(outputFormat))
-	if err != nil {
+	if err := formatAndPrint(resp, meta); err != nil {
 		return err
 	}
 
-	printOutput("%s\n", output)
-
-	// Show count info if we're truncating
-	if originalCount > int(monitorLimit) {
+	// Show count info if we're truncating (human mode only)
+	if !isAgentMode() && truncated {
 		printOutput("\nShowing %d of %d monitors (use --limit to adjust)\n", monitorLimit, originalCount)
 	}
 
@@ -348,13 +361,11 @@ func runMonitorsGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get monitor", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
+	var meta *formatter.Metadata
+	if isAgentMode() {
+		meta = &formatter.Metadata{Command: "monitors get"}
 	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, meta)
 }
 
 func runMonitorsDelete(cmd *cobra.Command, args []string) error {
@@ -389,13 +400,7 @@ func runMonitorsDelete(cmd *cobra.Command, args []string) error {
 		return formatAPIError("delete monitor", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runMonitorsSearch(cmd *cobra.Command, args []string) error {
@@ -425,11 +430,5 @@ func runMonitorsSearch(cmd *cobra.Command, args []string) error {
 		return formatAPIError("search monitors", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }

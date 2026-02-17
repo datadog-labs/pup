@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -362,12 +361,7 @@ func runCasesSearch(cmd *cobra.Command, args []string) error {
 		return formatAPIError("search cases", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesGet(cmd *cobra.Command, args []string) error {
@@ -384,12 +378,7 @@ func runCasesGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get case", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesCreate(cmd *cobra.Command, args []string) error {
@@ -422,12 +411,7 @@ func runCasesCreate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("create case", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesArchive(cmd *cobra.Command, args []string) error {
@@ -446,12 +430,7 @@ func runCasesArchive(cmd *cobra.Command, args []string) error {
 		return formatAPIError("archive case", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesUnarchive(cmd *cobra.Command, args []string) error {
@@ -470,12 +449,7 @@ func runCasesUnarchive(cmd *cobra.Command, args []string) error {
 		return formatAPIError("unarchive case", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesAssign(cmd *cobra.Command, args []string) error {
@@ -497,12 +471,7 @@ func runCasesAssign(cmd *cobra.Command, args []string) error {
 		return formatAPIError("assign case", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesUpdateTitle(cmd *cobra.Command, args []string) error {
@@ -524,12 +493,7 @@ func runCasesUpdateTitle(cmd *cobra.Command, args []string) error {
 		return formatAPIError("update case title", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesUpdatePriority(cmd *cobra.Command, args []string) error {
@@ -556,12 +520,7 @@ func runCasesUpdatePriority(cmd *cobra.Command, args []string) error {
 		return formatAPIError("update case priority", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 // Project implementations
@@ -577,12 +536,7 @@ func runCasesProjectsList(cmd *cobra.Command, args []string) error {
 		return formatAPIError("list projects", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesProjectsGet(cmd *cobra.Command, args []string) error {
@@ -599,12 +553,7 @@ func runCasesProjectsGet(cmd *cobra.Command, args []string) error {
 		return formatAPIError("get project", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesProjectsCreate(cmd *cobra.Command, args []string) error {
@@ -624,12 +573,7 @@ func runCasesProjectsCreate(cmd *cobra.Command, args []string) error {
 		return formatAPIError("create project", err, r)
 	}
 
-	output, err := formatter.FormatOutput(resp, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(resp, nil)
 }
 
 func runCasesProjectsDelete(cmd *cobra.Command, args []string) error {

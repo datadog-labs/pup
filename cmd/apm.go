@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -580,12 +579,7 @@ func runAPMServicesList(cmd *cobra.Command, args []string) error {
 			err, path, startTime, endTime, envFilter)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMServicesStats(cmd *cobra.Command, args []string) error {
@@ -622,12 +616,7 @@ func runAPMServicesStats(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get service stats: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMServicesOperations(cmd *cobra.Command, args []string) error {
@@ -670,12 +659,7 @@ func runAPMServicesOperations(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get service operations: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMServicesResources(cmd *cobra.Command, args []string) error {
@@ -719,12 +703,7 @@ func runAPMServicesResources(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get service resources: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMEntitiesList(cmd *cobra.Command, args []string) error {
@@ -773,12 +752,7 @@ func runAPMEntitiesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list APM entities: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMDependenciesList(cmd *cobra.Command, args []string) error {
@@ -822,12 +796,7 @@ func runAPMDependenciesList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list service dependencies: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }
 
 func runAPMFlowMap(cmd *cobra.Command, args []string) error {
@@ -860,10 +829,5 @@ func runAPMFlowMap(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get flow map: %w", err)
 	}
 
-	output, err := formatter.FormatOutput(result, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-	printOutput("%s\n", output)
-	return nil
+	return formatAndPrint(result, nil)
 }

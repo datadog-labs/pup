@@ -284,6 +284,7 @@ func isReservedCommand(name string) bool {
 		"usage", "cost", "data-governance", "obs-pipelines",
 		"network", "cloud", "integrations", "misc",
 		"investigations", "product-analytics", "cases", "apm",
+		"agent",
 	}
 
 	// Convert to lowercase for case-insensitive comparison

@@ -17,7 +17,6 @@ import (
 	"github.com/DataDog/pup/pkg/auth/oauth"
 	"github.com/DataDog/pup/pkg/auth/storage"
 	"github.com/DataDog/pup/pkg/auth/types"
-	"github.com/DataDog/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -455,13 +454,7 @@ func runAuthStatus(cmd *cobra.Command, args []string) error {
 		fmt.Printf("   Token expires in: %s\n", timeLeft.Round(time.Second))
 	}
 
-	output, err := formatter.FormatOutput(status, formatter.OutputFormat(outputFormat))
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("\n%s\n", output)
-	return nil
+	return formatAndPrint(status, nil)
 }
 
 func runAuthLogout(cmd *cobra.Command, args []string) error {

@@ -16,6 +16,7 @@ type Config struct {
 	AppKey      string
 	Site        string
 	AutoApprove bool
+	AgentMode   bool
 }
 
 // Load loads configuration from environment variables
