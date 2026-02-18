@@ -7,6 +7,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
@@ -706,18 +707,65 @@ func runRumSessionsSearch(cmd *cobra.Command, args []string) error {
 	return formatAndPrint(resp, nil)
 }
 
-// RUM Playlists (Placeholder)
+// RUM Playlists
 func runRumPlaylistsList(cmd *cobra.Command, args []string) error {
-	return fmt.Errorf("playlist functionality not yet implemented in Datadog API client")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewRumReplayPlaylistsApi(client.V2())
+	resp, r, err := api.ListRumReplayPlaylists(client.Context())
+	if err != nil {
+		return formatAPIError("list RUM replay playlists", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
 }
 
 func runRumPlaylistsGet(cmd *cobra.Command, args []string) error {
-	return fmt.Errorf("playlist functionality not yet implemented in Datadog API client")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	playlistID, err := parseInt32(rumPlaylistID)
+	if err != nil {
+		return fmt.Errorf("invalid playlist ID: %w", err)
+	}
+
+	api := datadogV2.NewRumReplayPlaylistsApi(client.V2())
+	resp, r, err := api.GetRumReplayPlaylist(client.Context(), playlistID)
+	if err != nil {
+		return formatAPIError("get RUM replay playlist", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
 }
 
-// RUM Heatmaps (Placeholder)
+// RUM Heatmaps
 func runRumHeatmapsQuery(cmd *cobra.Command, args []string) error {
-	return fmt.Errorf("heatmap functionality not yet implemented in Datadog API client")
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewRumReplayHeatmapsApi(client.V2())
+	resp, r, err := api.ListReplayHeatmapSnapshots(client.Context(), rumView)
+	if err != nil {
+		return formatAPIError("list RUM replay heatmaps", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// parseInt32 parses a string to int32
+func parseInt32(s string) (int32, error) {
+	n, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return int32(n), nil
 }
 
 // Helper function

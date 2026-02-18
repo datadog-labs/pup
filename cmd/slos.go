@@ -7,8 +7,10 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
 )
 
@@ -207,10 +209,43 @@ var slosDeleteCmd = &cobra.Command{
 	RunE:  runSlosDelete,
 }
 
+var slosStatusCmd = &cobra.Command{
+	Use:   "status [slo-id]",
+	Short: "Get SLO status",
+	Long: `Get the status of a specific SLO over a time range.
+
+ARGUMENTS:
+  slo-id    The SLO ID
+
+FLAGS:
+  --from                  Start timestamp (Unix seconds, required)
+  --to                    End timestamp (Unix seconds, required)
+  --disable-corrections   Disable SLO corrections
+
+EXAMPLES:
+  # Get SLO status for the last hour
+  pup slos status abc-123 --from=1700000000 --to=1700003600`,
+	Args: cobra.ExactArgs(1),
+	RunE: runSlosStatus,
+}
+
+var (
+	sloStatusFrom              string
+	sloStatusTo                string
+	sloStatusDisableCorrection bool
+)
+
 func init() {
+	slosStatusCmd.Flags().StringVar(&sloStatusFrom, "from", "", "Start timestamp in Unix seconds (required)")
+	slosStatusCmd.Flags().StringVar(&sloStatusTo, "to", "", "End timestamp in Unix seconds (required)")
+	slosStatusCmd.Flags().BoolVar(&sloStatusDisableCorrection, "disable-corrections", false, "Disable SLO corrections")
+	_ = slosStatusCmd.MarkFlagRequired("from")
+	_ = slosStatusCmd.MarkFlagRequired("to")
+
 	slosCmd.AddCommand(slosListCmd)
 	slosCmd.AddCommand(slosGetCmd)
 	slosCmd.AddCommand(slosDeleteCmd)
+	slosCmd.AddCommand(slosStatusCmd)
 }
 
 func runSlosList(cmd *cobra.Command, args []string) error {
@@ -285,6 +320,37 @@ func runSlosDelete(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to delete SLO: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to delete SLO: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSlosStatus(cmd *cobra.Command, args []string) error {
+	fromTs, err := strconv.ParseInt(sloStatusFrom, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid --from timestamp: %w", err)
+	}
+
+	toTs, err := strconv.ParseInt(sloStatusTo, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid --to timestamp: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	sloID := args[0]
+	api := datadogV2.NewServiceLevelObjectivesApi(client.V2())
+	opts := datadogV2.NewGetSloStatusOptionalParameters()
+	if sloStatusDisableCorrection {
+		opts = opts.WithDisableCorrections(true)
+	}
+
+	resp, r, err := api.GetSloStatus(client.Context(), sloID, fromTs, toTs, *opts)
+	if err != nil {
+		return formatAPIError("get SLO status", err, r)
 	}
 
 	return formatAndPrint(resp, nil)

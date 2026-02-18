@@ -79,3 +79,44 @@ func TestRunSyntheticsLocationsList(t *testing.T) {
 		t.Error("Expected error with mock client")
 	}
 }
+
+func TestSyntheticsSuitesCmd(t *testing.T) {
+	if syntheticsSuitesCmd == nil {
+		t.Fatal("syntheticsSuitesCmd is nil")
+	}
+	expectedCommands := []string{"list", "create", "delete"}
+	commands := syntheticsSuitesCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Use] = true
+	}
+	for _, expected := range expectedCommands {
+		if !commandMap[expected] {
+			t.Errorf("Missing suites subcommand: %s", expected)
+		}
+	}
+}
+
+func TestRunSyntheticsSuitesList(t *testing.T) {
+	cleanup := setupSyntheticsTestClient(t)
+	defer cleanup()
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+	err := runSyntheticsSuitesList(syntheticsSuitesListCmd, []string{})
+	if err == nil {
+		t.Error("Expected error with mock client")
+	}
+}
+
+func TestRunSyntheticsSuitesGet(t *testing.T) {
+	cleanup := setupSyntheticsTestClient(t)
+	defer cleanup()
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+	err := runSyntheticsSuitesGet(syntheticsSuitesGetCmd, []string{"suite-123"})
+	if err == nil {
+		t.Error("Expected error with mock client")
+	}
+}

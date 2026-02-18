@@ -7,6 +7,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
@@ -99,11 +101,62 @@ EXAMPLES:
 	RunE: runSecurityFindingsSearch,
 }
 
+// Content Packs subcommands
+var securityContentPacksCmd = &cobra.Command{
+	Use:   "content-packs",
+	Short: "Manage security content packs",
+}
+
+var securityContentPacksListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List content pack states",
+	RunE:  runSecurityContentPacksList,
+}
+
+var securityContentPacksActivateCmd = &cobra.Command{
+	Use:   "activate [content-pack-id]",
+	Short: "Activate a content pack",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runSecurityContentPacksActivate,
+}
+
+var securityContentPacksDeactivateCmd = &cobra.Command{
+	Use:   "deactivate [content-pack-id]",
+	Short: "Deactivate a content pack",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runSecurityContentPacksDeactivate,
+}
+
+// Bulk export subcommand
+var securityRulesBulkExportCmd = &cobra.Command{
+	Use:   "bulk-export",
+	Short: "Bulk export security monitoring rules",
+	RunE:  runSecurityRulesBulkExport,
+}
+
+// Risk Scores subcommands
+var securityRiskScoresCmd = &cobra.Command{
+	Use:   "risk-scores",
+	Short: "Manage entity risk scores",
+}
+
+var securityRiskScoresListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List entity risk scores",
+	RunE:  runSecurityRiskScoresList,
+}
+
 var (
 	// Findings search flags
 	findingsQuery string
 	findingsLimit int32
 	findingsSort  string
+
+	// Bulk export flags
+	securityRuleIDs string
+
+	// Risk scores flags
+	riskScoresQuery string
 )
 
 func init() {
@@ -113,11 +166,20 @@ func init() {
 	securityFindingsSearchCmd.Flags().StringVar(&findingsSort, "sort", "", "Sort field: severity, status, timestamp")
 	_ = securityFindingsSearchCmd.MarkFlagRequired("query")
 
+	// Bulk export flags
+	securityRulesBulkExportCmd.Flags().StringVar(&securityRuleIDs, "rule-ids", "", "Comma-separated rule IDs (required)")
+	_ = securityRulesBulkExportCmd.MarkFlagRequired("rule-ids")
+
+	// Risk scores flags
+	securityRiskScoresListCmd.Flags().StringVar(&riskScoresQuery, "query", "", "Filter query")
+
 	// Command hierarchy
-	securityRulesCmd.AddCommand(securityRulesListCmd, securityRulesGetCmd)
+	securityRulesCmd.AddCommand(securityRulesListCmd, securityRulesGetCmd, securityRulesBulkExportCmd)
 	securitySignalsCmd.AddCommand(securitySignalsListCmd)
 	securityFindingsCmd.AddCommand(securityFindingsSearchCmd)
-	securityCmd.AddCommand(securityRulesCmd, securitySignalsCmd, securityFindingsCmd)
+	securityContentPacksCmd.AddCommand(securityContentPacksListCmd, securityContentPacksActivateCmd, securityContentPacksDeactivateCmd)
+	securityRiskScoresCmd.AddCommand(securityRiskScoresListCmd)
+	securityCmd.AddCommand(securityRulesCmd, securitySignalsCmd, securityFindingsCmd, securityContentPacksCmd, securityRiskScoresCmd)
 }
 
 func runSecurityRulesList(cmd *cobra.Command, args []string) error {
@@ -170,6 +232,107 @@ func runSecuritySignalsList(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to list security signals: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to list security signals: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// Content Packs implementations
+func runSecurityContentPacksList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSecurityMonitoringApi(client.V2())
+	resp, r, err := api.GetContentPacksStates(client.Context())
+	if err != nil {
+		return formatAPIError("list content packs", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSecurityContentPacksActivate(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSecurityMonitoringApi(client.V2())
+	r, err := api.ActivateContentPack(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("activate content pack", err, r)
+	}
+
+	printOutput("Content pack '%s' activated successfully.\n", args[0])
+	return nil
+}
+
+func runSecurityContentPacksDeactivate(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSecurityMonitoringApi(client.V2())
+	r, err := api.DeactivateContentPack(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("deactivate content pack", err, r)
+	}
+
+	printOutput("Content pack '%s' deactivated successfully.\n", args[0])
+	return nil
+}
+
+// Bulk Export implementation
+func runSecurityRulesBulkExport(cmd *cobra.Command, args []string) error {
+	ruleIDs := strings.Split(securityRuleIDs, ",")
+	for i := range ruleIDs {
+		ruleIDs[i] = strings.TrimSpace(ruleIDs[i])
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSecurityMonitoringApi(client.V2())
+	attrs := *datadogV2.NewSecurityMonitoringRuleBulkExportAttributes(ruleIDs)
+	data := *datadogV2.NewSecurityMonitoringRuleBulkExportData(attrs, datadogV2.SECURITYMONITORINGRULEBULKEXPORTDATATYPE_SECURITY_MONITORING_RULES_BULK_EXPORT)
+	body := *datadogV2.NewSecurityMonitoringRuleBulkExportPayload(data)
+
+	resp, r, err := api.BulkExportSecurityMonitoringRules(client.Context(), body)
+	if err != nil {
+		return formatAPIError("bulk export security rules", err, r)
+	}
+
+	// resp is an io.Reader, read and output
+	output, err := io.ReadAll(resp)
+	if err != nil {
+		return fmt.Errorf("failed to read export data: %w", err)
+	}
+
+	printOutput("%s\n", string(output))
+	return nil
+}
+
+// Risk Scores implementation
+func runSecurityRiskScoresList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewEntityRiskScoresApi(client.V2())
+	opts := datadogV2.NewListEntityRiskScoresOptionalParameters()
+	if riskScoresQuery != "" {
+		opts = opts.WithFilterQuery(riskScoresQuery)
+	}
+
+	resp, r, err := api.ListEntityRiskScores(client.Context(), *opts)
+	if err != nil {
+		return formatAPIError("list entity risk scores", err, r)
 	}
 
 	return formatAndPrint(resp, nil)

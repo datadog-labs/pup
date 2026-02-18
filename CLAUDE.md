@@ -190,12 +190,12 @@ See [TESTING.md](docs/TESTING.md) for details.
 
 ## Implementation Status
 
-- **28 command files** implemented
-- **200+ subcommands** across 33 domains
+- **31 command files** implemented
+- **260+ subcommands** across 36 domains
 - **93.9% test coverage** in pkg/
-- **23/33 commands** fully working
-- **7/33 commands** blocked by API client library issues
-- **3/33 commands** placeholder (API endpoints pending)
+- **34/36 commands** fully working
+- **0/36 commands** blocked by API client library issues
+- **2/36 commands** placeholder (API endpoints pending)
 
 See [COMMANDS.md](docs/COMMANDS.md) for detailed status.
 

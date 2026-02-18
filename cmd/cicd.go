@@ -6,7 +6,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
@@ -78,6 +80,31 @@ var cicdEventsAggregateCmd = &cobra.Command{
 	RunE:  runCICDEventsAggregate,
 }
 
+// DORA subcommands
+var cicdDoraCmd = &cobra.Command{
+	Use:   "dora",
+	Short: "Manage DORA metrics",
+}
+
+var cicdDoraPatchDeploymentCmd = &cobra.Command{
+	Use:   "patch-deployment [deployment-id]",
+	Short: "Patch a DORA deployment",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCICDDoraPatchDeployment,
+}
+
+// Flaky Tests subcommands
+var cicdFlakyTestsCmd = &cobra.Command{
+	Use:   "flaky-tests",
+	Short: "Manage flaky tests",
+}
+
+var cicdFlakyTestsUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update flaky tests",
+	RunE:  runCICDFlakyTestsUpdate,
+}
+
 var (
 	pipelineID   string
 	pipelineName string
@@ -89,6 +116,7 @@ var (
 	cicdSort     string
 	cicdCompute  string
 	cicdGroupBy  string
+	cicdFile     string
 )
 
 func init() {
@@ -121,9 +149,19 @@ func init() {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
 
+	// DORA flags
+	cicdDoraPatchDeploymentCmd.Flags().StringVar(&cicdFile, "file", "", "JSON file with patch data (required)")
+	_ = cicdDoraPatchDeploymentCmd.MarkFlagRequired("file")
+
+	// Flaky tests flags
+	cicdFlakyTestsUpdateCmd.Flags().StringVar(&cicdFile, "file", "", "JSON file with flaky tests data (required)")
+	_ = cicdFlakyTestsUpdateCmd.MarkFlagRequired("file")
+
 	cicdPipelinesCmd.AddCommand(cicdPipelinesListCmd, cicdPipelinesGetCmd)
 	cicdEventsCmd.AddCommand(cicdEventsSearchCmd, cicdEventsAggregateCmd)
-	cicdCmd.AddCommand(cicdPipelinesCmd, cicdEventsCmd)
+	cicdDoraCmd.AddCommand(cicdDoraPatchDeploymentCmd)
+	cicdFlakyTestsCmd.AddCommand(cicdFlakyTestsUpdateCmd)
+	cicdCmd.AddCommand(cicdPipelinesCmd, cicdEventsCmd, cicdDoraCmd, cicdFlakyTestsCmd)
 }
 
 func runCICDPipelinesList(cmd *cobra.Command, args []string) error {
@@ -284,6 +322,59 @@ func runCICDEventsAggregate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to aggregate events: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to aggregate events: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// DORA implementations
+func runCICDDoraPatchDeployment(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(cicdFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.DORADeploymentPatchRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewDORAMetricsApi(client.V2())
+	r, err := api.PatchDORADeployment(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("patch DORA deployment", err, r)
+	}
+
+	printOutput("DORA deployment '%s' patched successfully.\n", args[0])
+	return nil
+}
+
+// Flaky Tests implementations
+func runCICDFlakyTestsUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(cicdFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.UpdateFlakyTestsRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewTestOptimizationApi(client.V2())
+	resp, r, err := api.UpdateFlakyTests(client.Context(), body)
+	if err != nil {
+		return formatAPIError("update flaky tests", err, r)
 	}
 
 	return formatAndPrint(resp, nil)

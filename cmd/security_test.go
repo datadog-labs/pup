@@ -28,7 +28,7 @@ func TestSecurityCmd(t *testing.T) {
 }
 
 func TestSecurityCmd_Subcommands(t *testing.T) {
-	expectedCommands := []string{"rules", "signals", "findings"}
+	expectedCommands := []string{"rules", "signals", "findings", "content-packs", "risk-scores"}
 
 	commands := securityCmd.Commands()
 

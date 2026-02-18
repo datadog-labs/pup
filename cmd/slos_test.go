@@ -147,6 +147,49 @@ func TestRunSlosDelete_AutoApprove(t *testing.T) {
 	}
 }
 
+func TestSlosStatusCmd(t *testing.T) {
+	if slosStatusCmd == nil {
+		t.Fatal("slosStatusCmd is nil")
+	}
+	if slosStatusCmd.Use != "status [slo-id]" {
+		t.Errorf("Use = %s, want 'status [slo-id]'", slosStatusCmd.Use)
+	}
+}
+
+func TestRunSlosStatus(t *testing.T) {
+	cleanup := setupSlosTestClient(t)
+	defer cleanup()
+
+	sloStatusFrom = "1700000000"
+	sloStatusTo = "1700003600"
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runSlosStatus(slosStatusCmd, []string{"slo-123"})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
+	}
+}
+
+func TestRunSlosStatus_InvalidTimestamp(t *testing.T) {
+	cleanup := setupSlosTestClient(t)
+	defer cleanup()
+
+	sloStatusFrom = "not-a-number"
+	sloStatusTo = "1700003600"
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runSlosStatus(slosStatusCmd, []string{"slo-123"})
+	if err == nil {
+		t.Error("expected error for invalid timestamp, got nil")
+	}
+}
+
 func TestRunSlosDelete_WithConfirmation(t *testing.T) {
 	cleanup := setupSlosTestClient(t)
 	defer cleanup()

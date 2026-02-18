@@ -1,6 +1,6 @@
 # Command Reference
 
-Complete reference for all 38 command groups in Pup.
+Complete reference for all 41 command groups in Pup.
 
 ## Command Pattern
 
@@ -25,10 +25,10 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | traces | - | cmd/traces_simple.go | ❌ |
 | monitors | list, get, delete, search | cmd/monitors.go | ✅ |
 | dashboards | list, get, delete, url | cmd/dashboards.go | ✅ |
-| slos | list, get, create, update, delete, corrections | cmd/slos.go | ✅ |
-| incidents | list, get, attachments | cmd/incidents.go | ✅ |
-| rum | apps, sessions | cmd/rum.go | ✅ |
-| cicd | pipelines, events | cmd/cicd.go | ✅ |
+| slos | list, get, delete, status | cmd/slos.go | ✅ |
+| incidents | list, get, attachments, settings, handles, postmortem-templates | cmd/incidents.go | ✅ |
+| rum | apps, metrics, retention-filters, sessions, playlists, heatmaps | cmd/rum.go | ✅ |
+| cicd | pipelines, events, dora, flaky-tests | cmd/cicd.go | ✅ |
 | static-analysis | custom-rulesets | cmd/vulnerabilities.go | ✅ |
 | downtime | list, get, cancel | cmd/downtime.go | ✅ |
 | tags | list, get, add, update, delete | cmd/tags.go | ✅ |
@@ -38,10 +38,10 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | api-keys | list, get, create, delete | cmd/api_keys.go | ✅ |
 | app-keys | list, get, register, unregister | cmd/app_keys.go | ✅ |
 | infrastructure | hosts (list, get) | cmd/infrastructure.go | ✅ |
-| synthetics | tests, locations | cmd/synthetics.go | ✅ |
+| synthetics | tests, locations, suites | cmd/synthetics.go | ✅ |
 | users | list, get, roles | cmd/users.go | ✅ |
 | notebooks | list, get, delete | cmd/notebooks.go | ✅ |
-| security | rules, signals, findings (search) | cmd/security.go | ✅ |
+| security | rules, signals, findings, content-packs, risk-scores | cmd/security.go | ✅ |
 | organizations | get, list | cmd/organizations.go | ✅ |
 | service-catalog | list, get | cmd/service_catalog.go | ✅ |
 | error-tracking | issues (search, get) | cmd/error_tracking.go | ✅ |
@@ -53,12 +53,15 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | data-governance | scanner-rules (list) | cmd/data_governance.go | ✅ |
 | obs-pipelines | list, get | cmd/obs_pipelines.go | ⏳ |
 | network | flows, devices | cmd/network.go | ⏳ |
-| cloud | aws, gcp, azure (list) | cmd/cloud.go | ✅ |
-| integrations | slack, pagerduty, webhooks | cmd/integrations.go | ✅ |
+| cloud | aws, gcp, azure, oci | cmd/cloud.go | ✅ |
+| integrations | slack, pagerduty, webhooks, jira, servicenow | cmd/integrations.go | ✅ |
 | misc | ip-ranges, status | cmd/miscellaneous.go | ✅ |
-| cases | create, get, search, assign, archive, projects | cmd/cases.go | ✅ |
+| cases | create, get, search, assign, archive, projects, jira, servicenow, move | cmd/cases.go | ✅ |
+| status-pages | pages, components, degradations | cmd/status_pages.go | ✅ |
+| code-coverage | branch-summary, commit-summary | cmd/code_coverage.go | ✅ |
+| hamr | connections (get, create) | cmd/hamr.go | ✅ |
 
-**Summary:** 34 working, 0 API-blocked, 3 placeholders
+**Summary:** 37 working, 0 API-blocked, 2 placeholders
 
 **Note:** RUM command (cmd/rum.go) is fully operational. Apps and sessions work completely. Metrics and retention-filters support list/get operations (create/update/delete operations pending due to complex API type structures).
 
@@ -115,10 +118,11 @@ pup infrastructure hosts list
 ### Monitoring & Alerting
 - **monitors** - Monitor management (list, get, delete)
 - **dashboards** - Dashboard management (list, get, delete, url)
-- **slos** - Service Level Objectives (list, get, create, update, delete)
-- **synthetics** - Synthetic monitoring (tests, locations)
+- **slos** - Service Level Objectives (list, get, delete, status)
+- **synthetics** - Synthetic monitoring (tests, locations, suites)
 - **notebooks** - Investigation notebooks (list, get, delete)
 - **downtime** - Monitor downtime (list, get, cancel)
+- **status-pages** - Status pages with components and degradations
 
 ### Infrastructure & Performance
 - **infrastructure** - Host inventory (hosts list, hosts get)
@@ -126,25 +130,27 @@ pup infrastructure hosts list
 - **tags** - Host tag management (list, get, add, update, delete)
 
 ### Security & Compliance
-- **security** - Security monitoring (rules, signals, findings search)
+- **security** - Security monitoring (rules, signals, findings, content-packs, risk-scores)
 - **static-analysis** - Code security (ast, custom-rulesets, sca, coverage)
 - **audit-logs** - Audit trail (list, search)
 - **data-governance** - Sensitive data scanning (scanner-rules list)
 
 ### Cloud & Integrations
-- **cloud** - Cloud providers (aws, gcp, azure)
-- **integrations** - Third-party integrations (slack, pagerduty, webhooks)
+- **cloud** - Cloud providers (aws, gcp, azure, oci)
+- **integrations** - Third-party integrations (slack, pagerduty, webhooks, jira, servicenow)
 
 ### Development & Quality
-- **cicd** - CI/CD visibility (pipelines, events)
+- **cicd** - CI/CD visibility (pipelines, events, dora, flaky-tests)
+- **code-coverage** - Code coverage summaries (branch, commit)
 - **error-tracking** - Error management (issues search, issues get)
 - **scorecards** - Service quality (list, get)
 - **service-catalog** - Service registry (list, get)
 
 ### Operations & Incident Response
-- **incidents** - Incident management (list, get, attachments)
+- **incidents** - Incident management (list, get, attachments, settings, handles, postmortem-templates)
 - **on-call** - Team management (create, update, delete teams; manage memberships with roles)
-- **cases** - Case management (create, search, assign, archive, projects)
+- **cases** - Case management (create, search, assign, archive, projects, jira, servicenow, move)
+- **hamr** - High Availability Multi-Region connections
 
 ### Organization & Access
 - **users** - User management (list, get, roles)
@@ -173,23 +179,22 @@ Available on all commands:
 --yes                Skip confirmation prompts
 ```
 
-## Recent Enhancements (v2.54.0 API Client Update)
+## Recent Enhancements (v2.55.0 API Client Update)
 
-The upgrade to datadog-api-client-go v2.54.0 has resolved all previous API blocking issues and added new capabilities:
-
-### Newly Unblocked Commands
-All 7 previously blocked commands now work:
-- ✅ **audit-logs** - Full audit log search and listing
-- ✅ **cicd** - CI/CD pipeline visibility and events
-- ✅ **events** - Infrastructure event management
-- ✅ **tags** - Host tag operations
-- ✅ **usage** - Usage and billing metrics
-- ✅ **static-analysis** - Code security analysis
+The upgrade to datadog-api-client-go v2.55.0 adds 3 new command groups and ~60 new subcommands across 9 existing domains.
 
 ### New Command Groups
-- ✅ **app-keys** - App key registration for Action Connections and Workflow Automation
-- ✅ **cost** - Cost management with projected costs, attribution by tags, and organizational breakdowns
-- ✅ **product-analytics** - Send server-side product analytics events with custom properties
+- ✅ **status-pages** - Status page management (pages, components, degradations CRUD)
+- ✅ **code-coverage** - Code coverage summaries (branch-level and commit-level)
+- ✅ **hamr** - High Availability Multi-Region connections
 
 ### Enhanced Existing Commands
-- **security findings** - Now includes get and search capabilities with advanced filtering (severity, status, resource type, evaluation results)
+- **integrations** - Added Jira integration (accounts, templates CRUD) and ServiceNow integration (instances, templates, users, assignment groups, business services)
+- **cloud** - Added OCI integration (tenancy configs CRUD, products)
+- **synthetics** - Added suites management (V2 API: search, get, create, update, delete)
+- **security** - Added content packs (list, activate, deactivate), bulk rule export, and entity risk scores
+- **incidents** - Added global settings, handles, and postmortem template management
+- **cases** - Added Jira/ServiceNow issue linking, case project moves, and notification rules
+- **cicd** - Added DORA deployment patching and flaky tests management
+- **slos** - Added SLO status query (V2 API)
+- **rum** - Replaced playlist/heatmap placeholders with working RUM Replay API implementations

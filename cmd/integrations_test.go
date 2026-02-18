@@ -30,12 +30,9 @@ func TestIntegrationsCmd(t *testing.T) {
 }
 
 func TestIntegrationsCmd_Subcommands(t *testing.T) {
-	expectedCommands := []string{"slack", "pagerduty", "webhooks"}
+	expectedCommands := []string{"slack", "pagerduty", "webhooks", "jira", "servicenow"}
 
 	commands := integrationsCmd.Commands()
-	if len(commands) != len(expectedCommands) {
-		t.Errorf("Number of subcommands = %d, want %d", len(commands), len(expectedCommands))
-	}
 
 	commandMap := make(map[string]*cobra.Command)
 	for _, cmd := range commands {

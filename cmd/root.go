@@ -279,6 +279,9 @@ func init() {
 	rootCmd.AddCommand(casesCmd)
 	rootCmd.AddCommand(apmCmd)
 	rootCmd.AddCommand(agentCmd)
+	rootCmd.AddCommand(statusPagesCmd)
+	rootCmd.AddCommand(codeCoverageCmd)
+	rootCmd.AddCommand(hamrCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.

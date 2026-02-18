@@ -77,6 +77,48 @@ func TestRunIncidentsList(t *testing.T) {
 	}
 }
 
+func TestIncidentsCmd_NewSubcommands(t *testing.T) {
+	expectedCommands := []string{"settings", "handles", "postmortem-templates"}
+	commands := incidentsCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Use] = true
+	}
+	for _, expected := range expectedCommands {
+		if !commandMap[expected] {
+			t.Errorf("Missing subcommand: %s", expected)
+		}
+	}
+}
+
+func TestRunIncidentsSettingsGet(t *testing.T) {
+	cleanup := setupIncidentsTestClient(t)
+	defer cleanup()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runIncidentsSettingsGet(incidentsSettingsGetCmd, []string{})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
+	}
+}
+
+func TestRunIncidentsPostmortemTemplatesList(t *testing.T) {
+	cleanup := setupIncidentsTestClient(t)
+	defer cleanup()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runIncidentsPostmortemTemplatesList(incidentsPostmortemTemplatesListCmd, []string{})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
+	}
+}
+
 func TestRunIncidentsGet(t *testing.T) {
 	cleanup := setupIncidentsTestClient(t)
 	defer cleanup()

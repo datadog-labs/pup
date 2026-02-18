@@ -113,11 +113,66 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 	// Enable all unstable operations to suppress warnings
 	// These are beta/preview features that we want to use
 	unstableOps := []string{
+		// Incidents
 		"v2.ListIncidents",
 		"v2.GetIncident",
 		"v2.CreateIncident",
 		"v2.UpdateIncident",
 		"v2.DeleteIncident",
+		"v2.CreateGlobalIncidentHandle",
+		"v2.DeleteGlobalIncidentHandle",
+		"v2.GetGlobalIncidentSettings",
+		"v2.ListGlobalIncidentHandles",
+		"v2.UpdateGlobalIncidentHandle",
+		"v2.UpdateGlobalIncidentSettings",
+		"v2.CreateIncidentPostmortemTemplate",
+		"v2.DeleteIncidentPostmortemTemplate",
+		"v2.GetIncidentPostmortemTemplate",
+		"v2.ListIncidentPostmortemTemplates",
+		"v2.UpdateIncidentPostmortemTemplate",
+		// Code Coverage
+		"v2.GetCodeCoverageBranchSummary",
+		"v2.GetCodeCoverageCommitSummary",
+		// ServiceNow Integration
+		"v2.CreateServiceNowTemplate",
+		"v2.DeleteServiceNowTemplate",
+		"v2.GetServiceNowTemplate",
+		"v2.ListServiceNowAssignmentGroups",
+		"v2.ListServiceNowBusinessServices",
+		"v2.ListServiceNowInstances",
+		"v2.ListServiceNowTemplates",
+		"v2.ListServiceNowUsers",
+		"v2.UpdateServiceNowTemplate",
+		// Jira Integration
+		"v2.CreateJiraIssueTemplate",
+		"v2.DeleteJiraAccount",
+		"v2.DeleteJiraIssueTemplate",
+		"v2.GetJiraIssueTemplate",
+		"v2.ListJiraAccounts",
+		"v2.ListJiraIssueTemplates",
+		"v2.UpdateJiraIssueTemplate",
+		// OCI Integration
+		"v2.CreateTenancyConfig",
+		"v2.GetTenancyConfigs",
+		// Entity Risk Scores
+		"v2.ListEntityRiskScores",
+		// HAMR
+		"v2.CreateHamrOrgConnection",
+		"v2.GetHamrOrgConnection",
+		// Content Packs
+		"v2.ActivateContentPack",
+		"v2.DeactivateContentPack",
+		"v2.GetContentPacksStates",
+		// SLO Status
+		"v2.GetSloStatus",
+		// Cases
+		"v2.CreateCaseJiraIssue",
+		"v2.LinkJiraIssueToCase",
+		"v2.UnlinkJiraIssue",
+		"v2.CreateCaseServiceNowTicket",
+		"v2.MoveCaseToProject",
+		// Flaky Tests
+		"v2.UpdateFlakyTests",
 	}
 	for _, op := range unstableOps {
 		configuration.SetUnstableOperationEnabled(op, true)
