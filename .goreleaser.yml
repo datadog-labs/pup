@@ -156,17 +156,13 @@ changelog:
 # Homebrew Tap
 homebrew_casks:
   - name: pup
+    skip_upload: true  # We use commit-headless for signed commits
     repository:
       owner: datadog-labs
       name: homebrew-pack
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     homepage: https://github.com/datadog-labs/pup
     description: "Datadog API CLI - OAuth2 + API key authentication for Datadog APIs"
     license: Apache-2.0
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-    commit_msg_template: "chore(cask): update {{ .ProjectName }} to {{ .Tag }}"
     binaries:
       - pup
     completions:
