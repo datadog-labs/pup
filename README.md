@@ -1,4 +1,4 @@
-# [PREVIEW] Pup - Datadog API CLI Wrapper
+# :dog2: Give Your Agent a Puppy: Introducing Pup CLI
 
 **NOTICE: This is in Preview mode, we are fine tuning the interactions and bugs that arise. Please file issues or submit PRs. Thank you for your early interest!**
 
@@ -6,16 +6,36 @@
 [![Go Version](https://img.shields.io/badge/go-1.25+-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-A Go-based command-line wrapper for easy interaction with Datadog APIs.
+Every AI agent needs a loyal companion. Meet Pup — the CLI that gives your agents full access to Datadog's observability platform (because even autonomous agents need good tooling, not just tricks).
 
-## Features
+## What is Pup?
 
-- **Native Go Implementation**: Fast, cross-platform binary
-- **OAuth2 Authentication**: Secure browser-based login with PKCE protection
-- **API Key Support**: Traditional API key authentication still available
-- **Simple Commands**: Intuitive CLI for common Datadog operations
-- **JSON Output**: Structured output for easy parsing and automation
-- **Dynamic Client Registration**: Each installation gets unique OAuth credentials
+A comprehensive, AI-agent-ready CLI with 200+ commands across 33 Datadog products. We've unleashed the full power of Datadog's APIs so your agents can fetch metrics, sniff out errors, and track down issues without barking up the wrong API tree.
+
+AI agents are the fastest-growing interface for infrastructure management. Companies like Vercel and AWS are racing to make their platforms agent-accessible, but we're leading the pack. Pup makes Datadog the alpha choice for AI-native workflows with 100% documented API coverage while competitors are still learning basic commands.
+
+## Why Your Agent Will Love It
+
+- :paw_prints: **Well-trained**: Self-discoverable commands (no need to chase documentation)
+- :guide_dog: **Obedient**: Structured JSON/YAML output for easy parsing
+- :service_dog: **On a leash**: OAuth2 + PKCE for scoped access (no more long-lived keys running wild)
+- :dog: **Knows all the tricks**: Monitors, logs, metrics, RUM, security and more!
+
+## Try It (Humans Welcome Too!)
+
+```bash
+# Give your agent credentials (house-training, basically)
+pup auth login
+
+# Now they can fetch data like a good pup
+pup monitors list --tags="team:api-platform"         # Fetch monitors
+pup logs search --query="status:error" --from="1h"   # Sniff out errors
+pup metrics query --query="avg:system.cpu.user{*}"   # Track the metrics tail
+```
+
+:dog: **TL;DR**: We built a comprehensive CLI so AI agents can use Datadog like a pro. Give your agent a pup. They're housetrained, loyal, and know way more tricks than you'd expect.
+
+*P.S. No actual puppies were harmed in the making of this CLI. Just a lot of Go code and API endpoints.*
 
 ## API Coverage
 
