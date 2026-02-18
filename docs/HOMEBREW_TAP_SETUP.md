@@ -7,8 +7,12 @@ This guide documents the setup required to enable automatic Homebrew formula pub
 When a new release is tagged, the release workflow will:
 1. Request an OIDC token from GitHub Actions
 2. Exchange it with dd-octo-sts for a scoped, short-lived GitHub token
-3. Use GoReleaser to build binaries and push formula to `homebrew-pack`
-4. Token automatically expires after 1 hour and is revoked after the workflow completes
+3. Use GoReleaser to build binaries and generate the cask file locally (no direct push)
+4. Use `commit-headless` to create a cryptographically signed commit on a new branch in `homebrew-pack`
+5. Create a PR from that branch for review
+6. Token automatically expires after 1 hour and is revoked after the workflow completes
+
+Commits to `homebrew-pack` are signed via the GitHub GraphQL API (`commit-headless`), ensuring they show as **Verified** and satisfy branch protection rules requiring signed commits.
 
 Users can then install via: `brew install datadog-labs/pack/pup`
 
@@ -108,10 +112,27 @@ The `pup` repository workflow is already configured (see `.github/workflows/rele
   uses: goreleaser/goreleaser-action@v6
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    HOMEBREW_TAP_TOKEN: ${{ steps.octo-sts.outputs.token }}
+
+# GoReleaser generates the cask file locally (skip_upload: true)
+# Then commit-headless creates a signed commit on a new branch
+
+- name: Push signed Homebrew cask update
+  uses: datadog/commit-headless@action
+  with:
+    token: ${{ steps.octo-sts.outputs.token }}
+    target: datadog-labs/homebrew-pack
+    branch: chore/update-pup-${{ github.ref_name }}
+    command: commit
+    # ... see .github/workflows/release.yml for full config
+
+- name: Create PR for Homebrew cask update
+  env:
+    GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
+  run: |
+    gh pr create --repo datadog-labs/homebrew-pack ...
 ```
 
-**No GitHub secrets required!** The workflow uses OIDC federation automatically.
+**No GitHub secrets required!** The workflow uses OIDC federation automatically. Commits are cryptographically signed via the GitHub GraphQL API.
 
 ### Step 3: Protect Release Tags (Recommended)
 
@@ -193,11 +214,14 @@ To test without affecting production:
    - Go to: https://github.com/datadog-labs/pup/actions
    - Check the "Release" workflow run
    - Verify the "Get Homebrew tap token via dd-octo-sts" step succeeds
-   - Verify GoReleaser successfully pushes to `homebrew-pack`
+   - Verify GoReleaser generates the cask file locally
+   - Verify commit-headless creates a signed commit on a new branch
+   - Verify a PR is opened in `homebrew-pack`
 
-4. Verify the formula was created:
-   - Check: https://github.com/datadog-labs/homebrew-pack/blob/main/Formula/pup.rb
-   - The formula should be auto-generated with version `0.9.0-beta.1`
+4. Verify the PR was created:
+   - Check: https://github.com/datadog-labs/homebrew-pack/pulls
+   - A PR titled "chore(cask): update pup to v0.9.0-beta.1" should be open
+   - The commit should show as **Verified** (signed via GitHub GraphQL API)
 
 5. Test installation (optional):
    ```bash
@@ -227,7 +251,8 @@ Once testing is successful:
    - Get short-lived token via dd-octo-sts
    - Build binaries for all platforms
    - Create GitHub release with artifacts
-   - Push `pup.rb` formula to `datadog-labs/homebrew-pack`
+   - Create a signed commit with the cask update on a new branch in `homebrew-pack`
+   - Open a PR for review in `datadog-labs/homebrew-pack`
 
 3. Users can install via:
    ```bash
