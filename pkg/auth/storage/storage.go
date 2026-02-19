@@ -56,14 +56,14 @@ type FileStorage struct {
 
 // NewFileStorage creates a new file-based storage
 func NewFileStorage() (*FileStorage, error) {
-	// Get user config directory
-	configDir, err := os.UserConfigDir()
+	// Use home directory so tokens and config share ~/.config/pup/ on all platforms
+	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get config directory: %w", err)
+		return nil, fmt.Errorf("failed to get home directory: %w", err)
 	}
 
 	// Create pup config directory
-	baseDir := filepath.Join(configDir, "pup")
+	baseDir := filepath.Join(home, ".config", "pup")
 	if err := os.MkdirAll(baseDir, 0700); err != nil {
 		return nil, fmt.Errorf("failed to create config directory: %w", err)
 	}
