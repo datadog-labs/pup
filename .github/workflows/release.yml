@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  # id-token: write  # Required by dd-octo-sts — re-enable when org support is added
+  id-token: write  # Required for cosign keyless signing (Sigstore OIDC) and dd-octo-sts
   packages: write
 
 jobs:
