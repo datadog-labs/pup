@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/99designs/keyring"
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 func TestKeychainStorage_GetBackendType(t *testing.T) {

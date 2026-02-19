@@ -345,7 +345,6 @@ func TestGetEnvWithDefault(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			if tt.setEnv {
 				os.Setenv(tt.key, tt.setValue)
 			} else {

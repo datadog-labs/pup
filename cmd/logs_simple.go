@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
-	"github.com/DataDog/pup/pkg/formatter"
-	"github.com/DataDog/pup/pkg/util"
+	"github.com/datadog-labs/pup/pkg/formatter"
+	"github.com/datadog-labs/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 

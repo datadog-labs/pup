@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/config"
 	"github.com/spf13/cobra"
 )
 

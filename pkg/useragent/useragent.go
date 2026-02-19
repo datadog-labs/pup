@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/DataDog/pup/internal/version"
+	"github.com/datadog-labs/pup/internal/version"
 )
 
 // AgentInfo contains information about a detected AI coding agent.

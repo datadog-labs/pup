@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
-	"github.com/DataDog/pup/pkg/util"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/util"
 )
 
 func TestLogsCmd(t *testing.T) {

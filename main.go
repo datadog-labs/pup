@@ -8,7 +8,7 @@ package main
 import (
 	"os"
 
-	"github.com/DataDog/pup/cmd"
+	"github.com/datadog-labs/pup/cmd"
 )
 
 func main() {

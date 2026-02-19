@@ -6,7 +6,7 @@
 package agenthelp
 
 import (
-	"github.com/DataDog/pup/internal/version"
+	"github.com/datadog-labs/pup/internal/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

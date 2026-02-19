@@ -11,7 +11,7 @@ import (
 	"runtime"
 
 	"github.com/99designs/keyring"
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 const (

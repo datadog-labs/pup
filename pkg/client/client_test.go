@@ -15,9 +15,9 @@ import (
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/internal/version"
-	"github.com/DataDog/pup/pkg/config"
-	"github.com/DataDog/pup/pkg/useragent"
+	"github.com/datadog-labs/pup/internal/version"
+	"github.com/datadog-labs/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/useragent"
 )
 
 func TestNew_WithAPIKeys(t *testing.T) {

@@ -6,7 +6,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
@@ -269,16 +271,126 @@ EXAMPLES:
 	RunE: runIncidentsAttachmentsDelete,
 }
 
+// Settings subcommands
+var incidentsSettingsCmd = &cobra.Command{
+	Use:   "settings",
+	Short: "Manage global incident settings",
+}
+
+var incidentsSettingsGetCmd = &cobra.Command{
+	Use:   "get",
+	Short: "Get global incident settings",
+	RunE:  runIncidentsSettingsGet,
+}
+
+var incidentsSettingsUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update global incident settings",
+	RunE:  runIncidentsSettingsUpdate,
+}
+
+// Handles subcommands
+var incidentsHandlesCmd = &cobra.Command{
+	Use:   "handles",
+	Short: "Manage global incident handles",
+}
+
+var incidentsHandlesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List global incident handles",
+	RunE:  runIncidentsHandlesList,
+}
+
+var incidentsHandlesCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create global incident handle",
+	RunE:  runIncidentsHandlesCreate,
+}
+
+var incidentsHandlesUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update global incident handle",
+	RunE:  runIncidentsHandlesUpdate,
+}
+
+var incidentsHandlesDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete global incident handle",
+	RunE:  runIncidentsHandlesDelete,
+}
+
+// Postmortem Templates subcommands
+var incidentsPostmortemTemplatesCmd = &cobra.Command{
+	Use:   "postmortem-templates",
+	Short: "Manage incident postmortem templates",
+}
+
+var incidentsPostmortemTemplatesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List postmortem templates",
+	RunE:  runIncidentsPostmortemTemplatesList,
+}
+
+var incidentsPostmortemTemplatesGetCmd = &cobra.Command{
+	Use:   "get [template-id]",
+	Short: "Get postmortem template",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runIncidentsPostmortemTemplatesGet,
+}
+
+var incidentsPostmortemTemplatesCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create postmortem template",
+	RunE:  runIncidentsPostmortemTemplatesCreate,
+}
+
+var incidentsPostmortemTemplatesUpdateCmd = &cobra.Command{
+	Use:   "update [template-id]",
+	Short: "Update postmortem template",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runIncidentsPostmortemTemplatesUpdate,
+}
+
+var incidentsPostmortemTemplatesDeleteCmd = &cobra.Command{
+	Use:   "delete [template-id]",
+	Short: "Delete postmortem template",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runIncidentsPostmortemTemplatesDelete,
+}
+
+var (
+	incidentsFile string
+)
+
 func init() {
+	// File flags
+	incidentsSettingsUpdateCmd.Flags().StringVar(&incidentsFile, "file", "", "JSON file with settings (required)")
+	_ = incidentsSettingsUpdateCmd.MarkFlagRequired("file")
+	incidentsHandlesCreateCmd.Flags().StringVar(&incidentsFile, "file", "", "JSON file with handle data (required)")
+	_ = incidentsHandlesCreateCmd.MarkFlagRequired("file")
+	incidentsHandlesUpdateCmd.Flags().StringVar(&incidentsFile, "file", "", "JSON file with handle data (required)")
+	_ = incidentsHandlesUpdateCmd.MarkFlagRequired("file")
+	incidentsPostmortemTemplatesCreateCmd.Flags().StringVar(&incidentsFile, "file", "", "JSON file with template (required)")
+	_ = incidentsPostmortemTemplatesCreateCmd.MarkFlagRequired("file")
+	incidentsPostmortemTemplatesUpdateCmd.Flags().StringVar(&incidentsFile, "file", "", "JSON file with template (required)")
+	_ = incidentsPostmortemTemplatesUpdateCmd.MarkFlagRequired("file")
+
 	incidentsAttachmentsCmd.AddCommand(
 		incidentsAttachmentsListCmd,
 		incidentsAttachmentsDeleteCmd,
 	)
 
+	incidentsSettingsCmd.AddCommand(incidentsSettingsGetCmd, incidentsSettingsUpdateCmd)
+	incidentsHandlesCmd.AddCommand(incidentsHandlesListCmd, incidentsHandlesCreateCmd, incidentsHandlesUpdateCmd, incidentsHandlesDeleteCmd)
+	incidentsPostmortemTemplatesCmd.AddCommand(incidentsPostmortemTemplatesListCmd, incidentsPostmortemTemplatesGetCmd, incidentsPostmortemTemplatesCreateCmd, incidentsPostmortemTemplatesUpdateCmd, incidentsPostmortemTemplatesDeleteCmd)
+
 	incidentsCmd.AddCommand(
 		incidentsListCmd,
 		incidentsGetCmd,
 		incidentsAttachmentsCmd,
+		incidentsSettingsCmd,
+		incidentsHandlesCmd,
+		incidentsPostmortemTemplatesCmd,
 	)
 }
 
@@ -364,5 +476,251 @@ func runIncidentsAttachmentsDelete(cmd *cobra.Command, args []string) error {
 	}
 
 	printOutput("Attachment '%s' deleted successfully from incident '%s'.\n", attachmentID, incidentID)
+	return nil
+}
+
+// Settings implementations
+func runIncidentsSettingsGet(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.GetGlobalIncidentSettings(client.Context())
+	if err != nil {
+		return formatAPIError("get incident settings", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsSettingsUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(incidentsFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.GlobalIncidentSettingsRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.UpdateGlobalIncidentSettings(client.Context(), body)
+	if err != nil {
+		return formatAPIError("update incident settings", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// Handles implementations
+func runIncidentsHandlesList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.ListGlobalIncidentHandles(client.Context())
+	if err != nil {
+		return formatAPIError("list incident handles", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsHandlesCreate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(incidentsFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.IncidentHandleRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.CreateGlobalIncidentHandle(client.Context(), body)
+	if err != nil {
+		return formatAPIError("create incident handle", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsHandlesUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(incidentsFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.IncidentHandleRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.UpdateGlobalIncidentHandle(client.Context(), body)
+	if err != nil {
+		return formatAPIError("update incident handle", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsHandlesDelete(cmd *cobra.Command, args []string) error {
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will delete the global incident handle.\n")
+		printOutput("Are you sure you want to continue? [y/N]: ")
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	r, err := api.DeleteGlobalIncidentHandle(client.Context())
+	if err != nil {
+		return formatAPIError("delete incident handle", err, r)
+	}
+
+	printOutput("Global incident handle deleted successfully.\n")
+	return nil
+}
+
+// Postmortem Templates implementations
+func runIncidentsPostmortemTemplatesList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.ListIncidentPostmortemTemplates(client.Context())
+	if err != nil {
+		return formatAPIError("list postmortem templates", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsPostmortemTemplatesGet(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.GetIncidentPostmortemTemplate(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("get postmortem template", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsPostmortemTemplatesCreate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(incidentsFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.PostmortemTemplateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.CreateIncidentPostmortemTemplate(client.Context(), body)
+	if err != nil {
+		return formatAPIError("create postmortem template", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsPostmortemTemplatesUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(incidentsFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.PostmortemTemplateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	resp, r, err := api.UpdateIncidentPostmortemTemplate(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("update postmortem template", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runIncidentsPostmortemTemplatesDelete(cmd *cobra.Command, args []string) error {
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will permanently delete postmortem template '%s'.\n", args[0])
+		printOutput("Are you sure you want to continue? [y/N]: ")
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewIncidentsApi(client.V2())
+	r, err := api.DeleteIncidentPostmortemTemplate(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("delete postmortem template", err, r)
+	}
+
+	printOutput("Postmortem template '%s' deleted successfully.\n", args[0])
 	return nil
 }

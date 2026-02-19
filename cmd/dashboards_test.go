@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestDashboardsCmd(t *testing.T) {

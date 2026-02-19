@@ -6,9 +6,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
 )
 
@@ -73,11 +76,83 @@ var cloudAzureListCmd = &cobra.Command{
 	RunE:  runCloudAzureList,
 }
 
+// OCI subcommands
+var cloudOCICmd = &cobra.Command{
+	Use:   "oci",
+	Short: "Manage OCI integrations",
+}
+
+var cloudOCITenanciesCmd = &cobra.Command{
+	Use:   "tenancies",
+	Short: "Manage OCI tenancy configurations",
+}
+
+var cloudOCITenanciesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List OCI tenancy configurations",
+	RunE:  runCloudOCITenanciesList,
+}
+
+var cloudOCITenanciesGetCmd = &cobra.Command{
+	Use:   "get [tenancy-ocid]",
+	Short: "Get OCI tenancy configuration",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCloudOCITenanciesGet,
+}
+
+var cloudOCITenanciesCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create OCI tenancy configuration",
+	RunE:  runCloudOCITenanciesCreate,
+}
+
+var cloudOCITenanciesUpdateCmd = &cobra.Command{
+	Use:   "update [tenancy-ocid]",
+	Short: "Update OCI tenancy configuration",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCloudOCITenanciesUpdate,
+}
+
+var cloudOCITenanciesDeleteCmd = &cobra.Command{
+	Use:   "delete [tenancy-ocid]",
+	Short: "Delete OCI tenancy configuration",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCloudOCITenanciesDelete,
+}
+
+var cloudOCIProductsCmd = &cobra.Command{
+	Use:   "products",
+	Short: "Manage OCI products",
+}
+
+var cloudOCIProductsListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List OCI tenancy products",
+	RunE:  runCloudOCIProductsList,
+}
+
+var (
+	cloudOCIFile        string
+	cloudOCIProductKeys string
+)
+
 func init() {
+	cloudOCITenanciesCreateCmd.Flags().StringVar(&cloudOCIFile, "file", "", "JSON file with request body (required)")
+	_ = cloudOCITenanciesCreateCmd.MarkFlagRequired("file")
+	cloudOCITenanciesUpdateCmd.Flags().StringVar(&cloudOCIFile, "file", "", "JSON file with request body (required)")
+	_ = cloudOCITenanciesUpdateCmd.MarkFlagRequired("file")
+	cloudOCIProductsListCmd.Flags().StringVar(&cloudOCIProductKeys, "product-keys", "", "Comma-separated product keys (required)")
+	_ = cloudOCIProductsListCmd.MarkFlagRequired("product-keys")
+
 	cloudAWSCmd.AddCommand(cloudAWSListCmd)
 	cloudGCPCmd.AddCommand(cloudGCPListCmd)
 	cloudAzureCmd.AddCommand(cloudAzureListCmd)
-	cloudCmd.AddCommand(cloudAWSCmd, cloudGCPCmd, cloudAzureCmd)
+
+	cloudOCITenanciesCmd.AddCommand(cloudOCITenanciesListCmd, cloudOCITenanciesGetCmd, cloudOCITenanciesCreateCmd, cloudOCITenanciesUpdateCmd, cloudOCITenanciesDeleteCmd)
+	cloudOCIProductsCmd.AddCommand(cloudOCIProductsListCmd)
+	cloudOCICmd.AddCommand(cloudOCITenanciesCmd, cloudOCIProductsCmd)
+
+	cloudCmd.AddCommand(cloudAWSCmd, cloudGCPCmd, cloudAzureCmd, cloudOCICmd)
 }
 
 func runCloudAWSList(cmd *cobra.Command, args []string) error {
@@ -129,6 +204,131 @@ func runCloudAzureList(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to list Azure integrations: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to list Azure integrations: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// OCI implementations
+func runCloudOCITenanciesList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	resp, r, err := api.GetTenancyConfigs(client.Context())
+	if err != nil {
+		return formatAPIError("list OCI tenancies", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCloudOCITenanciesGet(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	resp, r, err := api.GetTenancyConfig(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("get OCI tenancy", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCloudOCITenanciesCreate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(cloudOCIFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.CreateTenancyConfigRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	resp, r, err := api.CreateTenancyConfig(client.Context(), body)
+	if err != nil {
+		return formatAPIError("create OCI tenancy", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCloudOCITenanciesUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(cloudOCIFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.UpdateTenancyConfigRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	resp, r, err := api.UpdateTenancyConfig(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("update OCI tenancy", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCloudOCITenanciesDelete(cmd *cobra.Command, args []string) error {
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will permanently delete OCI tenancy '%s'.\n", args[0])
+		printOutput("Are you sure you want to continue? [y/N]: ")
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	r, err := api.DeleteTenancyConfig(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("delete OCI tenancy", err, r)
+	}
+
+	printOutput("OCI tenancy '%s' deleted successfully.\n", args[0])
+	return nil
+}
+
+func runCloudOCIProductsList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewOCIIntegrationApi(client.V2())
+	resp, r, err := api.ListTenancyProducts(client.Context(), cloudOCIProductKeys)
+	if err != nil {
+		return formatAPIError("list OCI products", err, r)
 	}
 
 	return formatAndPrint(resp, nil)

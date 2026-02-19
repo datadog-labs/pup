@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/DataDog/pup/pkg/agenthelp"
+	"github.com/datadog-labs/pup/pkg/agenthelp"
 	"github.com/spf13/cobra"
 )
 

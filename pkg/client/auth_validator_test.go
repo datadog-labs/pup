@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestGetAuthType(t *testing.T) {
@@ -84,6 +84,12 @@ func TestRequiresAPIKeyFallback(t *testing.T) {
 			name:     "error tracking get requires API keys",
 			method:   "GET",
 			path:     "/api/v2/error_tracking/issues/abc123",
+			expected: true,
+		},
+		{
+			name:     "events v2 search requires API keys",
+			method:   "POST",
+			path:     "/api/v2/events/search",
 			expected: true,
 		},
 		{

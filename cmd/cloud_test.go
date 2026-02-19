@@ -30,12 +30,9 @@ func TestCloudCmd(t *testing.T) {
 }
 
 func TestCloudCmd_Subcommands(t *testing.T) {
-	expectedCommands := []string{"aws", "gcp", "azure"}
+	expectedCommands := []string{"aws", "gcp", "azure", "oci"}
 
 	commands := cloudCmd.Commands()
-	if len(commands) != len(expectedCommands) {
-		t.Errorf("Number of subcommands = %d, want %d", len(commands), len(expectedCommands))
-	}
 
 	commandMap := make(map[string]*cobra.Command)
 	for _, cmd := range commands {

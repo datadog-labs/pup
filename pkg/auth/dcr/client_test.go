@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 // mockTransport implements http.RoundTripper to redirect requests to test server

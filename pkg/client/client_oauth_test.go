@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/pup/pkg/auth/dcr"
-	"github.com/DataDog/pup/pkg/auth/storage"
-	"github.com/DataDog/pup/pkg/auth/types"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/auth/dcr"
+	"github.com/datadog-labs/pup/pkg/auth/storage"
+	"github.com/datadog-labs/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 // setupTestStorage creates a FileStorage backed by a temp dir and seeds it with

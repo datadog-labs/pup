@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 // Client handles Dynamic Client Registration with Datadog

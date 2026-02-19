@@ -16,12 +16,12 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/pup/internal/version"
-	"github.com/DataDog/pup/pkg/agenthelp"
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
-	"github.com/DataDog/pup/pkg/formatter"
-	"github.com/DataDog/pup/pkg/useragent"
+	"github.com/datadog-labs/pup/internal/version"
+	"github.com/datadog-labs/pup/pkg/agenthelp"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/formatter"
+	"github.com/datadog-labs/pup/pkg/useragent"
 	"github.com/spf13/cobra"
 )
 
@@ -279,6 +279,9 @@ func init() {
 	rootCmd.AddCommand(casesCmd)
 	rootCmd.AddCommand(apmCmd)
 	rootCmd.AddCommand(agentCmd)
+	rootCmd.AddCommand(statusPagesCmd)
+	rootCmd.AddCommand(codeCoverageCmd)
+	rootCmd.AddCommand(hamrCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.

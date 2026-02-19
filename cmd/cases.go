@@ -6,7 +6,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
@@ -268,6 +270,96 @@ EXAMPLES:
 	RunE: runCasesProjectsDelete,
 }
 
+// Jira subcommands
+var casesJiraCmd = &cobra.Command{
+	Use:   "jira",
+	Short: "Manage Jira integrations for cases",
+}
+
+var casesJiraCreateIssueCmd = &cobra.Command{
+	Use:   "create-issue [case-id]",
+	Short: "Create a Jira issue for a case",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesJiraCreateIssue,
+}
+
+var casesJiraLinkCmd = &cobra.Command{
+	Use:   "link [case-id]",
+	Short: "Link a Jira issue to a case",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesJiraLink,
+}
+
+var casesJiraUnlinkCmd = &cobra.Command{
+	Use:   "unlink [case-id]",
+	Short: "Unlink a Jira issue from a case",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesJiraUnlink,
+}
+
+// ServiceNow subcommands
+var casesServiceNowCmd = &cobra.Command{
+	Use:   "servicenow",
+	Short: "Manage ServiceNow integrations for cases",
+}
+
+var casesServiceNowCreateTicketCmd = &cobra.Command{
+	Use:   "create-ticket [case-id]",
+	Short: "Create a ServiceNow ticket for a case",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesServiceNowCreateTicket,
+}
+
+// Move subcommand
+var casesMoveCmd = &cobra.Command{
+	Use:   "move [case-id]",
+	Short: "Move a case to a different project",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesMove,
+}
+
+// Projects update subcommand
+var casesProjectsUpdateCmd = &cobra.Command{
+	Use:   "update [project-id]",
+	Short: "Update a project",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesProjectsUpdate,
+}
+
+// Notification rules subcommands
+var casesProjectsNotificationRulesCmd = &cobra.Command{
+	Use:   "notification-rules",
+	Short: "Manage project notification rules",
+}
+
+var casesProjectsNotificationRulesListCmd = &cobra.Command{
+	Use:   "list [project-id]",
+	Short: "List notification rules for a project",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesProjectsNotificationRulesList,
+}
+
+var casesProjectsNotificationRulesCreateCmd = &cobra.Command{
+	Use:   "create [project-id]",
+	Short: "Create a notification rule",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCasesProjectsNotificationRulesCreate,
+}
+
+var casesProjectsNotificationRulesUpdateCmd = &cobra.Command{
+	Use:   "update [project-id] [rule-id]",
+	Short: "Update a notification rule",
+	Args:  cobra.ExactArgs(2),
+	RunE:  runCasesProjectsNotificationRulesUpdate,
+}
+
+var casesProjectsNotificationRulesDeleteCmd = &cobra.Command{
+	Use:   "delete [project-id] [rule-id]",
+	Short: "Delete a notification rule",
+	Args:  cobra.ExactArgs(2),
+	RunE:  runCasesProjectsNotificationRulesDelete,
+}
+
 var (
 	// Case flags
 	caseTitle       string
@@ -282,6 +374,10 @@ var (
 	// Project flags
 	projectName string
 	projectKey  string
+
+	// Cases file flag (for create/update operations)
+	casesFile     string
+	caseProjectID string
 )
 
 func init() {
@@ -316,12 +412,34 @@ func init() {
 	_ = casesProjectsCreateCmd.MarkFlagRequired("name")
 	_ = casesProjectsCreateCmd.MarkFlagRequired("key")
 
+	// File flags for new subcommands
+	casesJiraCreateIssueCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesJiraCreateIssueCmd.MarkFlagRequired("file")
+	casesJiraLinkCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesJiraLinkCmd.MarkFlagRequired("file")
+	casesServiceNowCreateTicketCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesServiceNowCreateTicketCmd.MarkFlagRequired("file")
+	casesMoveCmd.Flags().StringVar(&caseProjectID, "project-id", "", "Target project ID (required)")
+	_ = casesMoveCmd.MarkFlagRequired("project-id")
+	casesProjectsUpdateCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesProjectsUpdateCmd.MarkFlagRequired("file")
+	casesProjectsNotificationRulesCreateCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesProjectsNotificationRulesCreateCmd.MarkFlagRequired("file")
+	casesProjectsNotificationRulesUpdateCmd.Flags().StringVar(&casesFile, "file", "", "JSON file with request body (required)")
+	_ = casesProjectsNotificationRulesUpdateCmd.MarkFlagRequired("file")
+
 	// Build command hierarchy
+	casesJiraCmd.AddCommand(casesJiraCreateIssueCmd, casesJiraLinkCmd, casesJiraUnlinkCmd)
+	casesServiceNowCmd.AddCommand(casesServiceNowCreateTicketCmd)
+	casesProjectsNotificationRulesCmd.AddCommand(casesProjectsNotificationRulesListCmd, casesProjectsNotificationRulesCreateCmd, casesProjectsNotificationRulesUpdateCmd, casesProjectsNotificationRulesDeleteCmd)
+
 	casesProjectsCmd.AddCommand(
 		casesProjectsListCmd,
 		casesProjectsGetCmd,
 		casesProjectsCreateCmd,
 		casesProjectsDeleteCmd,
+		casesProjectsUpdateCmd,
+		casesProjectsNotificationRulesCmd,
 	)
 
 	casesCmd.AddCommand(
@@ -334,6 +452,9 @@ func init() {
 		casesUpdateTitleCmd,
 		casesUpdatePriorityCmd,
 		casesProjectsCmd,
+		casesJiraCmd,
+		casesServiceNowCmd,
+		casesMoveCmd,
 	)
 }
 
@@ -576,6 +697,32 @@ func runCasesProjectsCreate(cmd *cobra.Command, args []string) error {
 	return formatAndPrint(resp, nil)
 }
 
+func runCasesProjectsUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.ProjectUpdateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	projectID := args[0]
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	resp, r, err := api.UpdateProject(client.Context(), projectID, body)
+	if err != nil {
+		return formatAPIError("update project", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
 func runCasesProjectsDelete(cmd *cobra.Command, args []string) error {
 	projectID := args[0]
 
@@ -607,5 +754,220 @@ func runCasesProjectsDelete(cmd *cobra.Command, args []string) error {
 	}
 
 	printOutput("Project '%s' deleted successfully.\n", projectID)
+	return nil
+}
+
+// Jira implementations
+func runCasesJiraCreateIssue(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.JiraIssueCreateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.CreateCaseJiraIssue(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("create Jira issue for case", err, r)
+	}
+
+	printOutput("Jira issue created for case '%s'.\n", args[0])
+	return nil
+}
+
+func runCasesJiraLink(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.JiraIssueLinkRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.LinkJiraIssueToCase(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("link Jira issue to case", err, r)
+	}
+
+	printOutput("Jira issue linked to case '%s'.\n", args[0])
+	return nil
+}
+
+func runCasesJiraUnlink(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.UnlinkJiraIssue(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("unlink Jira issue from case", err, r)
+	}
+
+	printOutput("Jira issue unlinked from case '%s'.\n", args[0])
+	return nil
+}
+
+// ServiceNow implementations
+func runCasesServiceNowCreateTicket(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.ServiceNowTicketCreateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.CreateCaseServiceNowTicket(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("create ServiceNow ticket for case", err, r)
+	}
+
+	printOutput("ServiceNow ticket created for case '%s'.\n", args[0])
+	return nil
+}
+
+// Move implementation
+func runCasesMove(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	body := datadogV2.ProjectRelationship{
+		Data: datadogV2.ProjectRelationshipData{
+			Id:   caseProjectID,
+			Type: datadogV2.PROJECTRESOURCETYPE_PROJECT,
+		},
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	resp, r, err := api.MoveCaseToProject(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("move case to project", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// Notification Rules implementations
+func runCasesProjectsNotificationRulesList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	resp, r, err := api.GetProjectNotificationRules(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("list notification rules", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCasesProjectsNotificationRulesCreate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.CaseNotificationRuleCreateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	resp, r, err := api.CreateProjectNotificationRule(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("create notification rule", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCasesProjectsNotificationRulesUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(casesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.CaseNotificationRuleUpdateRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.UpdateProjectNotificationRule(client.Context(), args[0], args[1], body)
+	if err != nil {
+		return formatAPIError("update notification rule", err, r)
+	}
+
+	printOutput("Notification rule '%s' updated successfully.\n", args[1])
+	return nil
+}
+
+func runCasesProjectsNotificationRulesDelete(cmd *cobra.Command, args []string) error {
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will permanently delete notification rule '%s'.\n", args[1])
+		printOutput("Are you sure you want to continue? [y/N]: ")
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCaseManagementApi(client.V2())
+	r, err := api.DeleteProjectNotificationRule(client.Context(), args[0], args[1])
+	if err != nil {
+		return formatAPIError("delete notification rule", err, r)
+	}
+
+	printOutput("Notification rule '%s' deleted successfully.\n", args[1])
 	return nil
 }

@@ -12,11 +12,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/DataDog/pup/pkg/auth/callback"
-	"github.com/DataDog/pup/pkg/auth/dcr"
-	"github.com/DataDog/pup/pkg/auth/oauth"
-	"github.com/DataDog/pup/pkg/auth/storage"
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/callback"
+	"github.com/datadog-labs/pup/pkg/auth/dcr"
+	"github.com/datadog-labs/pup/pkg/auth/oauth"
+	"github.com/datadog-labs/pup/pkg/auth/storage"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 	"github.com/spf13/cobra"
 )
 

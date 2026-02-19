@@ -16,9 +16,9 @@ DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Build flags
 LDFLAGS := -s -w \
-	-X github.com/DataDog/pup/internal/version.Version=$(VERSION) \
-	-X github.com/DataDog/pup/internal/version.GitCommit=$(COMMIT) \
-	-X github.com/DataDog/pup/internal/version.BuildDate=$(DATE)
+	-X github.com/datadog-labs/pup/internal/version.Version=$(VERSION) \
+	-X github.com/datadog-labs/pup/internal/version.GitCommit=$(COMMIT) \
+	-X github.com/datadog-labs/pup/internal/version.BuildDate=$(DATE)
 
 # Go build flags
 GO_BUILD_FLAGS := -trimpath -ldflags "$(LDFLAGS)"

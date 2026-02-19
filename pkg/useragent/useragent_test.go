@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/internal/version"
+	"github.com/datadog-labs/pup/internal/version"
 )
 
 // allAgentEnvVars returns all env vars used by agent detectors plus FORCE_AGENT_MODE.

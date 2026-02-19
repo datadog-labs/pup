@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/DataDog/pup/pkg/formatter"
+	"github.com/datadog-labs/pup/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 

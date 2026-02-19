@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 func TestNewClient(t *testing.T) {

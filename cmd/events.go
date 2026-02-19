@@ -120,7 +120,8 @@ func runEventsList(cmd *cobra.Command, args []string) error {
 }
 
 func runEventsSearch(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
+	// Events V2 search does not support OAuth, requires API keys
+	client, err := getClientForEndpoint("POST", "/api/v2/events/search")
 	if err != nil {
 		return err
 	}

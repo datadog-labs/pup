@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/DataDog/pup/pkg/auth/types"
+	"github.com/datadog-labs/pup/pkg/auth/types"
 )
 
 // Client handles OAuth2 authorization flow

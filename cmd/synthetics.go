@@ -6,9 +6,13 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/spf13/cobra"
 )
 
@@ -148,6 +152,49 @@ var syntheticsLocationsListCmd = &cobra.Command{
 	RunE:  runSyntheticsLocationsList,
 }
 
+// Suites subcommands (V2 API)
+var syntheticsSuitesCmd = &cobra.Command{
+	Use:   "suites",
+	Short: "Manage synthetic test suites",
+}
+
+var syntheticsSuitesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Search synthetic suites",
+	RunE:  runSyntheticsSuitesList,
+}
+
+var syntheticsSuitesGetCmd = &cobra.Command{
+	Use:   "get [public-id]",
+	Short: "Get suite details",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runSyntheticsSuitesGet,
+}
+
+var syntheticsSuitesCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a synthetic suite",
+	RunE:  runSyntheticsSuitesCreate,
+}
+
+var syntheticsSuitesUpdateCmd = &cobra.Command{
+	Use:   "update [public-id]",
+	Short: "Update a synthetic suite",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runSyntheticsSuitesUpdate,
+}
+
+var syntheticsSuitesDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete synthetic suites",
+	RunE:  runSyntheticsSuitesDelete,
+}
+
+var (
+	syntheticsSuitesFile string
+	syntheticsSuitesIDs  string
+)
+
 func init() {
 	syntheticsTestsSearchCmd.Flags().StringVar(&syntheticsSearchText, "text", "", "Search text query")
 	syntheticsTestsSearchCmd.Flags().BoolVar(&syntheticsSearchIncludeFullConfig, "include-full-config", false, "Include full test configuration in results")
@@ -156,9 +203,19 @@ func init() {
 	syntheticsTestsSearchCmd.Flags().Int64Var(&syntheticsSearchCount, "count", 50, "Number of results to return")
 	syntheticsTestsSearchCmd.Flags().StringVar(&syntheticsSearchSort, "sort", "", "Sort order")
 
+	// Suites flags
+	syntheticsSuitesListCmd.Flags().StringVar(&syntheticsSearchText, "query", "", "Search query")
+	syntheticsSuitesCreateCmd.Flags().StringVar(&syntheticsSuitesFile, "file", "", "JSON file with suite definition (required)")
+	_ = syntheticsSuitesCreateCmd.MarkFlagRequired("file")
+	syntheticsSuitesUpdateCmd.Flags().StringVar(&syntheticsSuitesFile, "file", "", "JSON file with suite definition (required)")
+	_ = syntheticsSuitesUpdateCmd.MarkFlagRequired("file")
+	syntheticsSuitesDeleteCmd.Flags().StringVar(&syntheticsSuitesIDs, "ids", "", "Comma-separated suite public IDs (required)")
+	_ = syntheticsSuitesDeleteCmd.MarkFlagRequired("ids")
+
 	syntheticsTestsCmd.AddCommand(syntheticsTestsListCmd, syntheticsTestsGetCmd, syntheticsTestsSearchCmd)
 	syntheticsLocationsCmd.AddCommand(syntheticsLocationsListCmd)
-	syntheticsCmd.AddCommand(syntheticsTestsCmd, syntheticsLocationsCmd)
+	syntheticsSuitesCmd.AddCommand(syntheticsSuitesListCmd, syntheticsSuitesGetCmd, syntheticsSuitesCreateCmd, syntheticsSuitesUpdateCmd, syntheticsSuitesDeleteCmd)
+	syntheticsCmd.AddCommand(syntheticsTestsCmd, syntheticsLocationsCmd, syntheticsSuitesCmd)
 }
 
 func runSyntheticsTestsList(cmd *cobra.Command, args []string) error {
@@ -247,6 +304,128 @@ func runSyntheticsLocationsList(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to list locations: %w (status: %d)", err, r.StatusCode)
 		}
 		return fmt.Errorf("failed to list locations: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+// Suites implementations (V2 API)
+func runSyntheticsSuitesList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSyntheticsApi(client.V2())
+	opts := datadogV2.NewSearchSuitesOptionalParameters()
+	if syntheticsSearchText != "" {
+		opts = opts.WithQuery(syntheticsSearchText)
+	}
+
+	resp, r, err := api.SearchSuites(client.Context(), *opts)
+	if err != nil {
+		return formatAPIError("search synthetic suites", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSyntheticsSuitesGet(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSyntheticsApi(client.V2())
+	resp, r, err := api.GetSyntheticsSuite(client.Context(), args[0])
+	if err != nil {
+		return formatAPIError("get synthetic suite", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSyntheticsSuitesCreate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(syntheticsSuitesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.SuiteCreateEditRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSyntheticsApi(client.V2())
+	resp, r, err := api.CreateSyntheticsSuite(client.Context(), body)
+	if err != nil {
+		return formatAPIError("create synthetic suite", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSyntheticsSuitesUpdate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(syntheticsSuitesFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var body datadogV2.SuiteCreateEditRequest
+	if err := json.Unmarshal(data, &body); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSyntheticsApi(client.V2())
+	resp, r, err := api.EditSyntheticsSuite(client.Context(), args[0], body)
+	if err != nil {
+		return formatAPIError("update synthetic suite", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runSyntheticsSuitesDelete(cmd *cobra.Command, args []string) error {
+	ids := strings.Split(syntheticsSuitesIDs, ",")
+	for i := range ids {
+		ids[i] = strings.TrimSpace(ids[i])
+	}
+
+	if !cfg.AutoApprove {
+		printOutput("WARNING: This will permanently delete %d synthetic suite(s).\n", len(ids))
+		printOutput("Are you sure you want to continue? [y/N]: ")
+		response, err := readConfirmation()
+		if err != nil {
+			return fmt.Errorf("failed to read confirmation: %w", err)
+		}
+		if response != "y" && response != "Y" && response != "yes" {
+			printOutput("Operation cancelled.\n")
+			return nil
+		}
+	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewSyntheticsApi(client.V2())
+	attrs := *datadogV2.NewDeletedSuitesRequestDeleteAttributes(ids)
+	data := *datadogV2.NewDeletedSuitesRequestDelete(attrs)
+	body := *datadogV2.NewDeletedSuitesRequestDeleteRequest(data)
+	resp, r, err := api.DeleteSyntheticsSuites(client.Context(), body)
+	if err != nil {
+		return formatAPIError("delete synthetic suites", err, r)
 	}
 
 	return formatAndPrint(resp, nil)

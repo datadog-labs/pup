@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestSlosCmd(t *testing.T) {
@@ -144,6 +144,49 @@ func TestRunSlosDelete_AutoApprove(t *testing.T) {
 				t.Errorf("runSlosDelete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestSlosStatusCmd(t *testing.T) {
+	if slosStatusCmd == nil {
+		t.Fatal("slosStatusCmd is nil")
+	}
+	if slosStatusCmd.Use != "status [slo-id]" {
+		t.Errorf("Use = %s, want 'status [slo-id]'", slosStatusCmd.Use)
+	}
+}
+
+func TestRunSlosStatus(t *testing.T) {
+	cleanup := setupSlosTestClient(t)
+	defer cleanup()
+
+	sloStatusFrom = "1700000000"
+	sloStatusTo = "1700003600"
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runSlosStatus(slosStatusCmd, []string{"slo-123"})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
+	}
+}
+
+func TestRunSlosStatus_InvalidTimestamp(t *testing.T) {
+	cleanup := setupSlosTestClient(t)
+	defer cleanup()
+
+	sloStatusFrom = "not-a-number"
+	sloStatusTo = "1700003600"
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runSlosStatus(slosStatusCmd, []string{"slo-123"})
+	if err == nil {
+		t.Error("expected error for invalid timestamp, got nil")
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -96,16 +96,16 @@ Each release includes:
 
 After the workflow completes (usually 5-10 minutes):
 
-1. Visit https://github.com/DataDog/pup/releases
+1. Visit https://github.com/datadog-labs/pup/releases
 2. Verify the release is published with all artifacts
 3. Check that signatures and SBOMs are present
 4. Test downloading and verifying an artifact:
 
 ```bash
 # Download a release
-curl -LO https://github.com/DataDog/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz
-curl -LO https://github.com/DataDog/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz.sig
-curl -LO https://github.com/DataDog/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz.pem
+curl -LO https://github.com/datadog-labs/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz
+curl -LO https://github.com/datadog-labs/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz.sig
+curl -LO https://github.com/datadog-labs/pup/releases/download/v1.0.0/pup_1.0.0_Linux_x86_64.tar.gz.pem
 
 # Verify signature with cosign
 cosign verify-blob \
@@ -166,7 +166,7 @@ If a release has issues:
 
 ### Release workflow fails
 
-1. Check the GitHub Actions logs: https://github.com/DataDog/pup/actions
+1. Check the GitHub Actions logs: https://github.com/datadog-labs/pup/actions
 2. Common issues:
    - **Tests failing**: Fix tests before releasing
    - **Build errors**: Ensure `go build` works locally
@@ -183,5 +183,5 @@ Check that `.goreleaser.yml` includes all desired platforms and architectures.
 ## Support
 
 For issues with the release process:
-- GitHub Issues: https://github.com/DataDog/pup/issues
+- GitHub Issues: https://github.com/datadog-labs/pup/issues
 - Internal Slack: #datadog-pup (if available)

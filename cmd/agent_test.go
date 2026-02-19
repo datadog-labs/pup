@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/agenthelp"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/agenthelp"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestAgentSchema(t *testing.T) {

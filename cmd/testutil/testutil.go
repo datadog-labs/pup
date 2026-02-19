@@ -15,8 +15,8 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 // MockClient provides a mock Datadog client for testing

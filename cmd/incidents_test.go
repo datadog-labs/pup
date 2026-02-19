@@ -11,8 +11,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/DataDog/pup/pkg/client"
-	"github.com/DataDog/pup/pkg/config"
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestIncidentsCmd(t *testing.T) {
@@ -74,6 +74,48 @@ func TestRunIncidentsList(t *testing.T) {
 				t.Errorf("runIncidentsList() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestIncidentsCmd_NewSubcommands(t *testing.T) {
+	expectedCommands := []string{"settings", "handles", "postmortem-templates"}
+	commands := incidentsCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Use] = true
+	}
+	for _, expected := range expectedCommands {
+		if !commandMap[expected] {
+			t.Errorf("Missing subcommand: %s", expected)
+		}
+	}
+}
+
+func TestRunIncidentsSettingsGet(t *testing.T) {
+	cleanup := setupIncidentsTestClient(t)
+	defer cleanup()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runIncidentsSettingsGet(incidentsSettingsGetCmd, []string{})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
+	}
+}
+
+func TestRunIncidentsPostmortemTemplatesList(t *testing.T) {
+	cleanup := setupIncidentsTestClient(t)
+	defer cleanup()
+
+	var buf bytes.Buffer
+	outputWriter = &buf
+	defer func() { outputWriter = os.Stdout }()
+
+	err := runIncidentsPostmortemTemplatesList(incidentsPostmortemTemplatesListCmd, []string{})
+	if err == nil {
+		t.Error("expected error due to mock client, got nil")
 	}
 }
 

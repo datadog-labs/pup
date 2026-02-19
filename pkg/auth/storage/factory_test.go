@@ -10,8 +10,13 @@ import (
 	"testing"
 )
 
+// NOTE: Tests in this file must NOT use t.Parallel() because they mutate
+// shared global state: the singleton storage cache (ResetStorage/GetStorage)
+// and the DD_TOKEN_STORAGE environment variable (os.Setenv/t.Setenv).
+// Running them concurrently causes races where one test's env var change
+// or cache reset is visible to another test, leading to flaky failures.
+
 func TestGetStorage(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		name              string
 		envValue          string
@@ -89,7 +94,6 @@ func TestGetStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			// Reset storage state
 			ResetStorage()
 
@@ -100,8 +104,7 @@ func TestGetStorage(t *testing.T) {
 
 			// Set environment variable
 			if tt.envValue != "" {
-				_ = os.Setenv(StorageEnvVar, tt.envValue)
-				defer func() { _ = os.Unsetenv(StorageEnvVar) }()
+				t.Setenv(StorageEnvVar, tt.envValue)
 			}
 
 			// Mock keychain availability
@@ -149,7 +152,6 @@ func TestGetStorage(t *testing.T) {
 }
 
 func TestGetActiveBackend(t *testing.T) {
-	t.Parallel()
 	// Reset storage state
 	ResetStorage()
 
@@ -174,7 +176,6 @@ func TestGetActiveBackend(t *testing.T) {
 }
 
 func TestIsUsingSecureStorage(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		name     string
 		backend  BackendType
@@ -194,7 +195,6 @@ func TestIsUsingSecureStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ResetStorage()
 
 			// Force the backend type we want to test
@@ -220,7 +220,6 @@ func TestIsUsingSecureStorage(t *testing.T) {
 }
 
 func TestGetStorageDescription(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Force file backend
@@ -246,7 +245,6 @@ func TestGetStorageDescription(t *testing.T) {
 }
 
 func TestResetStorage(t *testing.T) {
-	t.Parallel()
 	// Get storage to initialize state
 	_, err := GetStorage(&StorageOptions{ForceBackend: BackendFile})
 	if err != nil {
@@ -268,7 +266,6 @@ func TestResetStorage(t *testing.T) {
 }
 
 func TestGetStorageDescription_Keychain(t *testing.T) {
-	t.Parallel()
 	// Skip if keychain is not available
 	if !IsKeychainAvailable() {
 		t.Skip("Keychain not available in test environment")
@@ -295,7 +292,6 @@ func TestGetStorageDescription_Keychain(t *testing.T) {
 }
 
 func TestGetStorageDescription_File(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Force file backend
@@ -317,7 +313,6 @@ func TestGetStorageDescription_File(t *testing.T) {
 }
 
 func TestDetectBackend_AutoFallback(t *testing.T) {
-	t.Parallel()
 	// This tests the auto-detect fallback warning path
 	ResetStorage()
 
@@ -338,16 +333,14 @@ func TestDetectBackend_AutoFallback(t *testing.T) {
 }
 
 func TestDetectBackend_InvalidEnvValue(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Set invalid environment value
-	_ = os.Setenv(StorageEnvVar, "invalid-backend")
-	defer func() { _ = os.Unsetenv(StorageEnvVar) }()
+	t.Setenv(StorageEnvVar, "invalid-backend")
 
 	_, err := GetStorage(nil)
 	if err == nil {
-		t.Error("Expected error for invalid DD_TOKEN_STORAGE value")
+		t.Fatal("Expected error for invalid DD_TOKEN_STORAGE value")
 	}
 
 	if !contains(err.Error(), "invalid DD_TOKEN_STORAGE value") {
@@ -356,13 +349,12 @@ func TestDetectBackend_InvalidEnvValue(t *testing.T) {
 }
 
 func TestCreateStorage_UnknownBackend(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Try to create storage with unknown backend
 	_, err := createStorage("unknown-backend")
 	if err == nil {
-		t.Error("Expected error for unknown backend type")
+		t.Fatal("Expected error for unknown backend type")
 	}
 
 	if !contains(err.Error(), "unknown backend type") {
@@ -371,7 +363,6 @@ func TestCreateStorage_UnknownBackend(t *testing.T) {
 }
 
 func TestGetStorage_CachedInstance(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Get storage first time
@@ -393,7 +384,6 @@ func TestGetStorage_CachedInstance(t *testing.T) {
 }
 
 func TestGetStorage_ForceBackendOverridesCache(t *testing.T) {
-	t.Parallel()
 	ResetStorage()
 
 	// Get file storage first

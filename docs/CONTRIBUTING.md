@@ -6,7 +6,7 @@ Guidelines for contributing to Pup.
 
 ```bash
 # Clone repository
-git clone https://github.com/DataDog/pup.git
+git clone https://github.com/datadog-labs/pup.git
 cd pup
 
 # Install dependencies
