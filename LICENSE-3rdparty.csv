@@ -1,6 +1,7 @@
 Component,Origin,License,Copyright
 github.com/99designs/go-keychain,https://github.com/99designs/go-keychain,MIT,Copyright (c) 2019 99designs
 github.com/99designs/keyring,https://github.com/99designs/keyring,MIT,Copyright (c) 2019 99designs
+github.com/cespare/xxhash/v2,https://github.com/cespare/xxhash,MIT,Copyright (c) 2016 Caleb Spare
 github.com/clipperhouse/displaywidth,https://github.com/clipperhouse/displaywidth,MIT,Copyright (c) 2025 Matt Sherman
 github.com/clipperhouse/stringish,https://github.com/clipperhouse/stringish,MIT,Copyright (c) 2025 Matt Sherman
 github.com/clipperhouse/uax29/v2,https://github.com/clipperhouse/uax29,MIT,Copyright (c) 2020 Matt Sherman
