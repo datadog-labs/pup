@@ -12,7 +12,6 @@ github.com/dvsekhvalnov/jose2go,https://github.com/dvsekhvalnov/jose2go,MIT,Copy
 github.com/fatih/color,https://github.com/fatih/color,MIT,Copyright (c) 2013 Fatih Arslan
 github.com/goccy/go-json,https://github.com/goccy/go-json,MIT,Copyright (c) 2020 Masaaki Goshima
 github.com/godbus/dbus,https://github.com/godbus/dbus,BSD-2-Clause,Copyright (c) 2013-Present godbus contributors
-github.com/golang/protobuf,https://github.com/golang/protobuf,BSD-3-Clause,Copyright 2010 The Go Authors
 github.com/google/uuid,https://github.com/google/uuid,BSD-3-Clause,Copyright (c) 2009-2018 The Go Authors
 github.com/gsterjov/go-libsecret,https://github.com/gsterjov/go-libsecret,MIT,Copyright (c) 2016 Georgi Sterjov
 github.com/inconshreveable/mousetrap,https://github.com/inconshreveable/mousetrap,Apache-2.0,Copyright 2012 Alan Shreve
@@ -31,6 +30,4 @@ github.com/stretchr/testify,https://github.com/stretchr/testify,MIT,Copyright (c
 golang.org/x/oauth2,https://pkg.go.dev/golang.org/x/oauth2,BSD-3-Clause,Copyright (c) 2009 The Go Authors
 golang.org/x/sys,https://pkg.go.dev/golang.org/x/sys,BSD-3-Clause,Copyright (c) 2009 The Go Authors
 golang.org/x/term,https://pkg.go.dev/golang.org/x/term,BSD-3-Clause,Copyright (c) 2009 The Go Authors
-google.golang.org/appengine,https://pkg.go.dev/google.golang.org/appengine,Apache-2.0,Copyright 2011 Google Inc.
-google.golang.org/protobuf,https://pkg.go.dev/google.golang.org/protobuf,BSD-3-Clause,Copyright (c) 2018 The Go Authors
 gopkg.in/yaml.v3,https://github.com/go-yaml/yaml,MIT AND Apache-2.0,Copyright (c) 2006-2011 Kirill Simonov / Copyright (c) 2011-2019 Canonical Ltd
