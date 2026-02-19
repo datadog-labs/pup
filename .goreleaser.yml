@@ -9,14 +9,32 @@ before:
     - go mod tidy
 
 builds:
-  - id: pup
+  # Darwin builds must have CGO_ENABLED=1 so the keyring library's
+  # KeychainBackend (guarded by //go:build darwin && cgo) is compiled in.
+  # This build must run on a macOS CI runner.
+  - id: pup-darwin
+    binary: pup
+    main: .
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/datadog-labs/pup/internal/version.Version={{.Version}}
+      - -X github.com/datadog-labs/pup/internal/version.GitCommit={{.Commit}}
+      - -X github.com/datadog-labs/pup/internal/version.BuildDate={{.Date}}
+
+  # Linux and Windows builds use CGO_ENABLED=0 for cross-compilation.
+  # These platforms do not use go-keychain and are unaffected.
+  - id: pup-nix
     binary: pup
     main: .
     env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - darwin
       - windows
     goarch:
       - amd64
