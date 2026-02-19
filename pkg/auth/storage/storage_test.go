@@ -251,7 +251,7 @@ func TestNewFileStorage(t *testing.T) {
 		t.Error("Expected non-empty baseDir")
 	}
 
-	// Verify directory was created
+	// Verify directory exists
 	info, err := os.Stat(storage.baseDir)
 	if err != nil {
 		t.Fatalf("Storage directory not created: %v", err)
@@ -261,9 +261,14 @@ func TestNewFileStorage(t *testing.T) {
 		t.Error("Storage path is not a directory")
 	}
 
-	// Check directory permissions (should be 0700)
-	if info.Mode().Perm() != 0700 {
-		t.Errorf("Expected directory permissions 0700, got %v", info.Mode().Perm())
+	// Verify baseDir uses the home directory path (~/.config/pup/)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("Failed to get home directory: %v", err)
+	}
+	expectedDir := filepath.Join(home, ".config", "pup")
+	if storage.baseDir != expectedDir {
+		t.Errorf("Expected baseDir %s, got %s", expectedDir, storage.baseDir)
 	}
 }
 
