@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
+	"github.com/datadog-labs/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,7 @@ CAPABILITIES:
   • Get detailed pipeline execution information
   • Aggregate pipeline events for analytics
   • Track pipeline performance metrics
+  • Query CI test events and flaky tests
 
 EXAMPLES:
   # List recent pipelines
@@ -42,6 +44,12 @@ EXAMPLES:
   # Aggregate by status
   pup cicd events aggregate --query="*" --compute="count" --group-by="@ci.status"
 
+  # List recent test events
+  pup cicd tests list --from="1h"
+
+  # Search flaky tests
+  pup cicd flaky-tests search --query="flaky_test_state:active"
+
 AUTHENTICATION:
   Requires either OAuth2 authentication (pup auth login) or API keys.`,
 }
@@ -54,6 +62,11 @@ var cicdPipelinesCmd = &cobra.Command{
 var cicdEventsCmd = &cobra.Command{
 	Use:   "events",
 	Short: "Query CI/CD events",
+}
+
+var cicdTestsCmd = &cobra.Command{
+	Use:   "tests",
+	Short: "Query CI test events",
 }
 
 var cicdPipelinesListCmd = &cobra.Command{
@@ -80,6 +93,24 @@ var cicdEventsAggregateCmd = &cobra.Command{
 	RunE:  runCICDEventsAggregate,
 }
 
+var cicdTestsListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List CI test events",
+	RunE:  runCICDTestsList,
+}
+
+var cicdTestsSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search CI test events",
+	RunE:  runCICDTestsSearch,
+}
+
+var cicdTestsAggregateCmd = &cobra.Command{
+	Use:   "aggregate",
+	Short: "Aggregate CI test events",
+	RunE:  runCICDTestsAggregate,
+}
+
 // DORA subcommands
 var cicdDoraCmd = &cobra.Command{
 	Use:   "dora",
@@ -97,6 +128,12 @@ var cicdDoraPatchDeploymentCmd = &cobra.Command{
 var cicdFlakyTestsCmd = &cobra.Command{
 	Use:   "flaky-tests",
 	Short: "Manage flaky tests",
+}
+
+var cicdFlakyTestsSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search flaky tests",
+	RunE:  runCICDFlakyTestsSearch,
 }
 
 var cicdFlakyTestsUpdateCmd = &cobra.Command{
@@ -117,6 +154,21 @@ var (
 	cicdCompute  string
 	cicdGroupBy  string
 	cicdFile     string
+
+	cicdTestsQuery   string
+	cicdTestsFrom    string
+	cicdTestsTo      string
+	cicdTestsLimit   int32
+	cicdTestsSort    string
+	cicdTestsCompute string
+	cicdTestsGroupBy string
+	cicdTestsCursor  string
+
+	cicdFlakyQuery          string
+	cicdFlakyCursor         string
+	cicdFlakyLimit          int64
+	cicdFlakyIncludeHistory bool
+	cicdFlakySort           string
 )
 
 func init() {
@@ -149,19 +201,49 @@ func init() {
 		panic(fmt.Errorf("failed to mark flag as required: %w", err))
 	}
 
+	cicdTestsListCmd.Flags().StringVar(&cicdTestsQuery, "query", "", "Search query")
+	cicdTestsListCmd.Flags().StringVar(&cicdTestsFrom, "from", "1h", "Start time")
+	cicdTestsListCmd.Flags().StringVar(&cicdTestsTo, "to", "now", "End time")
+	cicdTestsListCmd.Flags().Int32Var(&cicdTestsLimit, "limit", 50, "Maximum results")
+	cicdTestsListCmd.Flags().StringVar(&cicdTestsSort, "sort", "desc", "Sort order (asc or desc)")
+	cicdTestsListCmd.Flags().StringVar(&cicdTestsCursor, "cursor", "", "Pagination cursor")
+
+	cicdTestsSearchCmd.Flags().StringVar(&cicdTestsQuery, "query", "", "Search query (required)")
+	cicdTestsSearchCmd.Flags().StringVar(&cicdTestsFrom, "from", "1h", "Start time")
+	cicdTestsSearchCmd.Flags().StringVar(&cicdTestsTo, "to", "now", "End time")
+	cicdTestsSearchCmd.Flags().Int32Var(&cicdTestsLimit, "limit", 50, "Maximum results")
+	cicdTestsSearchCmd.Flags().StringVar(&cicdTestsSort, "sort", "desc", "Sort order (asc or desc)")
+	cicdTestsSearchCmd.Flags().StringVar(&cicdTestsCursor, "cursor", "", "Pagination cursor")
+	_ = cicdTestsSearchCmd.MarkFlagRequired("query")
+
+	cicdTestsAggregateCmd.Flags().StringVar(&cicdTestsQuery, "query", "", "Search query (required)")
+	cicdTestsAggregateCmd.Flags().StringVar(&cicdTestsFrom, "from", "1h", "Start time")
+	cicdTestsAggregateCmd.Flags().StringVar(&cicdTestsTo, "to", "now", "End time")
+	cicdTestsAggregateCmd.Flags().StringVar(&cicdTestsCompute, "compute", "count", "Aggregation function")
+	cicdTestsAggregateCmd.Flags().StringVar(&cicdTestsGroupBy, "group-by", "", "Group by field(s)")
+	cicdTestsAggregateCmd.Flags().Int32Var(&cicdTestsLimit, "limit", 10, "Maximum groups")
+	_ = cicdTestsAggregateCmd.MarkFlagRequired("query")
+
 	// DORA flags
 	cicdDoraPatchDeploymentCmd.Flags().StringVar(&cicdFile, "file", "", "JSON file with patch data (required)")
 	_ = cicdDoraPatchDeploymentCmd.MarkFlagRequired("file")
 
 	// Flaky tests flags
+	cicdFlakyTestsSearchCmd.Flags().StringVar(&cicdFlakyQuery, "query", "", "Search query")
+	cicdFlakyTestsSearchCmd.Flags().StringVar(&cicdFlakyCursor, "cursor", "", "Pagination cursor")
+	cicdFlakyTestsSearchCmd.Flags().Int64Var(&cicdFlakyLimit, "limit", 100, "Maximum results")
+	cicdFlakyTestsSearchCmd.Flags().BoolVar(&cicdFlakyIncludeHistory, "include-history", false, "Include status history")
+	cicdFlakyTestsSearchCmd.Flags().StringVar(&cicdFlakySort, "sort", "", "Sort order (fqn, -fqn)")
+
 	cicdFlakyTestsUpdateCmd.Flags().StringVar(&cicdFile, "file", "", "JSON file with flaky tests data (required)")
 	_ = cicdFlakyTestsUpdateCmd.MarkFlagRequired("file")
 
 	cicdPipelinesCmd.AddCommand(cicdPipelinesListCmd, cicdPipelinesGetCmd)
 	cicdEventsCmd.AddCommand(cicdEventsSearchCmd, cicdEventsAggregateCmd)
+	cicdTestsCmd.AddCommand(cicdTestsListCmd, cicdTestsSearchCmd, cicdTestsAggregateCmd)
 	cicdDoraCmd.AddCommand(cicdDoraPatchDeploymentCmd)
-	cicdFlakyTestsCmd.AddCommand(cicdFlakyTestsUpdateCmd)
-	cicdCmd.AddCommand(cicdPipelinesCmd, cicdEventsCmd, cicdDoraCmd, cicdFlakyTestsCmd)
+	cicdFlakyTestsCmd.AddCommand(cicdFlakyTestsSearchCmd, cicdFlakyTestsUpdateCmd)
+	cicdCmd.AddCommand(cicdPipelinesCmd, cicdEventsCmd, cicdTestsCmd, cicdDoraCmd, cicdFlakyTestsCmd)
 }
 
 func runCICDPipelinesList(cmd *cobra.Command, args []string) error {
@@ -327,6 +409,148 @@ func runCICDEventsAggregate(cmd *cobra.Command, args []string) error {
 	return formatAndPrint(resp, nil)
 }
 
+// Tests implementations
+func runCICDTestsList(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCIVisibilityTestsApi(client.V2())
+	opts := datadogV2.NewListCIAppTestEventsOptionalParameters()
+
+	if cicdTestsQuery != "" {
+		opts = opts.WithFilterQuery(cicdTestsQuery)
+	}
+
+	if cicdTestsFrom != "" {
+		from, err := util.ParseTimeParam(cicdTestsFrom)
+		if err != nil {
+			return fmt.Errorf("invalid --from time: %w", err)
+		}
+		opts = opts.WithFilterFrom(from)
+	}
+
+	if cicdTestsTo != "" {
+		to, err := util.ParseTimeParam(cicdTestsTo)
+		if err != nil {
+			return fmt.Errorf("invalid --to time: %w", err)
+		}
+		opts = opts.WithFilterTo(to)
+	}
+
+	if cicdTestsLimit > 0 {
+		opts = opts.WithPageLimit(cicdTestsLimit)
+	}
+
+	if cicdTestsCursor != "" {
+		opts = opts.WithPageCursor(cicdTestsCursor)
+	}
+
+	opts = opts.WithSort(parseCIAppSort(cicdTestsSort))
+
+	resp, r, err := api.ListCIAppTestEvents(client.Context(), *opts)
+	if err != nil {
+		if r != nil {
+			return fmt.Errorf("failed to list test events: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to list test events: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCICDTestsSearch(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCIVisibilityTestsApi(client.V2())
+
+	filter := datadogV2.CIAppTestsQueryFilter{
+		From:  &cicdTestsFrom,
+		To:    &cicdTestsTo,
+		Query: &cicdTestsQuery,
+	}
+
+	page := datadogV2.CIAppQueryPageOptions{}
+	if cicdTestsLimit > 0 {
+		page.Limit = &cicdTestsLimit
+	}
+	if cicdTestsCursor != "" {
+		page.Cursor = &cicdTestsCursor
+	}
+
+	body := datadogV2.NewCIAppTestEventsRequest()
+	body.SetFilter(filter)
+	if page.Limit != nil || page.Cursor != nil {
+		body.SetPage(page)
+	}
+	body.SetSort(parseCIAppSort(cicdTestsSort))
+
+	opts := datadogV2.NewSearchCIAppTestEventsOptionalParameters()
+	opts = opts.WithBody(*body)
+
+	resp, r, err := api.SearchCIAppTestEvents(client.Context(), *opts)
+	if err != nil {
+		if r != nil {
+			return fmt.Errorf("failed to search test events: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to search test events: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
+func runCICDTestsAggregate(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewCIVisibilityTestsApi(client.V2())
+	compute, err := buildComputeAggregation(cicdTestsCompute)
+	if err != nil {
+		return err
+	}
+
+	var groupBy []datadogV2.CIAppTestsGroupBy
+	if cicdTestsGroupBy != "" {
+		fields := strings.Split(cicdTestsGroupBy, ",")
+		for _, field := range fields {
+			field = strings.TrimSpace(field)
+			gb := datadogV2.NewCIAppTestsGroupBy(field)
+			limit := int64(cicdTestsLimit)
+			gb.SetLimit(limit)
+			groupBy = append(groupBy, *gb)
+		}
+	}
+
+	filter := datadogV2.CIAppTestsQueryFilter{
+		From:  &cicdTestsFrom,
+		To:    &cicdTestsTo,
+		Query: &cicdTestsQuery,
+	}
+
+	body := datadogV2.NewCIAppTestsAggregateRequest()
+	body.SetCompute([]datadogV2.CIAppCompute{*compute})
+	body.SetFilter(filter)
+	if len(groupBy) > 0 {
+		body.SetGroupBy(groupBy)
+	}
+
+	resp, r, err := api.AggregateCIAppTestEvents(client.Context(), *body)
+	if err != nil {
+		if r != nil {
+			return fmt.Errorf("failed to aggregate test events: %w (status: %d)", err, r.StatusCode)
+		}
+		return fmt.Errorf("failed to aggregate test events: %w", err)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
 // DORA implementations
 func runCICDDoraPatchDeployment(cmd *cobra.Command, args []string) error {
 	data, err := os.ReadFile(cicdFile)
@@ -355,6 +579,59 @@ func runCICDDoraPatchDeployment(cmd *cobra.Command, args []string) error {
 }
 
 // Flaky Tests implementations
+func runCICDFlakyTestsSearch(cmd *cobra.Command, args []string) error {
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewTestOptimizationApi(client.V2())
+
+	attrs := datadogV2.NewFlakyTestsSearchRequestAttributes()
+	if cicdFlakyQuery != "" {
+		filter := datadogV2.NewFlakyTestsSearchFilter()
+		filter.SetQuery(cicdFlakyQuery)
+		attrs.SetFilter(*filter)
+	}
+	if cicdFlakyIncludeHistory {
+		attrs.SetIncludeHistory(true)
+	}
+	if cicdFlakyLimit > 0 || cicdFlakyCursor != "" {
+		page := datadogV2.NewFlakyTestsSearchPageOptions()
+		if cicdFlakyLimit > 0 {
+			page.SetLimit(cicdFlakyLimit)
+		}
+		if cicdFlakyCursor != "" {
+			page.SetCursor(cicdFlakyCursor)
+		}
+		attrs.SetPage(*page)
+	}
+	if cicdFlakySort != "" {
+		sortValue, err := datadogV2.NewFlakyTestsSearchSortFromValue(cicdFlakySort)
+		if err != nil {
+			return fmt.Errorf("invalid --sort value: %w", err)
+		}
+		attrs.SetSort(*sortValue)
+	}
+
+	data := datadogV2.NewFlakyTestsSearchRequestData()
+	data.SetAttributes(*attrs)
+	data.SetType(datadogV2.FLAKYTESTSSEARCHREQUESTDATATYPE_SEARCH_FLAKY_TESTS_REQUEST)
+
+	body := datadogV2.NewFlakyTestsSearchRequest()
+	body.SetData(*data)
+
+	opts := datadogV2.NewSearchFlakyTestsOptionalParameters()
+	opts = opts.WithBody(*body)
+
+	resp, r, err := api.SearchFlakyTests(client.Context(), *opts)
+	if err != nil {
+		return formatAPIError("search flaky tests", err, r)
+	}
+
+	return formatAndPrint(resp, nil)
+}
+
 func runCICDFlakyTestsUpdate(cmd *cobra.Command, args []string) error {
 	data, err := os.ReadFile(cicdFile)
 	if err != nil {
@@ -409,4 +686,11 @@ func buildComputeAggregation(compute string) (*datadogV2.CIAppCompute, error) {
 		Aggregation: aggType,
 		Metric:      &field,
 	}, nil
+}
+
+func parseCIAppSort(sort string) datadogV2.CIAppSort {
+	if sort == "asc" {
+		return datadogV2.CIAPPSORT_TIMESTAMP_ASCENDING
+	}
+	return datadogV2.CIAPPSORT_TIMESTAMP_DESCENDING
 }

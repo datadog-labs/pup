@@ -28,7 +28,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | slos | list, get, delete, status | cmd/slos.go | ✅ |
 | incidents | list, get, attachments, settings, handles, postmortem-templates | cmd/incidents.go | ✅ |
 | rum | apps, metrics, retention-filters, sessions, playlists, heatmaps | cmd/rum.go | ✅ |
-| cicd | pipelines, events, dora, flaky-tests | cmd/cicd.go | ✅ |
+| cicd | pipelines, events, tests, dora, flaky-tests | cmd/cicd.go | ✅ |
 | static-analysis | custom-rulesets | cmd/vulnerabilities.go | ✅ |
 | downtime | list, get, cancel | cmd/downtime.go | ✅ |
 | tags | list, get, add, update, delete | cmd/tags.go | ✅ |
@@ -140,7 +140,7 @@ pup infrastructure hosts list
 - **integrations** - Third-party integrations (slack, pagerduty, webhooks, jira, servicenow)
 
 ### Development & Quality
-- **cicd** - CI/CD visibility (pipelines, events, dora, flaky-tests)
+- **cicd** - CI/CD visibility (pipelines, events, tests, dora, flaky-tests)
 - **code-coverage** - Code coverage summaries (branch, commit)
 - **error-tracking** - Error management (issues search, issues get)
 - **scorecards** - Service quality (list, get)

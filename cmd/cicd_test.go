@@ -28,7 +28,7 @@ func TestCICDCmd(t *testing.T) {
 }
 
 func TestCICDCmd_Subcommands(t *testing.T) {
-	expectedCommands := []string{"pipelines", "events"}
+	expectedCommands := []string{"pipelines", "events", "tests", "dora", "flaky-tests"}
 
 	commands := cicdCmd.Commands()
 
@@ -109,6 +109,36 @@ func TestCICDEventsCmd(t *testing.T) {
 	}
 }
 
+func TestCICDTestsCmd(t *testing.T) {
+	if cicdTestsCmd == nil {
+		t.Fatal("cicdTestsCmd is nil")
+	}
+
+	if cicdTestsCmd.Use != "tests" {
+		t.Errorf("Use = %s, want tests", cicdTestsCmd.Use)
+	}
+
+	if cicdTestsCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	commands := cicdTestsCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Use] = true
+	}
+
+	if !commandMap["list"] {
+		t.Error("Missing tests list subcommand")
+	}
+	if !commandMap["search"] {
+		t.Error("Missing tests search subcommand")
+	}
+	if !commandMap["aggregate"] {
+		t.Error("Missing tests aggregate subcommand")
+	}
+}
+
 func TestCICDPipelinesListCmd(t *testing.T) {
 	if cicdPipelinesListCmd == nil {
 		t.Fatal("cicdPipelinesListCmd is nil")
@@ -163,6 +193,123 @@ func TestCICDEventsAggregateCmd(t *testing.T) {
 	}
 }
 
+func TestCICDTestsListCmd(t *testing.T) {
+	if cicdTestsListCmd == nil {
+		t.Fatal("cicdTestsListCmd is nil")
+	}
+
+	if cicdTestsListCmd.Use != "list" {
+		t.Errorf("Use = %s, want list", cicdTestsListCmd.Use)
+	}
+
+	if cicdTestsListCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if cicdTestsListCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+}
+
+func TestCICDTestsSearchCmd(t *testing.T) {
+	if cicdTestsSearchCmd == nil {
+		t.Fatal("cicdTestsSearchCmd is nil")
+	}
+
+	if cicdTestsSearchCmd.Use != "search" {
+		t.Errorf("Use = %s, want search", cicdTestsSearchCmd.Use)
+	}
+
+	if cicdTestsSearchCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if cicdTestsSearchCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+}
+
+func TestCICDTestsAggregateCmd(t *testing.T) {
+	if cicdTestsAggregateCmd == nil {
+		t.Fatal("cicdTestsAggregateCmd is nil")
+	}
+
+	if cicdTestsAggregateCmd.Use != "aggregate" {
+		t.Errorf("Use = %s, want aggregate", cicdTestsAggregateCmd.Use)
+	}
+
+	if cicdTestsAggregateCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if cicdTestsAggregateCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+}
+
+func TestCICDFlakyTestsCmd(t *testing.T) {
+	if cicdFlakyTestsCmd == nil {
+		t.Fatal("cicdFlakyTestsCmd is nil")
+	}
+
+	if cicdFlakyTestsCmd.Use != "flaky-tests" {
+		t.Errorf("Use = %s, want flaky-tests", cicdFlakyTestsCmd.Use)
+	}
+
+	if cicdFlakyTestsCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	commands := cicdFlakyTestsCmd.Commands()
+	commandMap := make(map[string]bool)
+	for _, cmd := range commands {
+		commandMap[cmd.Use] = true
+	}
+
+	if !commandMap["search"] {
+		t.Error("Missing flaky-tests search subcommand")
+	}
+	if !commandMap["update"] {
+		t.Error("Missing flaky-tests update subcommand")
+	}
+}
+
+func TestCICDFlakyTestsSearchCmd(t *testing.T) {
+	if cicdFlakyTestsSearchCmd == nil {
+		t.Fatal("cicdFlakyTestsSearchCmd is nil")
+	}
+
+	if cicdFlakyTestsSearchCmd.Use != "search" {
+		t.Errorf("Use = %s, want search", cicdFlakyTestsSearchCmd.Use)
+	}
+
+	if cicdFlakyTestsSearchCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if cicdFlakyTestsSearchCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+}
+
+func TestCICDFlakyTestsUpdateCmd(t *testing.T) {
+	if cicdFlakyTestsUpdateCmd == nil {
+		t.Fatal("cicdFlakyTestsUpdateCmd is nil")
+	}
+
+	if cicdFlakyTestsUpdateCmd.Use != "update" {
+		t.Errorf("Use = %s, want update", cicdFlakyTestsUpdateCmd.Use)
+	}
+
+	if cicdFlakyTestsUpdateCmd.Short == "" {
+		t.Error("Short description is empty")
+	}
+
+	if cicdFlakyTestsUpdateCmd.RunE == nil {
+		t.Error("RunE is nil")
+	}
+}
+
 func TestCICDCmd_CommandHierarchy(t *testing.T) {
 	// Verify main subcommands
 	commands := cicdCmd.Commands()
@@ -185,6 +332,22 @@ func TestCICDCmd_CommandHierarchy(t *testing.T) {
 	for _, cmd := range eventsCommands {
 		if cmd.Parent() != cicdEventsCmd {
 			t.Errorf("Command %s parent is not cicdEventsCmd", cmd.Use)
+		}
+	}
+
+	// Verify tests subcommands
+	testsCommands := cicdTestsCmd.Commands()
+	for _, cmd := range testsCommands {
+		if cmd.Parent() != cicdTestsCmd {
+			t.Errorf("Command %s parent is not cicdTestsCmd", cmd.Use)
+		}
+	}
+
+	// Verify flaky tests subcommands
+	flakyCommands := cicdFlakyTestsCmd.Commands()
+	for _, cmd := range flakyCommands {
+		if cmd.Parent() != cicdFlakyTestsCmd {
+			t.Errorf("Command %s parent is not cicdFlakyTestsCmd", cmd.Use)
 		}
 	}
 }
