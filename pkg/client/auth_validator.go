@@ -56,10 +56,10 @@ var endpointsWithoutOAuth = []EndpointAuthRequirement{
 	{Path: "/api/v2/api_keys/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "API Keys management missing OAuth implementation in spec"},
 	{Path: "/api/v2/api_keys", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "API Keys management missing OAuth implementation in spec"},
 	{Path: "/api/v2/api_keys/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "API Keys management missing OAuth implementation in spec"},
-	{Path: "/api/v2/app_keys", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
-	{Path: "/api/v2/app_keys/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
-	{Path: "/api/v2/app_keys/", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
-	{Path: "/api/v2/app_keys/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "App Keys management missing OAuth implementation in spec"},
+	{Path: "/api/v2/application_keys", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Application Keys management missing OAuth implementation in spec"},
+	{Path: "/api/v2/application_keys/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Application Keys management missing OAuth implementation in spec"},
+	{Path: "/api/v2/application_keys/", Method: "PATCH", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Application Keys management missing OAuth implementation in spec"},
+	{Path: "/api/v2/application_keys/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Application Keys management missing OAuth implementation in spec"},
 
 	// Error Tracking API - OAuth not working in practice
 	{Path: "/api/v2/error_tracking/issues/search", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
