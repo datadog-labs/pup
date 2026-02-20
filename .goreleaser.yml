@@ -8,7 +8,8 @@ before:
     # Ensure go.mod is tidy
     - go mod tidy
     # Copy wasm_exec.js from Go toolchain for WASM builds
-    - cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" wasm_exec.js
+    # Use sh -c to ensure $(go env GOROOT) is expanded by the shell
+    - sh -c 'cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" wasm_exec.js'
 
 builds:
   # Darwin builds must have CGO_ENABLED=1 so the keyring library's
