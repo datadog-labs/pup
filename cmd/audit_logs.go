@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
+	"github.com/datadog-labs/pup/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -75,6 +76,15 @@ func init() {
 }
 
 func runAuditLogsList(cmd *cobra.Command, args []string) error {
+	fromTime, err := util.ParseTimeParam(auditLogsFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w", err)
+	}
+	toTime, err := util.ParseTimeParam(auditLogsTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w", err)
+	}
+
 	client, err := getClient()
 	if err != nil {
 		return err
@@ -83,14 +93,9 @@ func runAuditLogsList(cmd *cobra.Command, args []string) error {
 	api := datadogV2.NewAuditApi(client.V2())
 	opts := datadogV2.ListAuditLogsOptionalParameters{}
 
-	filter := datadogV2.AuditLogsQueryFilter{}
-	filter.SetFrom(auditLogsFrom)
-	filter.SetTo(auditLogsTo)
-
-	page := datadogV2.AuditLogsQueryPageOptions{}
-	page.SetLimit(auditLogsLimit)
-
 	opts.WithFilterQuery("*")
+	opts.WithFilterFrom(fromTime)
+	opts.WithFilterTo(toTime)
 	opts.WithPageLimit(auditLogsLimit)
 
 	resp, r, err := api.ListAuditLogs(client.Context(), opts)
@@ -105,6 +110,15 @@ func runAuditLogsList(cmd *cobra.Command, args []string) error {
 }
 
 func runAuditLogsSearch(cmd *cobra.Command, args []string) error {
+	fromTime, err := util.ParseTimeToUnixMilli(auditLogsFrom)
+	if err != nil {
+		return fmt.Errorf("invalid --from time: %w", err)
+	}
+	toTime, err := util.ParseTimeToUnixMilli(auditLogsTo)
+	if err != nil {
+		return fmt.Errorf("invalid --to time: %w", err)
+	}
+
 	client, err := getClient()
 	if err != nil {
 		return err
@@ -113,10 +127,13 @@ func runAuditLogsSearch(cmd *cobra.Command, args []string) error {
 	api := datadogV2.NewAuditApi(client.V2())
 	body := datadogV2.AuditLogsSearchEventsRequest{}
 
+	from := fmt.Sprintf("%d", fromTime)
+	to := fmt.Sprintf("%d", toTime)
+
 	filter := datadogV2.AuditLogsQueryFilter{}
 	filter.SetQuery(auditLogsQuery)
-	filter.SetFrom(auditLogsFrom)
-	filter.SetTo(auditLogsTo)
+	filter.SetFrom(from)
+	filter.SetTo(to)
 	body.SetFilter(filter)
 
 	page := datadogV2.AuditLogsQueryPageOptions{}
