@@ -93,16 +93,16 @@ func TestSecuritySignalsCmd(t *testing.T) {
 		t.Error("Short description is empty")
 	}
 
-	// Check for list subcommand
+	// Check for search subcommand
 	commands := securitySignalsCmd.Commands()
-	foundList := false
+	foundSearch := false
 	for _, cmd := range commands {
-		if cmd.Use == "list" {
-			foundList = true
+		if cmd.Use == "search" {
+			foundSearch = true
 		}
 	}
-	if !foundList {
-		t.Error("Missing signals list subcommand")
+	if !foundSearch {
+		t.Error("Missing signals search subcommand")
 	}
 }
 

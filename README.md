@@ -88,7 +88,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 | API Domain | Status | Pup Commands | Notes |
 |------------|--------|--------------|-------|
-| Security Monitoring | ✅ | `security rules list`, `security signals list`, `security findings search` | Rules, signals, findings with advanced search |
+| Security Monitoring | ✅ | `security rules list`, `security signals search`, `security findings search` | Rules, signals, findings with advanced search |
 | Static Analysis | ✅ | `static-analysis ast`, `static-analysis custom-rulesets`, `static-analysis sca`, `static-analysis coverage` | Code security analysis |
 | Audit Logs | ✅ | `audit-logs list`, `audit-logs search` | Full audit log search and listing |
 | Data Governance | ✅ | `data-governance scanner-rules list` | Sensitive data scanner rules |

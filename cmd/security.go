@@ -62,10 +62,28 @@ var securitySignalsCmd = &cobra.Command{
 	Short: "Manage security signals",
 }
 
-var securitySignalsListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List security signals",
-	RunE:  runSecuritySignalsList,
+var securitySignalsSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search security signals",
+	Long: `Search security signals using log search syntax.
+
+QUERY SYNTAX (using log search syntax):
+  • @workflow.rule.name:my-rule - Filter by rule name
+  • @workflow.triage.state:open - Filter by triage state
+  • @workflow.severity:high - Filter by severity
+  • source:cloudtrail - Filter by source
+  • AND, OR, NOT - Boolean operators
+
+EXAMPLES:
+  # Search high severity signals
+  pup security signals search --query="@workflow.severity:high"
+
+  # Search open signals from a specific rule
+  pup security signals search --query="@workflow.triage.state:open @workflow.rule.name:my-rule"
+
+  # Limit results and sort
+  pup security signals search --query="source:cloudtrail" --limit=50 --sort="-timestamp"`,
+	RunE: runSecuritySignalsSearch,
 }
 
 var securityFindingsCmd = &cobra.Command{
@@ -152,6 +170,11 @@ var (
 	findingsLimit int32
 	findingsSort  string
 
+	// Signals search flags
+	signalsQuery string
+	signalsLimit int32
+	signalsSort  string
+
 	// Bulk export flags
 	securityRuleIDs string
 
@@ -173,9 +196,15 @@ func init() {
 	// Risk scores flags
 	securityRiskScoresListCmd.Flags().StringVar(&riskScoresQuery, "query", "", "Filter query")
 
+	// Signals search flags
+	securitySignalsSearchCmd.Flags().StringVar(&signalsQuery, "query", "", "Search query using log search syntax (required)")
+	securitySignalsSearchCmd.Flags().Int32Var(&signalsLimit, "limit", 100, "Maximum results (1-1000)")
+	securitySignalsSearchCmd.Flags().StringVar(&signalsSort, "sort", "", "Sort order: timestamp or -timestamp")
+	_ = securitySignalsSearchCmd.MarkFlagRequired("query")
+
 	// Command hierarchy
 	securityRulesCmd.AddCommand(securityRulesListCmd, securityRulesGetCmd, securityRulesBulkExportCmd)
-	securitySignalsCmd.AddCommand(securitySignalsListCmd)
+	securitySignalsCmd.AddCommand(securitySignalsSearchCmd)
 	securityFindingsCmd.AddCommand(securityFindingsSearchCmd)
 	securityContentPacksCmd.AddCommand(securityContentPacksListCmd, securityContentPacksActivateCmd, securityContentPacksDeactivateCmd)
 	securityRiskScoresCmd.AddCommand(securityRiskScoresListCmd)
@@ -219,19 +248,35 @@ func runSecurityRulesGet(cmd *cobra.Command, args []string) error {
 	return formatAndPrint(resp, nil)
 }
 
-func runSecuritySignalsList(cmd *cobra.Command, args []string) error {
+func runSecuritySignalsSearch(cmd *cobra.Command, args []string) error {
 	client, err := getClient()
 	if err != nil {
 		return err
 	}
 
 	api := datadogV2.NewSecurityMonitoringApi(client.V2())
-	resp, r, err := api.ListSecurityMonitoringSignals(client.Context())
-	if err != nil {
-		if r != nil {
-			return fmt.Errorf("failed to list security signals: %w (status: %d)", err, r.StatusCode)
+
+	body := datadogV2.SecurityMonitoringSignalListRequest{
+		Filter: &datadogV2.SecurityMonitoringSignalListRequestFilter{
+			Query: &signalsQuery,
+		},
+		Page: &datadogV2.SecurityMonitoringSignalListRequestPage{
+			Limit: &signalsLimit,
+		},
+	}
+
+	if signalsSort != "" {
+		sort, err := datadogV2.NewSecurityMonitoringSignalsSortFromValue(signalsSort)
+		if err != nil {
+			return fmt.Errorf("invalid sort value '%s': use 'timestamp' or '-timestamp'", signalsSort)
 		}
-		return fmt.Errorf("failed to list security signals: %w", err)
+		body.Sort = sort
+	}
+
+	opts := datadogV2.NewSearchSecurityMonitoringSignalsOptionalParameters().WithBody(body)
+	resp, r, err := api.SearchSecurityMonitoringSignals(client.Context(), *opts)
+	if err != nil {
+		return formatAPIError("search security signals", err, r)
 	}
 
 	return formatAndPrint(resp, nil)
