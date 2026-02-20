@@ -400,3 +400,35 @@ func TestFormatAPIError_IncludesResponseBody(t *testing.T) {
 		t.Errorf("formatAPIError() should include status code, got: %q", errMsg)
 	}
 }
+
+func TestSplitAndTrim(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want []string
+	}{
+		{name: "simple", in: "a,b,c", want: []string{"a", "b", "c"}},
+		{name: "with spaces", in: "a , b , c", want: []string{"a", "b", "c"}},
+		{name: "trailing comma", in: "a,b,", want: []string{"a", "b"}},
+		{name: "leading comma", in: ",a,b", want: []string{"a", "b"}},
+		{name: "empty", in: "", want: []string{}},
+		{name: "single", in: "dashboards_read", want: []string{"dashboards_read"}},
+		{name: "whitespace only entries", in: " , , ", want: []string{}},
+		{name: "realistic scopes", in: "dashboards_read,metrics_read,logs_read_data", want: []string{"dashboards_read", "metrics_read", "logs_read_data"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := splitAndTrim(tt.in)
+			if len(got) != len(tt.want) {
+				t.Errorf("splitAndTrim(%q) = %v (len %d), want %v (len %d)", tt.in, got, len(got), tt.want, len(tt.want))
+				return
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("splitAndTrim(%q)[%d] = %q, want %q", tt.in, i, got[i], tt.want[i])
+				}
+			}
+		})
+	}
+}

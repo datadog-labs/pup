@@ -36,7 +36,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | on-call | teams (CRUD, memberships) | cmd/on_call.go | ✅ |
 | audit-logs | list, search | cmd/audit_logs.go | ✅ |
 | api-keys | list, get, create, delete | cmd/api_keys.go | ✅ |
-| app-keys | list, get, register, unregister | cmd/app_keys.go | ✅ |
+| app-keys | list, get, create, update, delete | cmd/app_keys.go | ✅ |
 | infrastructure | hosts (list, get) | cmd/infrastructure.go | ✅ |
 | synthetics | tests, locations, suites | cmd/synthetics.go | ✅ |
 | users | list, get, roles | cmd/users.go | ✅ |
@@ -158,7 +158,7 @@ pup infrastructure hosts list
 - **users** - User management (list, get, roles)
 - **organizations** - Org settings (get, list)
 - **api-keys** - API key management (list, get, create, delete)
-- **app-keys** - App key registration for Action Connections (list, get, register, unregister)
+- **app-keys** - Application key management (list, get, create, update, delete)
 
 ### Cost & Usage
 - **usage** - Usage and billing (summary, hourly)
