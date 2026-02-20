@@ -68,6 +68,23 @@ var endpointsWithoutOAuth = []EndpointAuthRequirement{
 	{Path: "/api/v2/error_tracking/issues/search", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
 	{Path: "/api/v2/error_tracking/issues/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Error Tracking API requires API keys"},
 
+	// Fleet Automation API - missing OAuth implementation
+	{Path: "/api/v2/fleet/agents", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/agents/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/agents/versions", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments/configure", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments/upgrade", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments/", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/deployments/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules/", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules/", Method: "PATCH", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules/", Method: "DELETE", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+	{Path: "/api/v2/fleet/schedules/", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Fleet Automation API does not support OAuth authentication"},
+
 	// Notebooks API (V1) - missing OAuth scopes in spec
 	{Path: "/api/v1/notebooks", Method: "GET", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},
 	{Path: "/api/v1/notebooks", Method: "POST", SupportsOAuth: false, RequiresAPIKeys: true, Reason: "Notebooks API missing OAuth implementation in spec"},

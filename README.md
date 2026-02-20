@@ -41,7 +41,7 @@ pup metrics query --query="avg:system.cpu.user{*}"   # Track the metrics tail
 
 <!-- Last updated: 2026-02-10 | API Client: v2.54.0 -->
 
-Pup implements **38 of 85+ available Datadog APIs** (44.7% coverage).
+Pup implements **39 of 85+ available Datadog APIs** (45.9% coverage).
 
 See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
@@ -116,7 +116,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 </details>
 
 <details>
-<summary><b>🚨 Incident & Operations (6/7 implemented)</b></summary>
+<summary><b>🚨 Incident & Operations (7/8 implemented)</b></summary>
 
 | API Domain | Status | Pup Commands | Notes |
 |------------|--------|--------------|-------|
@@ -126,6 +126,7 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 | Error Tracking | ✅ | `error-tracking issues search`, `error-tracking issues get` | Error issue search and details |
 | Service Catalog | ✅ | `service-catalog list`, `service-catalog get` | Service registry management |
 | Scorecards | ✅ | `scorecards list`, `scorecards get` | Service quality scores |
+| Fleet Automation | ✅ | `fleet agents`, `fleet deployments`, `fleet schedules` | Agent management, deployments, schedules (Preview) |
 | Incident Services/Teams | ❌ | - | Not yet implemented |
 
 </details>

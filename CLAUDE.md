@@ -1,6 +1,6 @@
 # Pup - Datadog API CLI
 
-Go-based CLI wrapper for Datadog APIs. Provides OAuth2 + API key authentication for 28 command groups with 200+ subcommands across 33 API domains.
+Go-based CLI wrapper for Datadog APIs. Provides OAuth2 + API key authentication for 29 command groups with 200+ subcommands across 34 API domains.
 
 ## Documentation Index
 
@@ -190,12 +190,12 @@ See [TESTING.md](docs/TESTING.md) for details.
 
 ## Implementation Status
 
-- **31 command files** implemented
-- **260+ subcommands** across 36 domains
+- **32 command files** implemented
+- **274+ subcommands** across 37 domains
 - **93.9% test coverage** in pkg/
-- **34/36 commands** fully working
-- **0/36 commands** blocked by API client library issues
-- **2/36 commands** placeholder (API endpoints pending)
+- **35/37 commands** fully working
+- **0/37 commands** blocked by API client library issues
+- **2/37 commands** placeholder (API endpoints pending)
 
 See [COMMANDS.md](docs/COMMANDS.md) for detailed status.
 
