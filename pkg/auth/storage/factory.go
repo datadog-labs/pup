@@ -3,6 +3,8 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2024-present Datadog, Inc.
 
+//go:build !js
+
 package storage
 
 import (
@@ -23,20 +25,6 @@ var (
 
 	// mu protects access to global storage state
 	mu sync.Mutex
-)
-
-// StorageOptions configures storage backend selection
-type StorageOptions struct {
-	// ForceBackend forces a specific storage backend
-	ForceBackend BackendType
-
-	// StorageDir overrides the storage directory (file backend only)
-	StorageDir string
-}
-
-const (
-	// StorageEnvVar is the environment variable to override storage backend
-	StorageEnvVar = "DD_TOKEN_STORAGE"
 )
 
 // GetStorage returns a storage instance, automatically detecting the best backend

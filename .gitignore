@@ -5,6 +5,8 @@
 *.so
 *.dylib
 pup
+*.wasm
+wasm_exec.js
 coverage.html
 
 # Test binary, built with `go test -c`

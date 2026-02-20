@@ -233,6 +233,12 @@ jobs:
       - name: Verify binary
         run: ./pup --version
 
+      - name: Build WASM binary
+        env:
+          GOOS: js
+          GOARCH: wasm
+        run: go build -o pup.wasm .
+
   sast:
     name: Datadog Static Analysis
     runs-on: ubuntu-latest

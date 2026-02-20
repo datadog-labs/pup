@@ -22,6 +22,20 @@ const (
 	BackendFile     BackendType = "file"
 )
 
+// StorageOptions configures storage backend selection
+type StorageOptions struct {
+	// ForceBackend forces a specific storage backend
+	ForceBackend BackendType
+
+	// StorageDir overrides the storage directory (file backend only)
+	StorageDir string
+}
+
+const (
+	// StorageEnvVar is the environment variable to override storage backend
+	StorageEnvVar = "DD_TOKEN_STORAGE"
+)
+
 // Storage interface for token and credential storage
 type Storage interface {
 	// GetBackendType returns the type of storage backend

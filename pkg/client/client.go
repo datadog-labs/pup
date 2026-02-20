@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/datadog-labs/pup/pkg/auth/dcr"
-	"github.com/datadog-labs/pup/pkg/auth/storage"
 	"github.com/datadog-labs/pup/pkg/config"
 	"github.com/datadog-labs/pup/pkg/useragent"
 )
@@ -26,16 +24,11 @@ type Client struct {
 	api    *datadog.APIClient
 }
 
-// Test hooks — overridden in tests to inject fakes
-var (
-	getStorageFunc   = func() (storage.Storage, error) { return storage.GetStorage(nil) }
-	newDCRClientFunc = func(site string) *dcr.Client { return dcr.NewClient(site) }
-)
-
 // New creates a new Datadog API client
 // Authentication priority:
-//  1. OAuth2 tokens (if available and valid)
-//  2. API keys (DD_API_KEY and DD_APP_KEY)
+//  1. DD_ACCESS_TOKEN (highest — stateless bearer token)
+//  2. OAuth2 tokens from local storage (if available and valid)
+//  3. API keys (DD_API_KEY and DD_APP_KEY)
 func New(cfg *config.Config) (*Client, error) {
 	return NewWithOptions(cfg, false)
 }
@@ -51,41 +44,26 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 	var ctx context.Context
 
 	if !forceAPIKeys {
-		// Try OAuth2 tokens first (preferred method)
-		store, err := getStorageFunc()
-		if err == nil {
-			tokens, err := store.LoadTokens(cfg.Site)
-			if err == nil && tokens != nil {
-				// Auto-refresh: if token is expired but refresh token is available, refresh it
-				if tokens.IsExpired() && tokens.RefreshToken != "" {
-					creds, credsErr := store.LoadClientCredentials(cfg.Site)
-					if credsErr == nil && creds != nil {
-						dcrClient := newDCRClientFunc(cfg.Site)
-						newTokens, refreshErr := dcrClient.RefreshToken(tokens.RefreshToken, creds)
-						if refreshErr == nil {
-							_ = store.SaveTokens(cfg.Site, newTokens)
-							tokens = newTokens
-						}
-					}
-				}
+		// 1. DD_ACCESS_TOKEN — highest priority, stateless bearer token
+		if cfg.AccessToken != "" {
+			ctx = context.WithValue(
+				context.Background(),
+				datadog.ContextAccessToken,
+				cfg.AccessToken,
+			)
+		}
 
-				if !tokens.IsExpired() {
-					// Use OAuth2 Bearer token authentication
-					ctx = context.WithValue(
-						context.Background(),
-						datadog.ContextAccessToken,
-						tokens.AccessToken,
-					)
-				}
-			}
+		// 2. OAuth2 tokens from local storage (native only; no-op on WASM)
+		if ctx == nil {
+			ctx = tryOAuthFromStorage(cfg)
 		}
 	}
 
-	// Fall back to API keys if OAuth not available or forced
+	// 3. Fall back to API keys
 	if ctx == nil {
 		if cfg.APIKey == "" || cfg.AppKey == "" {
 			return nil, fmt.Errorf(
-				"authentication required: either run 'pup auth login' for OAuth2 or set DD_API_KEY and DD_APP_KEY environment variables",
+				"authentication required: set DD_ACCESS_TOKEN, run 'pup auth login' for OAuth2, or set DD_API_KEY and DD_APP_KEY environment variables",
 			)
 		}
 

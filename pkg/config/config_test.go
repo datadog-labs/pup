@@ -15,6 +15,7 @@ func TestLoad(t *testing.T) {
 	// Save original env vars
 	origAPIKey := os.Getenv("DD_API_KEY")
 	origAppKey := os.Getenv("DD_APP_KEY")
+	origAccessToken := os.Getenv("DD_ACCESS_TOKEN")
 	origSite := os.Getenv("DD_SITE")
 	origAutoApprove := os.Getenv("DD_AUTO_APPROVE")
 	origCLIAutoApprove := os.Getenv("DD_CLI_AUTO_APPROVE")
@@ -23,18 +24,20 @@ func TestLoad(t *testing.T) {
 	defer func() {
 		os.Setenv("DD_API_KEY", origAPIKey)
 		os.Setenv("DD_APP_KEY", origAppKey)
+		os.Setenv("DD_ACCESS_TOKEN", origAccessToken)
 		os.Setenv("DD_SITE", origSite)
 		os.Setenv("DD_AUTO_APPROVE", origAutoApprove)
 		os.Setenv("DD_CLI_AUTO_APPROVE", origCLIAutoApprove)
 	}()
 
 	tests := []struct {
-		name        string
-		envVars     map[string]string
-		wantAPIKey  string
-		wantAppKey  string
-		wantSite    string
-		wantApprove bool
+		name            string
+		envVars         map[string]string
+		wantAPIKey      string
+		wantAppKey      string
+		wantAccessToken string
+		wantSite        string
+		wantApprove     bool
 	}{
 		{
 			name: "all env vars set",
@@ -93,6 +96,14 @@ func TestLoad(t *testing.T) {
 			wantAppKey: "app",
 			wantSite:   "navy.oncall.datadoghq.com",
 		},
+		{
+			name: "DD_ACCESS_TOKEN loaded",
+			envVars: map[string]string{
+				"DD_ACCESS_TOKEN": "my-bearer-token",
+			},
+			wantAccessToken: "my-bearer-token",
+			wantSite:        "datadoghq.com",
+		},
 	}
 
 	for _, tt := range tests {
@@ -100,6 +111,7 @@ func TestLoad(t *testing.T) {
 			// Clear all env vars
 			os.Unsetenv("DD_API_KEY")
 			os.Unsetenv("DD_APP_KEY")
+			os.Unsetenv("DD_ACCESS_TOKEN")
 			os.Unsetenv("DD_SITE")
 			os.Unsetenv("DD_AUTO_APPROVE")
 			os.Unsetenv("DD_CLI_AUTO_APPROVE")
@@ -119,6 +131,9 @@ func TestLoad(t *testing.T) {
 			}
 			if cfg.AppKey != tt.wantAppKey {
 				t.Errorf("AppKey = %q, want %q", cfg.AppKey, tt.wantAppKey)
+			}
+			if cfg.AccessToken != tt.wantAccessToken {
+				t.Errorf("AccessToken = %q, want %q", cfg.AccessToken, tt.wantAccessToken)
 			}
 			if cfg.Site != tt.wantSite {
 				t.Errorf("Site = %q, want %q", cfg.Site, tt.wantSite)

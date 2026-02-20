@@ -15,6 +15,7 @@ import (
 type Config struct {
 	APIKey      string
 	AppKey      string
+	AccessToken string
 	Site        string
 	AutoApprove bool
 	AgentMode   bool
@@ -25,6 +26,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		APIKey:      os.Getenv("DD_API_KEY"),
 		AppKey:      os.Getenv("DD_APP_KEY"),
+		AccessToken: os.Getenv("DD_ACCESS_TOKEN"),
 		Site:        getEnvWithDefault("DD_SITE", "datadoghq.com"),
 		AutoApprove: os.Getenv("DD_AUTO_APPROVE") == "true" || os.Getenv("DD_CLI_AUTO_APPROVE") == "true",
 	}

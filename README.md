@@ -234,11 +234,25 @@ export DD_SITE="datadoghq.com"  # Optional, defaults to datadoghq.com
 pup monitors list
 ```
 
+### Bearer Token Authentication (WASM / Headless)
+
+For WASM builds or environments without keychain access, use a pre-obtained bearer token:
+
+```bash
+export DD_ACCESS_TOKEN="your-oauth-access-token"
+export DD_SITE="datadoghq.com"
+
+pup monitors list
+```
+
+This is the only authentication method available in the WASM build. See the [WASM](#wasm) section below.
+
 ### Authentication Priority
 
 Pup checks for authentication in this order:
-1. **OAuth2 tokens** (from `pup auth login`) - Used if valid tokens exist
-2. **API keys** (from `DD_API_KEY` and `DD_APP_KEY`) - Used if OAuth tokens not available
+1. **`DD_ACCESS_TOKEN`** - Stateless bearer token (highest priority)
+2. **OAuth2 tokens** (from `pup auth login`) - Used if valid tokens exist
+3. **API keys** (from `DD_API_KEY` and `DD_APP_KEY`) - Used if OAuth tokens not available
 
 ## Usage
 
@@ -333,11 +347,54 @@ pup incidents get abc-123-def
 
 ## Environment Variables
 
-- `DD_API_KEY`: Datadog API key (optional if using OAuth2)
-- `DD_APP_KEY`: Datadog Application key (optional if using OAuth2)
+- `DD_ACCESS_TOKEN`: Bearer token for stateless auth (highest priority, required for WASM)
+- `DD_API_KEY`: Datadog API key (optional if using OAuth2 or DD_ACCESS_TOKEN)
+- `DD_APP_KEY`: Datadog Application key (optional if using OAuth2 or DD_ACCESS_TOKEN)
 - `DD_SITE`: Datadog site (default: datadoghq.com)
 - `DD_AUTO_APPROVE`: Auto-approve destructive operations (true/false)
 - `DD_TOKEN_STORAGE`: Token storage backend (keychain or file, default: auto-detect)
+
+## WASM
+
+Pup compiles to WebAssembly (`GOOS=js GOARCH=wasm`) for use in browser-like runtimes such as Deno, Bun, and Cloudflare Workers.
+
+### Building
+
+```bash
+GOOS=js GOARCH=wasm go build -o pup.wasm .
+
+# Copy the Go WASM support file
+cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" .
+```
+
+### Authentication
+
+The WASM build uses **stateless authentication only** — keychain storage and browser-based OAuth login are not available. Set `DD_ACCESS_TOKEN` with a pre-obtained bearer token:
+
+```bash
+DD_ACCESS_TOKEN="your-token" DD_SITE="datadoghq.com" deno run pup.wasm monitors list
+```
+
+The `pup auth status` command works in WASM and reports which credentials are configured. The `login`, `logout`, and `refresh` subcommands return guidance to use `DD_ACCESS_TOKEN`.
+
+### Limitations
+
+- No local token storage (keychain/file) — use `DD_ACCESS_TOKEN`
+- No browser-based OAuth login flow
+- Networking relies on the host runtime's Fetch API
+
+### Running with Deno
+
+```javascript
+import "./wasm_exec.js";
+
+const go = new Go();
+const wasm = await Deno.readFile("pup.wasm");
+const result = await WebAssembly.instantiate(wasm, go.importObject);
+go.run(result.instance);
+```
+
+Pre-built WASM archives (including `wasm_exec.js`) are available in [GitHub Releases](https://github.com/datadog-labs/pup/releases).
 
 ## Development
 
@@ -347,6 +404,9 @@ go test ./...
 
 # Build
 go build -o pup .
+
+# Build WASM
+GOOS=js GOARCH=wasm go build -o pup.wasm .
 
 # Run without building
 go run main.go monitors list

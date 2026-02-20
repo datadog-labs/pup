@@ -640,3 +640,68 @@ func TestClient_IntegrationUserAgentInAPIClient(t *testing.T) {
 
 	t.Logf("✓ Integration test passed - API client uses custom User-Agent: %s", userAgent)
 }
+
+func TestNewWithOptions_AccessToken_HighestPriority(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Config{
+		AccessToken: "my-access-token",
+		APIKey:      "test-api-key",
+		AppKey:      "test-app-key",
+		Site:        "datadoghq.com",
+	}
+
+	client, err := NewWithOptions(cfg, false)
+	if err != nil {
+		t.Fatalf("NewWithOptions() error = %v", err)
+	}
+
+	// DD_ACCESS_TOKEN should take priority — client uses OAuth-style bearer token
+	if client.GetAuthType() != AuthTypeOAuth {
+		t.Errorf("expected AuthTypeOAuth (bearer token), got %v", client.GetAuthType())
+	}
+
+	token, ok := client.ctx.Value(datadog.ContextAccessToken).(string)
+	if !ok || token != "my-access-token" {
+		t.Errorf("expected access token 'my-access-token', got %q", token)
+	}
+}
+
+func TestNewWithOptions_AccessToken_EmptyFallsThrough(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Config{
+		AccessToken: "",
+		APIKey:      "test-api-key",
+		AppKey:      "test-app-key",
+		Site:        "datadoghq.com",
+	}
+
+	// With empty AccessToken and forceAPIKeys, should fall back to API keys
+	client, err := NewWithOptions(cfg, true)
+	if err != nil {
+		t.Fatalf("NewWithOptions() error = %v", err)
+	}
+
+	if client.GetAuthType() != AuthTypeAPIKeys {
+		t.Errorf("expected AuthTypeAPIKeys, got %v", client.GetAuthType())
+	}
+}
+
+func TestNewWithOptions_AccessToken_SkippedWhenForceAPIKeys(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Config{
+		AccessToken: "my-access-token",
+		APIKey:      "test-api-key",
+		AppKey:      "test-app-key",
+		Site:        "datadoghq.com",
+	}
+
+	// forceAPIKeys=true should skip DD_ACCESS_TOKEN
+	client, err := NewWithOptions(cfg, true)
+	if err != nil {
+		t.Fatalf("NewWithOptions() error = %v", err)
+	}
+
+	if client.GetAuthType() != AuthTypeAPIKeys {
+		t.Errorf("expected AuthTypeAPIKeys with forceAPIKeys=true, got %v", client.GetAuthType())
+	}
+}

@@ -7,6 +7,8 @@ before:
   hooks:
     # Ensure go.mod is tidy
     - go mod tidy
+    # Copy wasm_exec.js from Go toolchain for WASM builds
+    - cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" wasm_exec.js
 
 builds:
   # Darwin builds must have CGO_ENABLED=1 so the keyring library's
@@ -54,8 +56,28 @@ builds:
       - -X github.com/datadog-labs/pup/internal/version.GitCommit={{.Commit}}
       - -X github.com/datadog-labs/pup/internal/version.BuildDate={{.Date}}
 
+  # WASM build for browser/Deno/Bun/Workers runtimes.
+  # Uses GOOS=js (Fetch API networking) with stateless auth (DD_ACCESS_TOKEN).
+  - id: pup-wasm
+    binary: pup
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - js
+    goarch:
+      - wasm
+    ldflags:
+      - -s -w
+      - -X github.com/datadog-labs/pup/internal/version.Version={{.Version}}
+      - -X github.com/datadog-labs/pup/internal/version.GitCommit={{.Commit}}
+      - -X github.com/datadog-labs/pup/internal/version.BuildDate={{.Date}}
+
 archives:
   - id: pup
+    builds:
+      - pup-darwin
+      - pup-nix
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
@@ -69,6 +91,15 @@ archives:
       - README.md
       - CHANGELOG.md
       - docs/*
+
+  - id: pup-wasm
+    builds:
+      - pup-wasm
+    name_template: "{{ .ProjectName }}_{{ .Version }}_WASM"
+    files:
+      - wasm_exec.js
+      - LICENSE
+      - README.md
 
 # Source archive
 source:
