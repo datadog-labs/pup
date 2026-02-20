@@ -22,12 +22,13 @@ jobs:
   test:
     name: Test and Coverage
     runs-on: ubuntu-latest
-    env:
-      DD_API_KEY: ${{ secrets.DD_API_KEY }}
-      DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
-      DD_CIVISIBILITY_AGENTLESS_ENABLED: true
-      DD_CIVISIBILITY_GIT_UPLOAD_ENABLED: true
-      DD_CIVISIBILITY_ENABLED: true
+    # TODO: Re-enable DD env vars when dd-sts is fixed
+    # env:
+    #   DD_API_KEY: ${{ secrets.DD_API_KEY }}
+    #   DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
+    #   DD_CIVISIBILITY_AGENTLESS_ENABLED: true
+    #   DD_CIVISIBILITY_GIT_UPLOAD_ENABLED: true
+    #   DD_CIVISIBILITY_ENABLED: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -40,60 +41,42 @@ jobs:
           go-version: '1.25'
           cache: true
 
-      - name: Get Datadog credentials
-        if: github.ref == 'refs/heads/main'
-        id: dd-sts # Needed to be able to reference this step's output later
-        uses: DataDog/dd-sts-action@main # Pin to the main branch to get auto updates for free, or to a specific commit hash if you want stability
-        with:
-          policy: public-datadog-pup-sts
-
-      - name: Configure Datadog Test Optimization
-        if: github.ref == 'refs/heads/main'
-        uses: datadog/test-visibility-github-action@v2
-        with:
-          languages: go
-          api_key: ${{ steps.dd-sts.outputs.api_key }}
-          site: datadoghq.com
-
-      - name: Install Datadog CI tools
-        if: github.ref == 'refs/heads/main'
-        run: |
-          # Install orchestrion for Go test instrumentation
-          go install github.com/DataDog/orchestrion@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-          # Install datadog-ci CLI for coverage upload
-          npm install -g @datadog/datadog-ci
+      # TODO: Re-enable dd-sts + orchestrion + datadog-ci when STS policy is fixed (401 errors)
+      # - name: Get Datadog credentials
+      #   if: github.ref == 'refs/heads/main'
+      #   id: dd-sts
+      #   uses: DataDog/dd-sts-action@main
+      #   with:
+      #     policy: public-datadog-pup-sts
+      #
+      # - name: Configure Datadog Test Optimization
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: datadog/test-visibility-github-action@v2
+      #   with:
+      #     languages: go
+      #     api_key: ${{ steps.dd-sts.outputs.api_key }}
+      #     site: datadoghq.com
+      #
+      # - name: Install Datadog CI tools
+      #   if: github.ref == 'refs/heads/main'
+      #   run: |
+      #     # Install orchestrion for Go test instrumentation
+      #     go install github.com/DataDog/orchestrion@latest
+      #     echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      #
+      #     # Install datadog-ci CLI for coverage upload
+      #     npm install -g @datadog/datadog-ci
 
       - name: Install bc for floating-point math
         run: sudo apt-get update && sudo apt-get install -y bc
 
       - name: Run tests with coverage
-        env:
-          DD_CIVISIBILITY_ENABLED: true
-          DD_ENV: ci
         run: |
           # Run tests on all packages with race detection
-          # Use orchestrion to instrument tests for Datadog CI Visibility
-          # IMPORTANT: Use -parallel 256 with orchestrion. The test-visibility-github-action
-          # sets GOFLAGS='-toolexec=orchestrion toolexec' which auto-injects t.Parallel()
-          # into ALL subtests. With the default parallel limit (GOMAXPROCS=2 on runners),
-          # this deadlocks table-driven tests where parent tests wait for subtests that are
-          # blocked waiting for parallel slots. A high limit avoids the deadlock.
-          if [ -n "$DD_API_KEY" ]; then
-            echo "Running tests with Datadog CI Visibility enabled"
-            orchestrion go test -v -race -parallel 256 ./...
-          else
-            echo "Running tests without Datadog CI Visibility (DD_API_KEY not set)"
-            go test -v -race ./...
-          fi
+          go test -v -race ./...
 
-          # Coverage collection: run WITHOUT orchestrion/ITR to ensure ALL tests execute.
-          # Intelligent Test Runner skips tests it deems unaffected by code changes,
-          # which breaks coverage on dependency-only PRs (e.g., go.mod updates).
-          # GOFLAGS is cleared to remove the '-toolexec=orchestrion toolexec' injected
-          # by test-visibility-github-action.
-          GOFLAGS="" go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
+          # Coverage collection
+          go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
 
           # Generate HTML coverage report
           go tool cover -html=coverage.out -o coverage.html
@@ -119,14 +102,14 @@ jobs:
           echo "" >> coverage_report.txt
           go tool cover -func=coverage.out | tail -1 >> coverage_report.txt
 
-      - name: Upload coverage to Datadog
-        if: github.ref == 'refs/heads/main'
-        env:
-          DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
-          DD_SITE: datadoghq.com
-        run: |
-          # Upload coverage reports to Datadog
-          datadog-ci coverage upload --format=go-coverprofile coverage.out
+      # TODO: Re-enable when dd-sts is fixed
+      # - name: Upload coverage to Datadog
+      #   if: github.ref == 'refs/heads/main'
+      #   env:
+      #     DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
+      #     DD_SITE: datadoghq.com
+      #   run: |
+      #     datadog-ci coverage upload --format=go-coverprofile coverage.out
 
       - name: Check coverage threshold
         run: |
@@ -239,32 +222,28 @@ jobs:
           GOARCH: wasm
         run: go build -o pup.wasm .
 
-  sast:
-    name: Datadog Static Analysis
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    env:
-      DD_API_KEY: ${{ secrets.DD_API_KEY }}
-      DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
-      DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # Full history for better SAST analysis
-
-      - name: Run Datadog Static Analysis
-        if: env.DD_API_KEY != ''
-        run: |
-          # Install datadog-ci if not already installed
-          npm install -g @datadog/datadog-ci
-
-          # Run static analysis
-          # This will analyze the code for security vulnerabilities, code quality issues, etc.
-          datadog-ci sast scan --service=${{ env.DD_SERVICE }} --env=${{ env.DD_ENV }}
-
-      - name: SAST disabled notice
-        if: env.DD_API_KEY == ''
-        run: |
-          echo "⚠️  Datadog Static Analysis skipped: DD_API_KEY not configured"
-          echo "To enable SAST, add DD_API_KEY and DD_APP_KEY as repository secrets"
+  # TODO: Re-enable SAST when dd-sts/datadog-ci is fixed
+  # sast:
+  #   name: Datadog Static Analysis
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'pull_request'
+  #   env:
+  #     DD_API_KEY: ${{ secrets.DD_API_KEY }}
+  #     DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
+  #     DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - name: Run Datadog Static Analysis
+  #       if: env.DD_API_KEY != ''
+  #       run: |
+  #         npm install -g @datadog/datadog-ci
+  #         datadog-ci sast scan --service=${{ env.DD_SERVICE }} --env=${{ env.DD_ENV }}
+  #
+  #     - name: SAST disabled notice
+  #       if: env.DD_API_KEY == ''
+  #       run: |
+  #         echo "Datadog Static Analysis skipped: DD_API_KEY not configured"
