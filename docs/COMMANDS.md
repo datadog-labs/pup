@@ -1,6 +1,6 @@
 # Command Reference
 
-Complete reference for all 41 command groups in Pup.
+Complete reference for all 42 command groups in Pup.
 
 ## Command Pattern
 
@@ -60,8 +60,9 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | status-pages | pages, components, degradations | cmd/status_pages.go | ✅ |
 | code-coverage | branch-summary, commit-summary | cmd/code_coverage.go | ✅ |
 | hamr | connections (get, create) | cmd/hamr.go | ✅ |
+| fleet | agents (list, get, versions), deployments (list, get, configure, upgrade, cancel), schedules (list, get, create, update, delete, trigger) | cmd/fleet.go | ✅ |
 
-**Summary:** 37 working, 0 API-blocked, 2 placeholders
+**Summary:** 38 working, 0 API-blocked, 2 placeholders
 
 **Note:** RUM command (cmd/rum.go) is fully operational. Apps and sessions work completely. Metrics and retention-filters support list/get operations (create/update/delete operations pending due to complex API type structures).
 
@@ -151,6 +152,7 @@ pup infrastructure hosts list
 - **on-call** - Team management (create, update, delete teams; manage memberships with roles)
 - **cases** - Case management (create, search, assign, archive, projects, jira, servicenow, move)
 - **hamr** - High Availability Multi-Region connections
+- **fleet** - Fleet Automation (agents, deployments, schedules)
 
 ### Organization & Access
 - **users** - User management (list, get, roles)

@@ -282,6 +282,7 @@ func init() {
 	rootCmd.AddCommand(statusPagesCmd)
 	rootCmd.AddCommand(codeCoverageCmd)
 	rootCmd.AddCommand(hamrCmd)
+	rootCmd.AddCommand(fleetCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.

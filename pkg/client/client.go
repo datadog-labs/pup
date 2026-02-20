@@ -151,6 +151,21 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 		"v2.MoveCaseToProject",
 		// Flaky Tests
 		"v2.UpdateFlakyTests",
+		// Fleet Automation
+		"v2.ListFleetAgents",
+		"v2.GetFleetAgentInfo",
+		"v2.ListFleetAgentVersions",
+		"v2.ListFleetDeployments",
+		"v2.GetFleetDeployment",
+		"v2.CreateFleetDeploymentConfigure",
+		"v2.CreateFleetDeploymentUpgrade",
+		"v2.CancelFleetDeployment",
+		"v2.ListFleetSchedules",
+		"v2.GetFleetSchedule",
+		"v2.CreateFleetSchedule",
+		"v2.UpdateFleetSchedule",
+		"v2.DeleteFleetSchedule",
+		"v2.TriggerFleetSchedule",
 	}
 	for _, op := range unstableOps {
 		configuration.SetUnstableOperationEnabled(op, true)
