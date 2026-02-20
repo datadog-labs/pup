@@ -6,7 +6,14 @@
 package cmd
 
 import (
+	"bytes"
+	"fmt"
+	"os"
+	"strings"
 	"testing"
+
+	"github.com/datadog-labs/pup/pkg/client"
+	"github.com/datadog-labs/pup/pkg/config"
 )
 
 func TestAuditLogsCmd(t *testing.T) {
@@ -87,5 +94,175 @@ func TestAuditLogsCmd_ParentChild(t *testing.T) {
 		if cmd.Parent() != auditLogsCmd {
 			t.Errorf("Command %s parent is not auditLogsCmd", cmd.Use)
 		}
+	}
+}
+
+func setupAuditLogsTestClient(t *testing.T) func() {
+	t.Helper()
+
+	origClient := ddClient
+	origCfg := cfg
+	origFactory := clientFactory
+
+	cfg = &config.Config{
+		Site:        "datadoghq.com",
+		APIKey:      "test-api-key-12345678",
+		AppKey:      "test-app-key-12345678",
+		AutoApprove: false,
+	}
+
+	clientFactory = func(c *config.Config) (*client.Client, error) {
+		return nil, fmt.Errorf("mock client: no real API connection in tests")
+	}
+
+	ddClient = nil
+
+	return func() {
+		ddClient = origClient
+		cfg = origCfg
+		clientFactory = origFactory
+	}
+}
+
+func TestRunAuditLogsList(t *testing.T) {
+	cleanup := setupAuditLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name      string
+		from      string
+		to        string
+		wantErr   bool
+		errSubstr string // if set, error must contain this substring
+	}{
+		{
+			name:    "valid defaults reach API client",
+			from:    "1h",
+			to:      "now",
+			wantErr: true,
+		},
+		{
+			name:    "valid relative times",
+			from:    "30m",
+			to:      "now",
+			wantErr: true,
+		},
+		{
+			name:    "valid RFC3339 times",
+			from:    "2024-01-01T00:00:00Z",
+			to:      "2024-01-02T00:00:00Z",
+			wantErr: true,
+		},
+		{
+			name:      "invalid from time",
+			from:      "notadate",
+			to:        "now",
+			wantErr:   true,
+			errSubstr: "invalid --from time",
+		},
+		{
+			name:      "invalid to time",
+			from:      "1h",
+			to:        "notadate",
+			wantErr:   true,
+			errSubstr: "invalid --to time",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			auditLogsFrom = tt.from
+			auditLogsTo = tt.to
+
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runAuditLogsList(auditLogsListCmd, []string{})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runAuditLogsList() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.errSubstr != "" && err != nil {
+				if !strings.Contains(err.Error(), tt.errSubstr) {
+					t.Errorf("runAuditLogsList() error = %q, want substring %q", err.Error(), tt.errSubstr)
+				}
+			}
+		})
+	}
+}
+
+func TestRunAuditLogsSearch(t *testing.T) {
+	cleanup := setupAuditLogsTestClient(t)
+	defer cleanup()
+
+	tests := []struct {
+		name      string
+		query     string
+		from      string
+		to        string
+		wantErr   bool
+		errSubstr string
+	}{
+		{
+			name:    "valid defaults reach API client",
+			query:   "*",
+			from:    "1h",
+			to:      "now",
+			wantErr: true,
+		},
+		{
+			name:    "valid query with relative times",
+			query:   "@evt.outcome:error",
+			from:    "30m",
+			to:      "now",
+			wantErr: true,
+		},
+		{
+			name:    "valid query with RFC3339 times",
+			query:   "*",
+			from:    "2024-01-01T00:00:00Z",
+			to:      "2024-01-02T00:00:00Z",
+			wantErr: true,
+		},
+		{
+			name:      "invalid from time",
+			query:     "*",
+			from:      "notadate",
+			to:        "now",
+			wantErr:   true,
+			errSubstr: "invalid --from time",
+		},
+		{
+			name:      "invalid to time",
+			query:     "*",
+			from:      "1h",
+			to:        "notadate",
+			wantErr:   true,
+			errSubstr: "invalid --to time",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			auditLogsQuery = tt.query
+			auditLogsFrom = tt.from
+			auditLogsTo = tt.to
+
+			var buf bytes.Buffer
+			outputWriter = &buf
+			defer func() { outputWriter = os.Stdout }()
+
+			err := runAuditLogsSearch(auditLogsSearchCmd, []string{})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runAuditLogsSearch() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.errSubstr != "" && err != nil {
+				if !strings.Contains(err.Error(), tt.errSubstr) {
+					t.Errorf("runAuditLogsSearch() error = %q, want substring %q", err.Error(), tt.errSubstr)
+				}
+			}
+		})
 	}
 }

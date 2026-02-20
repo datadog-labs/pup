@@ -76,14 +76,6 @@ func init() {
 }
 
 func runAuditLogsList(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
-	if err != nil {
-		return err
-	}
-
-	api := datadogV2.NewAuditApi(client.V2())
-	opts := datadogV2.ListAuditLogsOptionalParameters{}
-
 	fromTime, err := util.ParseTimeParam(auditLogsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
@@ -92,6 +84,14 @@ func runAuditLogsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewAuditApi(client.V2())
+	opts := datadogV2.ListAuditLogsOptionalParameters{}
 
 	opts.WithFilterQuery("*")
 	opts.WithFilterFrom(fromTime)
@@ -110,14 +110,6 @@ func runAuditLogsList(cmd *cobra.Command, args []string) error {
 }
 
 func runAuditLogsSearch(cmd *cobra.Command, args []string) error {
-	client, err := getClient()
-	if err != nil {
-		return err
-	}
-
-	api := datadogV2.NewAuditApi(client.V2())
-	body := datadogV2.AuditLogsSearchEventsRequest{}
-
 	fromTime, err := util.ParseTimeToUnixMilli(auditLogsFrom)
 	if err != nil {
 		return fmt.Errorf("invalid --from time: %w", err)
@@ -126,6 +118,14 @@ func runAuditLogsSearch(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("invalid --to time: %w", err)
 	}
+
+	client, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	api := datadogV2.NewAuditApi(client.V2())
+	body := datadogV2.AuditLogsSearchEventsRequest{}
 
 	from := fmt.Sprintf("%d", fromTime)
 	to := fmt.Sprintf("%d", toTime)
