@@ -31,7 +31,12 @@ EXAMPLES:
   pup error-tracking issues get issue-id
 
 AUTHENTICATION:
-  Requires either OAuth2 authentication or API keys.`,
+  Requires either OAuth2 authentication (with error_tracking_read scope)
+  or API keys.
+
+  Note: If you encounter OAuth2 scope issues ("invalid_scope" during login
+  or 401 errors), use API key authentication as a workaround. See
+  docs/TROUBLESHOOTING.md for details.`,
 }
 
 var errorTrackingIssuesCmd = &cobra.Command{

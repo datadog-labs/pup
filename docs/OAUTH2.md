@@ -224,6 +224,9 @@ Pup requests the following OAuth scopes based on PR #84:
 ### Usage
 - `usage_read` - Read usage data
 
+### Error Tracking
+- `error_tracking_read` - Read error tracking issues
+
 ## Token Management
 
 ### Automatic Refresh

@@ -99,6 +99,8 @@ func DefaultScopes() []string {
 		"timeseries_query",
 		// Usage
 		"usage_read",
+		// Error Tracking
+		"error_tracking_read",
 	}
 }
 

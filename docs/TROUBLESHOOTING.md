@@ -131,6 +131,80 @@ curl -X GET "https://api.datadoghq.com/api/v1/validate" \
   -H "DD-APPLICATION-KEY: ${DD_APP_KEY}"
 ```
 
+### Error Tracking OAuth2 Scope Issues
+
+**Symptoms:**
+```
+Error: 401 Unauthorized
+# When using error-tracking commands with OAuth2
+
+Error: OAuth error: invalid_scope
+# During OAuth2 login after adding error_tracking_read scope
+```
+
+**Background:**
+
+The `error_tracking_read` OAuth2 scope is [documented](https://docs.datadoghq.com/api/latest/scopes/) and required for Error Tracking API endpoints. Pup v0.2.0+ includes this scope in the default OAuth2 scopes list.
+
+However, there may be scenarios where Datadog's OAuth2 authorization endpoint rejects the scope during login:
+
+1. **Scope not available for Dynamic Client Registration (DCR)**: Some OAuth2 scopes may only be available for pre-registered OAuth applications, not for dynamically registered clients like pup uses.
+
+2. **Org-level permissions required**: Your Datadog organization may need specific Error Tracking features or plan tiers enabled before the scope becomes available.
+
+3. **Timing/rollout issues**: The scope might not yet be available in all Datadog regions or for all customers.
+
+**Workaround - Use API Keys:**
+
+If you encounter OAuth2 issues with error-tracking commands, use API key authentication instead:
+
+```bash
+# Logout from OAuth2
+pup auth logout
+
+# Set API keys
+export DD_API_KEY="your-api-key"
+export DD_APP_KEY="your-app-key"
+export DD_SITE="datadoghq.com"
+
+# Use error-tracking commands
+pup error-tracking issues search
+pup error-tracking issues get <issue-id>
+```
+
+**Testing OAuth2 scope availability:**
+
+If you want to test whether the scope works for your organization:
+
+```bash
+# 1. Backup existing OAuth2 credentials
+mkdir -p ~/.config/pup/backup
+cp ~/.config/pup/tokens_*.json ~/.config/pup/backup/ 2>/dev/null || true
+cp ~/.config/pup/client_*.json ~/.config/pup/backup/ 2>/dev/null || true
+
+# 2. Logout and re-login to trigger new OAuth2 flow
+pup auth logout
+pup auth login
+
+# 3. Test error-tracking command
+pup error-tracking issues search --from=1d
+
+# If you get "invalid_scope" error during login, the scope is not available
+# If you get 401 during the command, there may be permission issues
+
+# 4. Restore backup if needed
+cp ~/.config/pup/backup/*.json ~/.config/pup/ 2>/dev/null || true
+```
+
+**Reporting scope issues:**
+
+If you encounter OAuth2 scope problems with error-tracking:
+
+1. Confirm your Datadog org has Error Tracking enabled
+2. Verify API key authentication works: `pup error-tracking issues search`
+3. Report to [Datadog Support](https://help.datadoghq.com/) if the scope should be available
+4. Open a [GitHub issue](https://github.com/DataDog/pup/issues) if this is a pup-specific problem
+
 ## API Call Issues
 
 ### Rate Limiting
