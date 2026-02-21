@@ -42,7 +42,7 @@ pub async fn delete(cfg: &Config, notebook_id: i64) -> Result<()> {
     api.delete_notebook(notebook_id)
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete notebook: {e:?}"))?;
-    println!("Notebook {notebook_id} deleted.");
+    println!("Successfully deleted notebook {notebook_id}");
     Ok(())
 }
 

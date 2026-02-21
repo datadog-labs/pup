@@ -62,6 +62,6 @@ pub async fn delete(cfg: &Config, key_id: &str) -> Result<()> {
     api.delete_api_key(key_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete API key: {e:?}"))?;
-    println!("API key {key_id} deleted.");
+    println!("Successfully deleted API key {key_id}");
     Ok(())
 }

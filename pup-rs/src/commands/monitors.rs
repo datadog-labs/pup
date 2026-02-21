@@ -7,7 +7,7 @@ use datadog_api_client::datadogV1::model::Monitor;
 
 use crate::client;
 use crate::config::Config;
-use crate::formatter;
+use crate::formatter::{self, Metadata};
 use crate::util;
 
 pub async fn list(
@@ -45,7 +45,13 @@ pub async fn list(
     }
 
     let monitors: Vec<_> = monitors.into_iter().take(limit as usize).collect();
-    formatter::output(cfg, &monitors)?;
+    let meta = Metadata {
+        count: Some(monitors.len()),
+        truncated: false,
+        command: Some("monitors list".to_string()),
+        next_action: None,
+    };
+    formatter::format_and_print(&monitors, &cfg.output_format, cfg.agent_mode, Some(&meta))?;
     Ok(())
 }
 
@@ -60,7 +66,13 @@ pub async fn get(cfg: &Config, monitor_id: i64) -> Result<()> {
         .get_monitor(monitor_id, GetMonitorOptionalParams::default())
         .await
         .map_err(|e| anyhow::anyhow!("failed to get monitor: {:?}", e))?;
-    formatter::output(cfg, &resp)
+    let meta = Metadata {
+        count: None,
+        truncated: false,
+        command: Some("monitors get".to_string()),
+        next_action: None,
+    };
+    formatter::format_and_print(&resp, &cfg.output_format, cfg.agent_mode, Some(&meta))
 }
 
 pub async fn create(cfg: &Config, file: &str) -> Result<()> {

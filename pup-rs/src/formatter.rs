@@ -50,6 +50,14 @@ fn sort_json_value(v: serde_json::Value) -> serde_json::Value {
     }
 }
 
+/// Go's encoding/json escapes <, >, and & for HTML safety.
+/// Apply the same escaping to match Go output exactly.
+fn go_html_escape(json: &str) -> String {
+    json.replace('&', "\\u0026")
+        .replace('<', "\\u003c")
+        .replace('>', "\\u003e")
+}
+
 /// Format and print data to stdout.
 pub fn format_and_print<T: Serialize>(
     data: &T,
@@ -58,14 +66,14 @@ pub fn format_and_print<T: Serialize>(
     meta: Option<&Metadata>,
 ) -> Result<()> {
     if agent_mode {
+        // Sort inner data keys but preserve envelope field order (status first)
         let sorted_data = sort_json_value(serde_json::to_value(data)?);
         let envelope = AgentEnvelope {
             status: "success",
             data: &sorted_data,
             metadata: meta,
         };
-        let envelope_val = sort_json_value(serde_json::to_value(&envelope)?);
-        let json = serde_json::to_string_pretty(&envelope_val)?;
+        let json = go_html_escape(&serde_json::to_string_pretty(&envelope)?);
         println!("{json}");
         return Ok(());
     }
@@ -88,8 +96,7 @@ pub fn print_json<T: Serialize>(data: &T) -> Result<()> {
         status: "success",
         data: &sorted_data,
     };
-    let envelope_val = sort_json_value(serde_json::to_value(&envelope)?);
-    let json = serde_json::to_string_pretty(&envelope_val)?;
+    let json = go_html_escape(&serde_json::to_string_pretty(&envelope)?);
     println!("{json}");
     Ok(())
 }
@@ -100,15 +107,19 @@ fn print_yaml<T: Serialize>(data: &T) -> Result<()> {
         status: "success",
         data: &sorted_data,
     };
-    let envelope_val = sort_json_value(serde_json::to_value(&envelope)?);
-    let yaml = serde_yaml::to_string(&envelope_val)?;
+    let yaml = serde_yaml::to_string(&envelope)?;
     print!("{yaml}");
     Ok(())
 }
 
 fn print_table<T: Serialize>(data: &T) -> Result<()> {
-    // Convert to serde_json::Value to inspect structure
-    let value = serde_json::to_value(data)?;
+    // Wrap in success envelope first (matches Go behavior)
+    let sorted_data = sort_json_value(serde_json::to_value(data)?);
+    let envelope = SuccessEnvelope {
+        status: "success",
+        data: &sorted_data,
+    };
+    let value = serde_json::to_value(&envelope)?;
     let rows = extract_rows(&value);
 
     if rows.is_empty() {

@@ -48,7 +48,7 @@ pub async fn teams_delete(cfg: &Config, team_id: &str) -> Result<()> {
     api.delete_team(team_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete team: {e:?}"))?;
-    println!("Team {team_id} deleted.");
+    println!("Team '{team_id}' deleted successfully.");
     Ok(())
 }
 

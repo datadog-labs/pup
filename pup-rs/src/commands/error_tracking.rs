@@ -32,6 +32,13 @@ pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> 
         .search_issues(body, params)
         .await
         .map_err(|e| anyhow::anyhow!("failed to search issues: {e:?}"))?;
+    let val = serde_json::to_value(&resp)?;
+    if let Some(data) = val.get("data") {
+        if data.as_array().map_or(false, |a| a.is_empty()) {
+            println!("No error tracking issues found matching the specified criteria.");
+            return Ok(());
+        }
+    }
     formatter::output(cfg, &resp)
 }
 

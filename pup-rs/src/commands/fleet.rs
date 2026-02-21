@@ -134,7 +134,7 @@ pub async fn schedules_delete(cfg: &Config, schedule_id: &str) -> Result<()> {
     api.delete_fleet_schedule(schedule_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete schedule: {e:?}"))?;
-    println!("Fleet schedule {schedule_id} deleted.");
+    println!("Schedule '{schedule_id}' deleted successfully.");
     Ok(())
 }
 

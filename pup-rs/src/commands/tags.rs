@@ -83,6 +83,6 @@ pub async fn delete(cfg: &Config, hostname: &str) -> Result<()> {
     )
     .await
     .map_err(|e| anyhow::anyhow!("failed to delete tags: {e:?}"))?;
-    println!("Tags deleted for host {hostname}.");
+    println!("Successfully deleted all tags from host {hostname}");
     Ok(())
 }
