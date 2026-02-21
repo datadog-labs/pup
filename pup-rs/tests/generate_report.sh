@@ -156,7 +156,7 @@ declare -a MODES=("human" "agent")
 # ============================================================================
 # Collect results
 # ============================================================================
-declare -a RESULTS=()  # "label|mode|go_rc|rust_rc|status"
+declare -a RESULTS=()  # "label|mode|go_rc|rust_rc|status|safe|go_full_cmd|rust_full_cmd"
 
 total=0
 exact=0
@@ -207,7 +207,9 @@ for entry in "${TEST_CASES[@]}"; do
             status="diff"
         fi
 
-        RESULTS+=("${label}|${mode}|${go_rc}|${rust_rc}|${status}|${safe}")
+        go_full="pup ${agent_flag} -o json ${go_cmd}"
+        rust_full="pup-rs ${agent_flag} -o json ${rust_cmd}"
+        RESULTS+=("${label}|${mode}|${go_rc}|${rust_rc}|${status}|${safe}|${go_full}|${rust_full}")
         printf "\r  %d/%d tests completed" "$total" "${#TEST_CASES[@]}"
     done
 done
@@ -263,6 +265,10 @@ tr.diff-row { background: #f8514910; }
 tr.go-fail-row { background: #d2992210; }
 tr.rust-fail-row { background: #b6232410; }
 .cmd { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; white-space: nowrap; }
+.cmd-box { background: #161b22; border: 1px solid #30363d; border-radius: 4px; padding: 6px 10px; margin: 4px 0 8px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #79c0ff; overflow-x: auto; white-space: nowrap; }
+.env-vars { background: #1c1c2e; border: 1px solid #30363d; border-radius: 4px; padding: 6px 10px; margin-bottom: 12px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: #8b949e; overflow-x: auto; white-space: nowrap; }
+.env-vars code { color: #d2a8ff; }
+.env-label { background: #30363d; color: #8b949e; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; margin-right: 6px; }
 .output-box { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; margin: 4px 0; max-height: 300px; overflow: auto; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
 .output-box.go { border-left: 3px solid #3fb950; }
 .output-box.rust { border-left: 3px solid #1f6feb; }
@@ -318,7 +324,7 @@ if [ "$has_issues" = true ]; then
         echo '<div class="alert">' >> "$REPORT"
         echo '<h3>Output Differences (inspect these)</h3><ul>' >> "$REPORT"
         for r in "${RESULTS[@]}"; do
-            IFS='|' read -r label mode go_rc rust_rc status safe <<< "$r"
+            IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full <<< "$r"
             if [ "$status" = "diff" ]; then
                 echo "<li><strong>${label}</strong> (${mode} mode)</li>" >> "$REPORT"
             fi
@@ -331,7 +337,7 @@ if [ "$has_issues" = true ]; then
         echo '<div class="alert warning">' >> "$REPORT"
         echo '<h3>Go-Only Failures (Rust works, Go crashes)</h3><ul>' >> "$REPORT"
         for r in "${RESULTS[@]}"; do
-            IFS='|' read -r label mode go_rc rust_rc status safe <<< "$r"
+            IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full <<< "$r"
             if [ "$status" = "go_fail" ]; then
                 go_err=$(head -1 "$OUTDIR/go_${safe}.txt" 2>/dev/null)
                 echo "<li><strong>${label}</strong> (${mode}) — <code>${go_err}</code></li>" >> "$REPORT"
@@ -356,8 +362,10 @@ FILTERBAR
 # Detail rows
 echo '<h2>Detailed Results</h2>' >> "$REPORT"
 
+ENV_DISPLAY="PUP_MOCK_SERVER=http://localhost:${MOCK_PORT} DD_API_KEY=test-key DD_APP_KEY=test-app-key DD_SITE=datadoghq.com"
+
 for r in "${RESULTS[@]}"; do
-    IFS='|' read -r label mode go_rc rust_rc status safe <<< "$r"
+    IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full <<< "$r"
 
     go_out=$(cat "$OUTDIR/go_${safe}.txt" 2>/dev/null)
     rust_out=$(cat "$OUTDIR/rs_${safe}.txt" 2>/dev/null)
@@ -368,8 +376,7 @@ for r in "${RESULTS[@]}"; do
     [ "$status" = "rust_fail" ] && row_class="rust-fail-row"
 
     badge_class="$status"
-    badge_text="$(echo "$status" | tr '_' ' ' | sed 's/\b\(.\)/\u\1/g')"
-    [ "$status" = "match" ] && badge_text="Match"
+    badge_text="Match"
     [ "$status" = "diff" ] && badge_text="Diff"
     [ "$status" = "go_fail" ] && badge_text="Go Fail"
     [ "$status" = "rust_fail" ] && badge_text="Rust Fail"
@@ -381,6 +388,10 @@ for r in "${RESULTS[@]}"; do
     # Escape HTML in output
     go_escaped=$(echo "$go_out" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | head -80)
     rust_escaped=$(echo "$rust_out" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | head -80)
+
+    # Escape HTML in commands
+    go_cmd_escaped=$(echo "$go_full" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+    rust_cmd_escaped=$(echo "$rust_full" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
     go_box_class="go"
     rust_box_class="rust"
@@ -395,13 +406,16 @@ for r in "${RESULTS[@]}"; do
     <strong>${label}</strong>
   </summary>
   <div class="detail-content">
+    <div class="env-vars"><span class="env-label">ENV</span> <code>${ENV_DISPLAY}</code></div>
     <div class="side-by-side">
       <div>
         <div class="col-header">Go (exit ${go_rc})</div>
+        <div class="cmd-box">\$ ${go_cmd_escaped}</div>
         <div class="output-box ${go_box_class}">${go_escaped}</div>
       </div>
       <div>
         <div class="col-header">Rust (exit ${rust_rc})</div>
+        <div class="cmd-box">\$ ${rust_cmd_escaped}</div>
         <div class="output-box ${rust_box_class}">${rust_escaped}</div>
       </div>
     </div>
