@@ -1,0 +1,265 @@
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup agent guide
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup agent schema
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup alias delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup alias import /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup alias list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup alias set myalias 'monitors list'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup api-keys create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup api-keys delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup api-keys get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup api-keys list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm dependencies list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm entities list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm flow-map
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm services list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm services operations
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm services resources
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup apm services stats
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup app-keys get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup app-keys list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup app-keys register test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup app-keys unregister test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup audit-logs list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup audit-logs search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases archive test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases assign
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases jira create-issue test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases jira link test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases jira unlink test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases move
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects notification-rules create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects notification-rules delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects notification-rules list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects notification-rules update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases projects update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases servicenow create-ticket test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases unarchive test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases update-priority
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cases update-title
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd dora patch-deployment test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd events aggregate
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd events search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd flaky-tests search
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd flaky-tests update --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd pipelines get --pipeline-id test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd pipelines list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd tests aggregate
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd tests list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cicd tests search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud aws list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud azure list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud gcp list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci products list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci tenancies create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci tenancies delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci tenancies get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci tenancies list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cloud oci tenancies update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup code-coverage branch-summary --repo test --branch main
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup code-coverage commit-summary --repo test --commit abc123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cost attribution --start 2024-01
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cost by-org --start-month 2024-01
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup cost projected
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup dashboards delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup dashboards get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup dashboards list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup data-governance scanner rules list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup downtime cancel test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup downtime get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup downtime list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup error-tracking issues get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup error-tracking issues search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup events get 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup events list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup events search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet agents get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet agents list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet agents versions
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet deployments cancel test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet deployments configure --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet deployments get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet deployments list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet deployments upgrade --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules trigger test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup fleet schedules update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup hamr connections create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup hamr connections get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents attachments delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents attachments list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents handles create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents handles delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents handles list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents handles update --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents postmortem-templates create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents postmortem-templates delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents postmortem-templates get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents postmortem-templates list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents postmortem-templates update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents settings get
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup incidents settings update --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup infrastructure hosts get test-host-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup infrastructure hosts list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira accounts delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira accounts list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira templates create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira templates delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira templates get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira templates list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations jira templates update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations pagerduty list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow assignment-groups list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow business-services list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow instances list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow templates create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow templates delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow templates get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow templates list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow templates update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations servicenow users list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations slack list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup integrations webhooks list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup investigations get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup investigations list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup investigations trigger test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs aggregate
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs archives delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs archives get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs archives list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs custom-destinations get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs custom-destinations list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs metrics delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs metrics get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs metrics list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs query --query test
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs restriction-queries get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs restriction-queries list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup logs search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics metadata get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics metadata update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics query --query 'avg:system.cpu.user{*}'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics submit
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup metrics tags list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup misc ip-ranges
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup misc status
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup monitors delete 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup monitors get 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup monitors list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup monitors search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup network devices list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup network flows list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup notebooks create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup notebooks delete 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup notebooks get 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup notebooks list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup notebooks update 12345 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup obs-pipelines get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup obs-pipelines list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams memberships add test-host tag1 tag2
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams memberships list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams memberships remove test-team test-user
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams memberships update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup on-call teams update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup organizations get
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup organizations list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup product-analytics events send --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum apps create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum apps delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum apps get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum apps list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum apps update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum heatmaps query test-view
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum metrics create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum metrics delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum metrics get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum metrics list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum metrics update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum playlists get 12345
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum playlists list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum retention-filters create test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum retention-filters delete test-id-123 test-filter-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum retention-filters get test-id-123 test-filter-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum retention-filters list test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum retention-filters update test-id-123 test-filter-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum sessions list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup rum sessions search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup scorecards get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup scorecards list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security content-packs activate test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security content-packs deactivate test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security content-packs list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security findings search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security risk-scores list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security rules bulk-export
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security rules get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security rules list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup security signals search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup service-catalog get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup service-catalog list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup slos delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup slos get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup slos list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup slos status test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis ast get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis ast list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis coverage get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis coverage list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis custom-rulesets get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis custom-rulesets list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis sca get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup static-analysis sca list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages components create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages components delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages components get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages components list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages components update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages degradations create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages degradations delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages degradations get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages degradations list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages degradations update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages pages create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages pages delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages pages get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages pages list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages pages update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup status-pages third-party
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics locations list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics suites create --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics suites delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics suites get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics suites list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics suites update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics tests get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics tests list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup synthetics tests search --query '*'
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup tags add test-host tag1 tag2
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup tags delete test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup tags get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup tags list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup tags update test-id-123 --file /tmp/pup_test_body.json
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup traces
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup usage hourly --start 1d
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup usage summary
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup users get test-id-123
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup users list
+/Users/cody.lee/go/src/github.com/DataDog/pup/pup users roles list

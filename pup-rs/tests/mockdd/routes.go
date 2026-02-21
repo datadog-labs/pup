@@ -112,8 +112,8 @@ func buildRoutes() []Route {
 
 		// AWS/GCP/Azure
 		{"GET", "/api/v1/integration/aws", "v2_generic_list.json"},
-		{"GET", "/api/v1/integration/gcp", "v2_generic_list.json"},
-		{"GET", "/api/v1/integration/azure", "v2_generic_list.json"},
+		{"GET", "/api/v1/integration/gcp", "v1_gcp_accounts.json"},
+		{"GET", "/api/v1/integration/azure", "v1_azure_accounts.json"},
 
 		// ---- V2 APIs ----
 
@@ -211,7 +211,7 @@ func buildRoutes() []Route {
 
 		// RUM (underscore + hyphen + Rust config paths)
 		{"GET", "/api/v2/rum/applications", "v2_rum_apps.json"},
-		{"GET", "/api/v2/rum/applications/{id}", "v2_generic_data.json"},
+		{"GET", "/api/v2/rum/applications/{id}", "v2_rum_app.json"},
 		{"POST", "/api/v2/rum/applications", "v2_generic_data.json"},
 		{"PATCH", "/api/v2/rum/applications/{id}", "v2_generic_data.json"},
 		{"DELETE", "/api/v2/rum/applications/{id}", "v2_ok.json"},
@@ -322,16 +322,25 @@ func buildRoutes() []Route {
 		{"GET", "/api/v2/integration/jira/accounts", "v2_generic_list.json"},
 		{"DELETE", "/api/v2/integration/jira/accounts/{id}", "v2_ok.json"},
 		{"GET", "/api/v2/integration/jira/templates", "v2_generic_list.json"},
-		{"GET", "/api/v2/integration/jira/templates/{id}", "v2_generic_data.json"},
+		{"GET", "/api/v2/integration/jira/templates/{id}", "v2_jira_template.json"},
+		{"GET", "/api/v2/integration/jira/issue-templates/{id}", "v2_jira_template.json"},
 		{"POST", "/api/v2/integration/jira/templates", "v2_generic_data.json"},
+		{"POST", "/api/v2/integration/jira/issue-templates", "v2_generic_data.json"},
 		{"PATCH", "/api/v2/integration/jira/templates/{id}", "v2_generic_data.json"},
+		{"PATCH", "/api/v2/integration/jira/issue-templates/{id}", "v2_generic_data.json"},
 		{"DELETE", "/api/v2/integration/jira/templates/{id}", "v2_ok.json"},
+		{"DELETE", "/api/v2/integration/jira/issue-templates/{id}", "v2_ok.json"},
 		{"GET", "/api/v2/integration/servicenow/instances", "v2_generic_list.json"},
 		{"GET", "/api/v2/integration/servicenow/templates", "v2_generic_list.json"},
-		{"GET", "/api/v2/integration/servicenow/templates/{id}", "v2_generic_data.json"},
+		{"GET", "/api/v2/integration/servicenow/handles", "v2_generic_list.json"},
+		{"GET", "/api/v2/integration/servicenow/templates/{id}", "v2_servicenow_template.json"},
+		{"GET", "/api/v2/integration/servicenow/handles/{id}", "v2_servicenow_template.json"},
 		{"POST", "/api/v2/integration/servicenow/templates", "v2_generic_data.json"},
+		{"POST", "/api/v2/integration/servicenow/handles", "v2_generic_data.json"},
 		{"PATCH", "/api/v2/integration/servicenow/templates/{id}", "v2_generic_data.json"},
+		{"PATCH", "/api/v2/integration/servicenow/handles/{id}", "v2_generic_data.json"},
 		{"DELETE", "/api/v2/integration/servicenow/templates/{id}", "v2_ok.json"},
+		{"DELETE", "/api/v2/integration/servicenow/handles/{id}", "v2_ok.json"},
 
 		// HAMR
 		{"GET", "/api/v2/hamr/connections/org", "v2_hamr.json"},

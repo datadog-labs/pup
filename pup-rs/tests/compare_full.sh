@@ -104,14 +104,7 @@ declare -a COMMANDS=(
     "notebooks delete 12345"
     # RUM
     "rum apps list"
-    "rum apps get test-id-123"
-    "rum apps delete test-id-123"
-    "rum metrics list"
-    "rum metrics get test-id-123"
-    "rum metrics delete test-id-123"
     "rum playlists list"
-    # CI/CD
-    "cicd pipelines get test-id-123"
     # On-call
     "on-call teams list"
     "on-call teams get test-id-123"
@@ -135,10 +128,10 @@ declare -a COMMANDS=(
     # Integrations
     "integrations jira accounts list"
     "integrations jira templates list"
-    "integrations jira templates get test-id-123"
+    "integrations jira templates get 00000000-0000-0000-0000-000000000001"
     "integrations servicenow instances list"
     "integrations servicenow templates list"
-    "integrations servicenow templates get test-id-123"
+    "integrations servicenow templates get 00000000-0000-0000-0000-000000000001"
     # Cost
     "cost projected"
     # Misc
@@ -147,6 +140,16 @@ declare -a COMMANDS=(
     # Investigations
     "investigations list"
     "investigations get test-id-123"
+)
+
+# Commands where Go and Rust use different argument styles (Go: --flag, Rust: positional)
+# Format: "label|go_args|rust_args"
+declare -a SPLIT_COMMANDS=(
+    "rum apps get|rum apps get --app-id test-id-123|rum apps get test-id-123"
+    "rum apps delete|rum apps delete --app-id test-id-123|rum apps delete test-id-123"
+    "rum metrics get|rum metrics get --metric-id test-id-123|rum metrics get test-id-123"
+    "rum metrics delete|rum metrics delete --metric-id test-id-123|rum metrics delete test-id-123"
+    "cicd pipelines get|cicd pipelines get --pipeline-id test-id-123|cicd pipelines get test-id-123"
 )
 
 declare -a FORMATS=("json" "yaml" "table")
@@ -220,6 +223,54 @@ for cmd in "${COMMANDS[@]}"; do
                 # Show first few lines
                 diff <(echo "$go_out") <(echo "$rust_out") | head -12 | sed 's/^/         /'
                 DIFF_DETAILS+=("$cmd | $fmt | $mode")
+            fi
+        done
+    done
+done
+
+# Run split commands (Go and Rust use different arg styles)
+for entry in "${SPLIT_COMMANDS[@]}"; do
+    IFS='|' read -r label go_cmd rust_cmd <<< "$entry"
+    for fmt in "${FORMATS[@]}"; do
+        for mode in "${MODES[@]}"; do
+            total=$((total + 1))
+            safe="$(echo "${label}__${fmt}__${mode}" | tr ' /' '__')"
+
+            agent_flag=""
+            if [ "$mode" = "agent" ]; then
+                agent_flag="--agent"
+            fi
+
+            go_out=$("$GO_BIN" $agent_flag --output "$fmt" $go_cmd 2>&1)
+            go_rc=$?
+            rust_out=$("$RUST_BIN" $agent_flag --output "$fmt" $rust_cmd 2>&1)
+            rust_rc=$?
+
+            echo "$go_out" > "$OUTDIR/go_${safe}.out"
+            echo "$rust_out" > "$OUTDIR/rs_${safe}.out"
+
+            if [ $go_rc -ne 0 ] && [ $rust_rc -ne 0 ]; then
+                both_fail=$((both_fail + 1))
+                continue
+            elif [ $go_rc -ne 0 ]; then
+                go_fail=$((go_fail + 1))
+                printf "${YELLOW}GO_FAIL ${NC} %-50s fmt=%-5s mode=%s\n" "$label" "$fmt" "$mode"
+                continue
+            elif [ $rust_rc -ne 0 ]; then
+                rust_fail=$((rust_fail + 1))
+                printf "${YELLOW}RS_FAIL ${NC} %-50s fmt=%-5s mode=%s\n" "$label" "$fmt" "$mode"
+                echo "         RS error: $(echo "$rust_out" | head -1)"
+                continue
+            fi
+
+            if [ "$go_out" = "$rust_out" ]; then
+                exact=$((exact + 1))
+            else
+                diff_count=$((diff_count + 1))
+                printf "${RED}DIFF    ${NC} %-50s fmt=%-5s mode=%s\n" "$label" "$fmt" "$mode"
+                diff <(echo "$go_out") <(echo "$rust_out") > "$OUTDIR/diffs/${safe}.diff" 2>&1
+                diff <(echo "$go_out") <(echo "$rust_out") | head -12 | sed 's/^/         /'
+                DIFF_DETAILS+=("$label | $fmt | $mode")
             fi
         done
     done

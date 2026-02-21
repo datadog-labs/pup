@@ -75,7 +75,7 @@ pub async fn apps_delete(cfg: &Config, app_id: &str) -> Result<()> {
     api.delete_rum_application(app_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete RUM app: {e:?}"))?;
-    println!("RUM application {app_id} deleted.");
+    println!("Successfully deleted RUM application {app_id}");
     Ok(())
 }
 

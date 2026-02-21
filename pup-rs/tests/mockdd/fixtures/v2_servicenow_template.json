@@ -1,0 +1,1 @@
+{"data":{"id":"00000000-0000-0000-0000-000000000001","type":"servicenow_template","attributes":{"handle_name":"test-handle","instance_id":"00000000-0000-0000-0000-000000000002","servicenow_tablename":"incident"}}}
