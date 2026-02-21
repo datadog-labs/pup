@@ -157,6 +157,69 @@ add "misc status" "misc status"
 add "investigations list" "investigations list"
 add "investigations get" "investigations get test-id-123"
 
+# ============================================================================
+# Help output tests
+# ============================================================================
+add "help: top-level" "--help" "--help"
+add "help: monitors" "monitors --help" "monitors --help"
+add "help: monitors list" "monitors list --help" "monitors list --help"
+add "help: dashboards" "dashboards --help" "dashboards --help"
+add "help: logs" "logs --help" "logs --help"
+add "help: logs search" "logs search --help" "logs search --help"
+add "help: metrics" "metrics --help" "metrics --help"
+add "help: slos" "slos --help" "slos --help"
+add "help: synthetics" "synthetics --help" "synthetics --help"
+add "help: events" "events --help" "events --help"
+add "help: downtime" "downtime --help" "downtime --help"
+add "help: tags" "tags --help" "tags --help"
+add "help: users" "users --help" "users --help"
+add "help: infrastructure" "infrastructure --help" "infrastructure --help"
+add "help: audit-logs" "audit-logs --help" "audit-logs --help"
+add "help: security" "security --help" "security --help"
+add "help: organizations" "organizations --help" "organizations --help"
+add "help: cloud" "cloud --help" "cloud --help"
+add "help: cases" "cases --help" "cases --help"
+add "help: service-catalog" "service-catalog --help" "service-catalog --help"
+add "help: api-keys" "api-keys --help" "api-keys --help"
+add "help: app-keys" "app-keys --help" "app-keys --help"
+add "help: notebooks" "notebooks --help" "notebooks --help"
+add "help: rum" "rum --help" "rum --help"
+add "help: cicd" "cicd --help" "cicd --help"
+add "help: on-call" "on-call --help" "on-call --help"
+add "help: fleet" "fleet --help" "fleet --help"
+add "help: data-governance" "data-governance --help" "data-governance --help"
+add "help: error-tracking" "error-tracking --help" "error-tracking --help"
+add "help: hamr" "hamr --help" "hamr --help"
+add "help: integrations" "integrations --help" "integrations --help"
+add "help: cost" "cost --help" "cost --help"
+add "help: misc" "misc --help" "misc --help"
+add "help: investigations" "investigations --help" "investigations --help"
+add "help: apm" "apm --help" "apm --help"
+add "help: product-analytics" "product-analytics --help" "product-analytics --help"
+add "help: static-analysis" "static-analysis --help" "static-analysis --help"
+add "help: auth" "auth --help" "auth --help"
+
+# ============================================================================
+# Error handling tests
+# ============================================================================
+# Missing required arguments
+add "error: monitors get (no id)" "monitors get" "monitors get"
+add "error: dashboards get (no id)" "dashboards get" "dashboards get"
+add "error: logs search (no query)" "logs search" "logs search"
+
+# Invalid/non-existent resources (404 from mock)
+add "error: monitors get 404" "monitors get 999999999" "monitors get 999999999"
+add "error: dashboards get 404" "dashboards get err-not-found" "dashboards get err-not-found"
+add "error: cases get 404" "cases get err-not-found" "cases get err-not-found"
+
+# Invalid flag values
+add "error: invalid output format" "-o xml monitors list" "-o xml monitors list"
+add "error: unknown flag" "monitors list --bogus-flag" "monitors list --bogus-flag"
+
+# Nonexistent subcommand
+add "error: unknown subcommand" "monitors bogus" "monitors bogus"
+add "error: unknown top-level" "nonexistent" "nonexistent"
+
 declare -a MODES=("human" "agent")
 
 # ============================================================================

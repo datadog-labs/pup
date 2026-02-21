@@ -77,7 +77,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, route := range h.routes {
 		if route.Method == r.Method && route.Match(r.URL.Path) {
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(200)
+			if route.Status != 0 {
+				w.WriteHeader(route.Status)
+			} else {
+				w.WriteHeader(200)
+			}
 			w.Write(route.Fixture)
 			return
 		}
