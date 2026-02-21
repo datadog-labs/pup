@@ -97,6 +97,9 @@ func DefaultScopes() []string {
 		// Metrics
 		"metrics_read",
 		"timeseries_query",
+		// CI Visibility / Test Optimization
+		"ci_visibility_read",
+		"test_optimization_read",
 		// Usage
 		"usage_read",
 	}

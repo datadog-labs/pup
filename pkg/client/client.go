@@ -150,6 +150,7 @@ func NewWithOptions(cfg *config.Config, forceAPIKeys bool) (*Client, error) {
 		"v2.CreateCaseServiceNowTicket",
 		"v2.MoveCaseToProject",
 		// Flaky Tests
+		"v2.SearchFlakyTests",
 		"v2.UpdateFlakyTests",
 		// Fleet Automation
 		"v2.ListFleetAgents",
