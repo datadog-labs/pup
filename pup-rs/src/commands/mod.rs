@@ -1,5 +1,7 @@
 pub mod audit_logs;
 pub mod auth;
+pub mod cases;
+pub mod cloud;
 pub mod dashboards;
 pub mod downtime;
 pub mod events;
@@ -8,6 +10,9 @@ pub mod infrastructure;
 pub mod logs;
 pub mod metrics;
 pub mod monitors;
+pub mod organizations;
+pub mod security;
+pub mod service_catalog;
 pub mod slos;
 pub mod synthetics;
 pub mod tags;

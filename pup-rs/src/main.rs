@@ -54,6 +54,17 @@ enum Commands {
     /// Search audit logs
     #[command(name = "audit-logs")]
     AuditLogs { #[command(subcommand)] action: AuditLogActions },
+    /// Manage security monitoring
+    Security { #[command(subcommand)] action: SecurityActions },
+    /// Manage organizations
+    Organizations { #[command(subcommand)] action: OrgActions },
+    /// Manage cloud integrations
+    Cloud { #[command(subcommand)] action: CloudActions },
+    /// Manage cases
+    Cases { #[command(subcommand)] action: CaseActions },
+    /// Manage service catalog
+    #[command(name = "service-catalog")]
+    ServiceCatalog { #[command(subcommand)] action: ServiceCatalogActions },
     /// Authentication (OAuth2)
     Auth { #[command(subcommand)] action: AuthActions },
     /// Show version information
@@ -267,6 +278,91 @@ enum AuditLogActions {
     },
 }
 
+// ---- Security ----
+#[derive(Subcommand)]
+enum SecurityActions {
+    /// Manage security rules
+    Rules { #[command(subcommand)] action: SecurityRuleActions },
+    /// Search security signals
+    Signals { #[command(subcommand)] action: SecuritySignalActions },
+}
+
+#[derive(Subcommand)]
+enum SecurityRuleActions {
+    /// List rules
+    List,
+    /// Get rule details
+    Get { rule_id: String },
+}
+
+#[derive(Subcommand)]
+enum SecuritySignalActions {
+    /// Search signals
+    Search {
+        #[arg(long)] query: String,
+        #[arg(long, default_value = "1h")] from: String,
+        #[arg(long, default_value = "now")] to: String,
+        #[arg(long, default_value_t = 100)] limit: i32,
+    },
+}
+
+// ---- Organizations ----
+#[derive(Subcommand)]
+enum OrgActions {
+    /// List organizations
+    List,
+    /// Get current organization
+    Get,
+}
+
+// ---- Cloud ----
+#[derive(Subcommand)]
+enum CloudActions {
+    /// List AWS integrations
+    Aws { #[command(subcommand)] action: CloudSubActions },
+    /// List GCP integrations
+    Gcp { #[command(subcommand)] action: CloudSubActions },
+    /// List Azure integrations
+    Azure { #[command(subcommand)] action: CloudSubActions },
+}
+
+#[derive(Subcommand)]
+enum CloudSubActions {
+    /// List integrations
+    List,
+}
+
+// ---- Cases ----
+#[derive(Subcommand)]
+enum CaseActions {
+    /// Search cases
+    Search {
+        #[arg(long)] query: Option<String>,
+        #[arg(long, default_value_t = 50)] page_size: i64,
+    },
+    /// Get case details
+    Get { case_id: String },
+    /// Manage projects
+    Projects { #[command(subcommand)] action: CaseProjectActions },
+}
+
+#[derive(Subcommand)]
+enum CaseProjectActions {
+    /// List projects
+    List,
+    /// Get project details
+    Get { project_id: String },
+}
+
+// ---- Service Catalog ----
+#[derive(Subcommand)]
+enum ServiceCatalogActions {
+    /// List services
+    List,
+    /// Get service details
+    Get { service_name: String },
+}
+
 // ---- Auth ----
 #[derive(Subcommand)]
 enum AuthActions {
@@ -454,6 +550,72 @@ async fn main() -> anyhow::Result<()> {
                 }
                 AuditLogActions::Search { query, from, to, limit } => {
                     commands::audit_logs::search(&cfg, query, from, to, limit).await?;
+                }
+            }
+        }
+        // --- Security ---
+        Commands::Security { action } => {
+            cfg.validate_auth()?;
+            match action {
+                SecurityActions::Rules { action } => match action {
+                    SecurityRuleActions::List => commands::security::rules_list(&cfg).await?,
+                    SecurityRuleActions::Get { rule_id } => {
+                        commands::security::rules_get(&cfg, &rule_id).await?;
+                    }
+                },
+                SecurityActions::Signals { action } => match action {
+                    SecuritySignalActions::Search { query, from, to, limit } => {
+                        commands::security::signals_search(&cfg, query, from, to, limit).await?;
+                    }
+                },
+            }
+        }
+        // --- Organizations ---
+        Commands::Organizations { action } => {
+            cfg.validate_auth()?;
+            match action {
+                OrgActions::List => commands::organizations::list(&cfg).await?,
+                OrgActions::Get => commands::organizations::get(&cfg).await?,
+            }
+        }
+        // --- Cloud ---
+        Commands::Cloud { action } => {
+            cfg.validate_auth()?;
+            match action {
+                CloudActions::Aws { action } => match action {
+                    CloudSubActions::List => commands::cloud::aws_list(&cfg).await?,
+                },
+                CloudActions::Gcp { action } => match action {
+                    CloudSubActions::List => commands::cloud::gcp_list(&cfg).await?,
+                },
+                CloudActions::Azure { action } => match action {
+                    CloudSubActions::List => commands::cloud::azure_list(&cfg).await?,
+                },
+            }
+        }
+        // --- Cases ---
+        Commands::Cases { action } => {
+            cfg.validate_auth()?;
+            match action {
+                CaseActions::Search { query, page_size } => {
+                    commands::cases::search(&cfg, query, page_size).await?;
+                }
+                CaseActions::Get { case_id } => commands::cases::get(&cfg, &case_id).await?,
+                CaseActions::Projects { action } => match action {
+                    CaseProjectActions::List => commands::cases::projects_list(&cfg).await?,
+                    CaseProjectActions::Get { project_id } => {
+                        commands::cases::projects_get(&cfg, &project_id).await?;
+                    }
+                },
+            }
+        }
+        // --- Service Catalog ---
+        Commands::ServiceCatalog { action } => {
+            cfg.validate_auth()?;
+            match action {
+                ServiceCatalogActions::List => commands::service_catalog::list(&cfg).await?,
+                ServiceCatalogActions::Get { service_name } => {
+                    commands::service_catalog::get(&cfg, &service_name).await?;
                 }
             }
         }
