@@ -1,0 +1,5999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pup CLI Parity Report — Go vs Rust</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.5; padding: 20px; }
+h1 { color: #f0f6fc; margin-bottom: 8px; font-size: 24px; }
+h2 { color: #f0f6fc; margin: 32px 0 16px; font-size: 20px; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
+h3 { color: #f0f6fc; margin: 24px 0 8px; font-size: 16px; }
+.subtitle { color: #8b949e; margin-bottom: 24px; }
+.summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 24px; text-align: center; min-width: 140px; }
+.stat .num { font-size: 32px; font-weight: 700; }
+.stat .label { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat.match .num { color: #3fb950; }
+.stat.diff .num { color: #f85149; }
+.stat.go-fail .num { color: #d29922; }
+.stat.rust-fail .num { color: #f97583; }
+.stat.both-fail .num { color: #8b949e; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge.match { background: #238636; color: #fff; }
+.badge.diff { background: #da3633; color: #fff; }
+.badge.go-fail { background: #9e6a03; color: #fff; }
+.badge.rust-fail { background: #b62324; color: #fff; }
+.badge.both-fail { background: #484f58; color: #fff; }
+.badge.human { background: #1f6feb; color: #fff; }
+.badge.agent { background: #8957e5; color: #fff; }
+.alert { background: #f8514926; border: 1px solid #f85149; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+.alert h3 { color: #f85149; margin: 0 0 8px; }
+.alert ul { padding-left: 20px; }
+.alert li { margin: 4px 0; }
+.alert.warning { background: #d2992226; border-color: #d29922; }
+.alert.warning h3 { color: #d29922; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+th { background: #161b22; color: #f0f6fc; text-align: left; padding: 10px 12px; font-size: 13px; border-bottom: 2px solid #30363d; position: sticky; top: 0; }
+td { padding: 8px 12px; border-bottom: 1px solid #21262d; font-size: 13px; vertical-align: top; }
+tr:hover { background: #161b22; }
+tr.diff-row { background: #f8514910; }
+tr.go-fail-row { background: #d2992210; }
+tr.rust-fail-row { background: #b6232410; }
+.cmd { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; white-space: nowrap; }
+.output-box { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; margin: 4px 0; max-height: 300px; overflow: auto; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+.output-box.go { border-left: 3px solid #3fb950; }
+.output-box.rust { border-left: 3px solid #1f6feb; }
+.output-box.error { border-left: 3px solid #f85149; color: #f85149; }
+details { margin: 8px 0; }
+details summary { cursor: pointer; padding: 8px 12px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 13px; }
+details summary:hover { background: #1c2128; }
+details[open] summary { border-radius: 6px 6px 0 0; }
+.detail-content { border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; padding: 16px; background: #0d1117; }
+.side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.side-by-side .col-header { font-weight: 600; font-size: 12px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.timestamp { color: #484f58; font-size: 11px; }
+.filter-bar { margin: 16px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+.filter-btn:hover { background: #30363d; }
+.filter-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+</style>
+</head>
+<body>
+<h1>Pup CLI Parity Report</h1>
+<p class="subtitle">Go <code>pup</code> vs Rust <code>pup-rs</code> — End-to-end output comparison against mock Datadog API</p>
+<p class="timestamp">Generated: 2026-02-21 22:13:59 UTC</p>
+<h2>Summary</h2>
+<div class="summary">
+  <div class="stat"><div class="num">158</div><div class="label">Total Tests</div></div>
+  <div class="stat match"><div class="num">152</div><div class="label">Exact Match</div></div>
+  <div class="stat diff"><div class="num">2</div><div class="label">Different</div></div>
+  <div class="stat go-fail"><div class="num">4</div><div class="label">Go-Only Fail</div></div>
+  <div class="stat rust-fail"><div class="num">0</div><div class="label">Rust-Only Fail</div></div>
+  <div class="stat both-fail"><div class="num">0</div><div class="label">Both Fail</div></div>
+</div>
+<div class="alert">
+<h3>Output Differences (inspect these)</h3><ul>
+<li><strong>data-governance scanner-rules list</strong> (human mode)</li>
+<li><strong>data-governance scanner-rules list</strong> (agent mode)</li>
+</ul></div>
+<div class="alert warning">
+<h3>Go-Only Failures (Rust works, Go crashes)</h3><ul>
+<li><strong>rum metrics get</strong> (human) — <code>panic: runtime error: index out of range [0] with length 0</code></li>
+<li><strong>rum metrics get</strong> (agent) — <code>panic: runtime error: index out of range [0] with length 0</code></li>
+<li><strong>rum metrics delete</strong> (human) — <code>Error: RUM metrics delete is not yet implemented - API client types require additional mapping</code></li>
+<li><strong>rum metrics delete</strong> (agent) — <code>Error: RUM metrics delete is not yet implemented - API client types require additional mapping</code></li>
+</ul></div>
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterRows('all')">All</button>
+  <button class="filter-btn" onclick="filterRows('match')">Match</button>
+  <button class="filter-btn" onclick="filterRows('diff')">Diff</button>
+  <button class="filter-btn" onclick="filterRows('go_fail')">Go Fail</button>
+  <button class="filter-btn" onclick="filterRows('rust_fail')">Rust Fail</button>
+  <button class="filter-btn" onclick="filterRows('both_fail')">Both Fail</button>
+</div>
+<h2>Detailed Results</h2>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>monitors list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "id": 1234,
+      "name": "Test Monitor",
+      "overall_state": "OK",
+      "query": "avg:system.cpu.user{*} \u003e 80",
+      "type": "metric alert"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "command": "monitors list"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "id": 1234,
+      "name": "Test Monitor",
+      "overall_state": "OK",
+      "query": "avg:system.cpu.user{*} \u003e 80",
+      "type": "metric alert"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "command": "monitors list"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>monitors list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "id": 1234,
+      "name": "Test Monitor",
+      "overall_state": "OK",
+      "query": "avg:system.cpu.user{*} \u003e 80",
+      "type": "metric alert"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "command": "monitors list"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "id": 1234,
+      "name": "Test Monitor",
+      "overall_state": "OK",
+      "query": "avg:system.cpu.user{*} \u003e 80",
+      "type": "metric alert"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "command": "monitors list"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>monitors get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  },
+  "metadata": {
+    "command": "monitors get"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  },
+  "metadata": {
+    "command": "monitors get"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>monitors get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  },
+  "metadata": {
+    "command": "monitors get"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  },
+  "metadata": {
+    "command": "monitors get"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>monitors search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>monitors search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "id": 1234,
+    "message": "CPU high",
+    "name": "Test Monitor",
+    "overall_state": "OK",
+    "query": "avg(last_5m):avg:system.cpu.user{*} \u003e 80",
+    "tags": [
+      "env:test"
+    ],
+    "type": "metric alert"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>monitors delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>monitors delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>dashboards list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "dashboards": [
+      {
+        "description": "",
+        "id": "abc-def-ghi",
+        "layout_type": "ordered",
+        "title": "Test Dashboard"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "dashboards": [
+      {
+        "description": "",
+        "id": "abc-def-ghi",
+        "layout_type": "ordered",
+        "title": "Test Dashboard"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>dashboards list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "dashboards": [
+      {
+        "description": "",
+        "id": "abc-def-ghi",
+        "layout_type": "ordered",
+        "title": "Test Dashboard"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "dashboards": [
+      {
+        "description": "",
+        "id": "abc-def-ghi",
+        "layout_type": "ordered",
+        "title": "Test Dashboard"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>dashboards get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "description": "",
+    "id": "abc-def-ghi",
+    "layout_type": "ordered",
+    "title": "Test Dashboard",
+    "widgets": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "description": "",
+    "id": "abc-def-ghi",
+    "layout_type": "ordered",
+    "title": "Test Dashboard",
+    "widgets": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>dashboards get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "description": "",
+    "id": "abc-def-ghi",
+    "layout_type": "ordered",
+    "title": "Test Dashboard",
+    "widgets": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "description": "",
+    "id": "abc-def-ghi",
+    "layout_type": "ordered",
+    "title": "Test Dashboard",
+    "widgets": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>dashboards delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>dashboards delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>metrics list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>metrics list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>metrics search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>metrics search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01T00:00:00Z",
+    "metrics": [
+      "system.cpu.user",
+      "system.cpu.system",
+      "system.mem.used"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>slos list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "id": "abc123",
+        "name": "Test SLO",
+        "thresholds": [
+          {
+            "target": 99.9,
+            "timeframe": "7d"
+          }
+        ],
+        "type": "metric"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "id": "abc123",
+        "name": "Test SLO",
+        "thresholds": [
+          {
+            "target": 99.9,
+            "timeframe": "7d"
+          }
+        ],
+        "type": "metric"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>slos list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "id": "abc123",
+        "name": "Test SLO",
+        "thresholds": [
+          {
+            "target": 99.9,
+            "timeframe": "7d"
+          }
+        ],
+        "type": "metric"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "id": "abc123",
+        "name": "Test SLO",
+        "thresholds": [
+          {
+            "target": 99.9,
+            "timeframe": "7d"
+          }
+        ],
+        "type": "metric"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>slos get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "id": "abc123",
+      "name": "Test SLO",
+      "thresholds": [
+        {
+          "target": 99.9,
+          "timeframe": "30d"
+        }
+      ],
+      "type": "metric"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "id": "abc123",
+      "name": "Test SLO",
+      "thresholds": [
+        {
+          "target": 99.9,
+          "timeframe": "30d"
+        }
+      ],
+      "type": "metric"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>slos get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "id": "abc123",
+      "name": "Test SLO",
+      "thresholds": [
+        {
+          "target": 99.9,
+          "timeframe": "30d"
+        }
+      ],
+      "type": "metric"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "id": "abc123",
+      "name": "Test SLO",
+      "thresholds": [
+        {
+          "target": 99.9,
+          "timeframe": "30d"
+        }
+      ],
+      "type": "metric"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>slos delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>slos delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "deleted_id": "12345"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>synthetics tests list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "tests": [
+      {
+        "name": "Test",
+        "public_id": "abc-def-ghi",
+        "status": "live",
+        "type": "api"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "tests": [
+      {
+        "name": "Test",
+        "public_id": "abc-def-ghi",
+        "status": "live",
+        "type": "api"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>synthetics tests list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "tests": [
+      {
+        "name": "Test",
+        "public_id": "abc-def-ghi",
+        "status": "live",
+        "type": "api"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "tests": [
+      {
+        "name": "Test",
+        "public_id": "abc-def-ghi",
+        "status": "live",
+        "type": "api"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>synthetics locations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>synthetics locations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>events list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>events list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>events get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>events get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "events": [
+      {
+        "date_happened": 1700000000,
+        "id": 1,
+        "tags": [
+          "env:test"
+        ],
+        "text": "Test",
+        "title": "Test Event"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>downtime list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>downtime list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>downtime get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>downtime get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>tags list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "tags": {
+      "env": [
+        "env:test"
+      ],
+      "role": [
+        "role:web"
+      ]
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "tags": {
+      "env": [
+        "env:test"
+      ],
+      "role": [
+        "role:web"
+      ]
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>tags list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "tags": {
+      "env": [
+        "env:test"
+      ],
+      "role": [
+        "role:web"
+      ]
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "tags": {
+      "env": [
+        "env:test"
+      ],
+      "role": [
+        "role:web"
+      ]
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>tags get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "host": "test-host",
+    "tags": [
+      "env:test",
+      "role:web"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "host": "test-host",
+    "tags": [
+      "env:test",
+      "role:web"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>tags get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "host": "test-host",
+    "tags": [
+      "env:test",
+      "role:web"
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "host": "test-host",
+    "tags": [
+      "env:test",
+      "role:web"
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>tags delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted all tags from host test-host</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted all tags from host test-host</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>tags delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted all tags from host test-host</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted all tags from host test-host</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>users list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "email": "test@example.com",
+          "name": "Test User"
+        },
+        "id": "user-1",
+        "type": "users"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "email": "test@example.com",
+          "name": "Test User"
+        },
+        "id": "user-1",
+        "type": "users"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>users list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "email": "test@example.com",
+          "name": "Test User"
+        },
+        "id": "user-1",
+        "type": "users"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "email": "test@example.com",
+          "name": "Test User"
+        },
+        "id": "user-1",
+        "type": "users"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>users get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>users get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>users roles list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>users roles list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>infrastructure hosts list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "host_list": [
+      {
+        "apps": [
+          "agent"
+        ],
+        "name": "host1",
+        "tags_by_source": {
+          "datadog": [
+            "env:test"
+          ]
+        },
+        "up": true
+      }
+    ],
+    "total_matching": 1
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "host_list": [
+      {
+        "apps": [
+          "agent"
+        ],
+        "name": "host1",
+        "tags_by_source": {
+          "datadog": [
+            "env:test"
+          ]
+        },
+        "up": true
+      }
+    ],
+    "total_matching": 1
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>infrastructure hosts list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "host_list": [
+      {
+        "apps": [
+          "agent"
+        ],
+        "name": "host1",
+        "tags_by_source": {
+          "datadog": [
+            "env:test"
+          ]
+        },
+        "up": true
+      }
+    ],
+    "total_matching": 1
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "host_list": [
+      {
+        "apps": [
+          "agent"
+        ],
+        "name": "host1",
+        "tags_by_source": {
+          "datadog": [
+            "env:test"
+          ]
+        },
+        "up": true
+      }
+    ],
+    "total_matching": 1
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>audit-logs list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>audit-logs list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>security rules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Rule"
+        },
+        "id": "rule-1",
+        "type": "security_monitoring_rule"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Rule"
+        },
+        "id": "rule-1",
+        "type": "security_monitoring_rule"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>security rules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Rule"
+        },
+        "id": "rule-1",
+        "type": "security_monitoring_rule"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Rule"
+        },
+        "id": "rule-1",
+        "type": "security_monitoring_rule"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>security rules get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>security rules get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>organizations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>organizations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cloud aws list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cloud aws list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cloud gcp list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "client_email": "test@test.iam.gserviceaccount.com",
+      "project_id": "test-project",
+      "type": "service_account"
+    }
+  ]
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "client_email": "test@test.iam.gserviceaccount.com",
+      "project_id": "test-project",
+      "type": "service_account"
+    }
+  ]
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cloud gcp list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "client_email": "test@test.iam.gserviceaccount.com",
+      "project_id": "test-project",
+      "type": "service_account"
+    }
+  ]
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "client_email": "test@test.iam.gserviceaccount.com",
+      "project_id": "test-project",
+      "type": "service_account"
+    }
+  ]
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cloud azure list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "client_id": "test-client-id",
+      "tenant_name": "test-tenant"
+    }
+  ]
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "client_id": "test-client-id",
+      "tenant_name": "test-tenant"
+    }
+  ]
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cloud azure list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": [
+    {
+      "client_id": "test-client-id",
+      "tenant_name": "test-tenant"
+    }
+  ]
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": [
+    {
+      "client_id": "test-client-id",
+      "tenant_name": "test-tenant"
+    }
+  ]
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cases get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cases get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cases projects list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cases projects list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cases projects get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cases projects get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>service-catalog list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>service-catalog list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>service-catalog get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>service-catalog get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>api-keys list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>api-keys list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>api-keys get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>api-keys get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>api-keys delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted API key test-id-123</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted API key test-id-123</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>api-keys delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted API key test-id-123</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted API key test-id-123</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>app-keys list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>app-keys list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>app-keys get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>app-keys get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>notebooks list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Notebook",
+          "status": "published",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        "id": 123,
+        "type": "notebooks"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Notebook",
+          "status": "published",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        "id": 123,
+        "type": "notebooks"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>notebooks list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Notebook",
+          "status": "published",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        "id": 123,
+        "type": "notebooks"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Notebook",
+          "status": "published",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        "id": 123,
+        "type": "notebooks"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>notebooks get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "cells": [],
+        "name": "Test Notebook",
+        "status": "published",
+        "time": {
+          "live_span": "1h"
+        }
+      },
+      "id": 123,
+      "type": "notebooks"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "cells": [],
+        "name": "Test Notebook",
+        "status": "published",
+        "time": {
+          "live_span": "1h"
+        }
+      },
+      "id": 123,
+      "type": "notebooks"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>notebooks get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "cells": [],
+        "name": "Test Notebook",
+        "status": "published",
+        "time": {
+          "live_span": "1h"
+        }
+      },
+      "id": 123,
+      "type": "notebooks"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "cells": [],
+        "name": "Test Notebook",
+        "status": "published",
+        "time": {
+          "live_span": "1h"
+        }
+      },
+      "id": 123,
+      "type": "notebooks"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>notebooks delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted notebook 12345</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted notebook 12345</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>notebooks delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted notebook 12345</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted notebook 12345</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>rum apps list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "application_id": "app-1",
+          "client_token": "pub-token",
+          "created_at": 1700000000000,
+          "created_by_handle": "test@example.com",
+          "name": "Test App",
+          "org_id": 1,
+          "type": "browser",
+          "updated_at": 1700000000000,
+          "updated_by_handle": "test@example.com"
+        },
+        "id": "app-1",
+        "type": "rum_application"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "application_id": "app-1",
+          "client_token": "pub-token",
+          "created_at": 1700000000000,
+          "created_by_handle": "test@example.com",
+          "name": "Test App",
+          "org_id": 1,
+          "type": "browser",
+          "updated_at": 1700000000000,
+          "updated_by_handle": "test@example.com"
+        },
+        "id": "app-1",
+        "type": "rum_application"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>rum apps list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "application_id": "app-1",
+          "client_token": "pub-token",
+          "created_at": 1700000000000,
+          "created_by_handle": "test@example.com",
+          "name": "Test App",
+          "org_id": 1,
+          "type": "browser",
+          "updated_at": 1700000000000,
+          "updated_by_handle": "test@example.com"
+        },
+        "id": "app-1",
+        "type": "rum_application"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "application_id": "app-1",
+          "client_token": "pub-token",
+          "created_at": 1700000000000,
+          "created_by_handle": "test@example.com",
+          "name": "Test App",
+          "org_id": 1,
+          "type": "browser",
+          "updated_at": 1700000000000,
+          "updated_by_handle": "test@example.com"
+        },
+        "id": "app-1",
+        "type": "rum_application"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>rum apps get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "application_id": "test-id",
+        "client_token": "pub-token",
+        "created_at": 1700000000000,
+        "created_by_handle": "test@example.com",
+        "name": "Test App",
+        "org_id": 1,
+        "type": "browser",
+        "updated_at": 1700000000000,
+        "updated_by_handle": "test@example.com"
+      },
+      "id": "test-id",
+      "type": "rum_application"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "application_id": "test-id",
+        "client_token": "pub-token",
+        "created_at": 1700000000000,
+        "created_by_handle": "test@example.com",
+        "name": "Test App",
+        "org_id": 1,
+        "type": "browser",
+        "updated_at": 1700000000000,
+        "updated_by_handle": "test@example.com"
+      },
+      "id": "test-id",
+      "type": "rum_application"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>rum apps get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "application_id": "test-id",
+        "client_token": "pub-token",
+        "created_at": 1700000000000,
+        "created_by_handle": "test@example.com",
+        "name": "Test App",
+        "org_id": 1,
+        "type": "browser",
+        "updated_at": 1700000000000,
+        "updated_by_handle": "test@example.com"
+      },
+      "id": "test-id",
+      "type": "rum_application"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "application_id": "test-id",
+        "client_token": "pub-token",
+        "created_at": 1700000000000,
+        "created_by_handle": "test@example.com",
+        "name": "Test App",
+        "org_id": 1,
+        "type": "browser",
+        "updated_at": 1700000000000,
+        "updated_by_handle": "test@example.com"
+      },
+      "id": "test-id",
+      "type": "rum_application"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>rum apps delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted RUM application test-id-123</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted RUM application test-id-123</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>rum apps delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Successfully deleted RUM application test-id-123</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Successfully deleted RUM application test-id-123</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>rum metrics list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>rum metrics list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="go_fail" class="go-fail-row">
+  <summary>
+    <span class="badge go_fail">Go Fail</span>
+    <span class="badge human">human</span>
+    <strong>rum metrics get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 2)</div>
+        <div class="output-box error">panic: runtime error: index out of range [0] with length 0
+
+goroutine 1 [running]:
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x15d840e82000?, {0x15d840ccd400, 0x0, 0x1055c8650?})
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
+github.com/spf13/cobra.(*Command).execute(0x1064e3320, {0x15d840ccd380, 0x4, 0x4})
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
+github.com/spf13/cobra.(*Command).ExecuteC(0x1064e1c20)
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
+github.com/spf13/cobra.(*Command).Execute(...)
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x15d840c42110, 0x7, 0x7})
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
+github.com/datadog-labs/pup/cmd.Execute(...)
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
+main.main()
+	/Users/cody.lee/go/src/github.com/DataDog/pup/main.go:15 +0x50</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="go_fail" class="go-fail-row">
+  <summary>
+    <span class="badge go_fail">Go Fail</span>
+    <span class="badge agent">agent</span>
+    <strong>rum metrics get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 2)</div>
+        <div class="output-box error">panic: runtime error: index out of range [0] with length 0
+
+goroutine 1 [running]:
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x3b1ad08d8000?, {0x3b1ad080a410, 0x0, 0x101798650?})
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
+github.com/spf13/cobra.(*Command).execute(0x1026b3320, {0x3b1ad080a3c0, 0x5, 0x5})
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
+github.com/spf13/cobra.(*Command).ExecuteC(0x1026b1c20)
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
+github.com/spf13/cobra.(*Command).Execute(...)
+	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x3b1ad06980a0, 0x8, 0x8})
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
+github.com/datadog-labs/pup/cmd.Execute(...)
+	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
+main.main()
+	/Users/cody.lee/go/src/github.com/DataDog/pup/main.go:15 +0x50</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="go_fail" class="go-fail-row">
+  <summary>
+    <span class="badge go_fail">Go Fail</span>
+    <span class="badge human">human</span>
+    <strong>rum metrics delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 1)</div>
+        <div class="output-box error">Error: RUM metrics delete is not yet implemented - API client types require additional mapping</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">RUM metric test-id-123 deleted.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="go_fail" class="go-fail-row">
+  <summary>
+    <span class="badge go_fail">Go Fail</span>
+    <span class="badge agent">agent</span>
+    <strong>rum metrics delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 1)</div>
+        <div class="output-box error">Error: RUM metrics delete is not yet implemented - API client types require additional mapping</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">RUM metric test-id-123 deleted.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>rum playlists list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>rum playlists list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cicd pipelines get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Pipeline"
+        },
+        "id": "pipeline-1",
+        "type": "cicd_pipeline"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Pipeline"
+        },
+        "id": "pipeline-1",
+        "type": "cicd_pipeline"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cicd pipelines get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Pipeline"
+        },
+        "id": "pipeline-1",
+        "type": "cicd_pipeline"
+      }
+    ]
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "attributes": {
+          "name": "Test Pipeline"
+        },
+        "id": "pipeline-1",
+        "type": "cicd_pipeline"
+      }
+    ]
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>on-call teams list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>on-call teams list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>on-call teams get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle": "test-team",
+        "name": "Test Team"
+      },
+      "id": "test-id",
+      "type": "team"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle": "test-team",
+        "name": "Test Team"
+      },
+      "id": "test-id",
+      "type": "team"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>on-call teams get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle": "test-team",
+        "name": "Test Team"
+      },
+      "id": "test-id",
+      "type": "team"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle": "test-team",
+        "name": "Test Team"
+      },
+      "id": "test-id",
+      "type": "team"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>on-call teams delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Team 'test-id-123' deleted successfully.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Team 'test-id-123' deleted successfully.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>on-call teams delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Team 'test-id-123' deleted successfully.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Team 'test-id-123' deleted successfully.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet agents list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "agents": []
+      },
+      "id": "fleet-status",
+      "type": "fleet_agents_response"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "agents": []
+      },
+      "id": "fleet-status",
+      "type": "fleet_agents_response"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet agents list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "agents": []
+      },
+      "id": "fleet-status",
+      "type": "fleet_agents_response"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "agents": []
+      },
+      "id": "fleet-status",
+      "type": "fleet_agents_response"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet agents get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet agents get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet agents versions</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet agents versions</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet deployments list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet deployments list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet deployments get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet deployments get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet schedules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet schedules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet schedules get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet schedules get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>fleet schedules delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Schedule 'test-id-123' deleted successfully.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Schedule 'test-id-123' deleted successfully.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>fleet schedules delete</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Schedule 'test-id-123' deleted successfully.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">Schedule 'test-id-123' deleted successfully.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="diff" class="diff-row">
+  <summary>
+    <span class="badge diff">Diff</span>
+    <span class="badge human">human</span>
+    <strong>data-governance scanner-rules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Manage data governance, sensitive data scanning, and data deletion.
+
+CAPABILITIES:
+  • Manage sensitive data scanner
+  • Configure data deletion policies
+  • View scan results
+  • Manage scanning rules
+
+EXAMPLES:
+  # List scanning rules
+  pup data-governance scanner rules list
+
+  # Get rule details
+  pup data-governance scanner rules get rule-id
+
+AUTHENTICATION:
+  Requires either OAuth2 authentication or API keys.
+
+Usage:
+  pup data-governance [command]
+
+Available Commands:
+  scanner     Manage sensitive data scanner
+
+Flags:
+  -h, --help   help for data-governance
+
+Global Flags:
+      --agent           Enable agent mode (auto-detected for AI coding assistants)
+  -o, --output string   Output format (json, table, yaml) (default "json")
+  -y, --yes             Skip confirmation prompts (auto-approve all operations)
+
+Use "pup data-governance [command] --help" for more information about a command.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {},
+      "id": "scanner-config",
+      "relationships": {
+        "groups": {
+          "data": []
+        }
+      },
+      "type": "sensitive_data_scanner_configuration"
+    },
+    "included": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="diff" class="diff-row">
+  <summary>
+    <span class="badge diff">Diff</span>
+    <span class="badge agent">agent</span>
+    <strong>data-governance scanner-rules list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">Manage data governance, sensitive data scanning, and data deletion.
+
+CAPABILITIES:
+  • Manage sensitive data scanner
+  • Configure data deletion policies
+  • View scan results
+  • Manage scanning rules
+
+EXAMPLES:
+  # List scanning rules
+  pup data-governance scanner rules list
+
+  # Get rule details
+  pup data-governance scanner rules get rule-id
+
+AUTHENTICATION:
+  Requires either OAuth2 authentication or API keys.
+
+Usage:
+  pup data-governance [command]
+
+Available Commands:
+  scanner     Manage sensitive data scanner
+
+Flags:
+  -h, --help   help for data-governance
+
+Global Flags:
+      --agent           Enable agent mode (auto-detected for AI coding assistants)
+  -o, --output string   Output format (json, table, yaml) (default "json")
+  -y, --yes             Skip confirmation prompts (auto-approve all operations)
+
+Use "pup data-governance [command] --help" for more information about a command.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {},
+      "id": "scanner-config",
+      "relationships": {
+        "groups": {
+          "data": []
+        }
+      },
+      "type": "sensitive_data_scanner_configuration"
+    },
+    "included": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>error-tracking issues search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">No error tracking issues found matching the specified criteria.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">No error tracking issues found matching the specified criteria.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>error-tracking issues search</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">No error tracking issues found matching the specified criteria.</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">No error tracking issues found matching the specified criteria.</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>error-tracking issues get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>error-tracking issues get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>hamr connections get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "hamr_status": 4,
+        "is_primary": true,
+        "modified_at": "2024-01-01T00:00:00Z",
+        "modified_by": "admin",
+        "target_org_datacenter": "us1",
+        "target_org_name": "Test Org",
+        "target_org_uuid": "00000000-0000-0000-0000-000000000001"
+      },
+      "id": "test",
+      "type": "hamr_org_connection"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "hamr_status": 4,
+        "is_primary": true,
+        "modified_at": "2024-01-01T00:00:00Z",
+        "modified_by": "admin",
+        "target_org_datacenter": "us1",
+        "target_org_name": "Test Org",
+        "target_org_uuid": "00000000-0000-0000-0000-000000000001"
+      },
+      "id": "test",
+      "type": "hamr_org_connection"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>hamr connections get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "hamr_status": 4,
+        "is_primary": true,
+        "modified_at": "2024-01-01T00:00:00Z",
+        "modified_by": "admin",
+        "target_org_datacenter": "us1",
+        "target_org_name": "Test Org",
+        "target_org_uuid": "00000000-0000-0000-0000-000000000001"
+      },
+      "id": "test",
+      "type": "hamr_org_connection"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "hamr_status": 4,
+        "is_primary": true,
+        "modified_at": "2024-01-01T00:00:00Z",
+        "modified_by": "admin",
+        "target_org_datacenter": "us1",
+        "target_org_name": "Test Org",
+        "target_org_uuid": "00000000-0000-0000-0000-000000000001"
+      },
+      "id": "test",
+      "type": "hamr_org_connection"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations jira accounts list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations jira accounts list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations jira templates list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations jira templates list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations jira templates get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "fields": {},
+        "issue_type_id": "10001",
+        "name": "Test Template",
+        "project_id": "PROJ-1"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "jira_issue_template"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "fields": {},
+        "issue_type_id": "10001",
+        "name": "Test Template",
+        "project_id": "PROJ-1"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "jira_issue_template"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations jira templates get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "fields": {},
+        "issue_type_id": "10001",
+        "name": "Test Template",
+        "project_id": "PROJ-1"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "jira_issue_template"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "fields": {},
+        "issue_type_id": "10001",
+        "name": "Test Template",
+        "project_id": "PROJ-1"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "jira_issue_template"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations servicenow instances list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations servicenow instances list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations servicenow templates list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations servicenow templates list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>integrations servicenow templates get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle_name": "test-handle",
+        "instance_id": "00000000-0000-0000-0000-000000000002",
+        "servicenow_tablename": "incident"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "servicenow_template"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle_name": "test-handle",
+        "instance_id": "00000000-0000-0000-0000-000000000002",
+        "servicenow_tablename": "incident"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "servicenow_template"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>integrations servicenow templates get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle_name": "test-handle",
+        "instance_id": "00000000-0000-0000-0000-000000000002",
+        "servicenow_tablename": "incident"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "servicenow_template"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "handle_name": "test-handle",
+        "instance_id": "00000000-0000-0000-0000-000000000002",
+        "servicenow_tablename": "incident"
+      },
+      "id": "00000000-0000-0000-0000-000000000001",
+      "type": "servicenow_template"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>cost projected</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>cost projected</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>misc ip-ranges</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "agents": {
+      "prefixes_ipv4": [
+        "1.2.3.4/32"
+      ]
+    },
+    "api": {
+      "prefixes_ipv4": [
+        "5.6.7.8/32"
+      ]
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "agents": {
+      "prefixes_ipv4": [
+        "1.2.3.4/32"
+      ]
+    },
+    "api": {
+      "prefixes_ipv4": [
+        "5.6.7.8/32"
+      ]
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>misc ip-ranges</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "agents": {
+      "prefixes_ipv4": [
+        "1.2.3.4/32"
+      ]
+    },
+    "api": {
+      "prefixes_ipv4": [
+        "5.6.7.8/32"
+      ]
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "agents": {
+      "prefixes_ipv4": [
+        "1.2.3.4/32"
+      ]
+    },
+    "api": {
+      "prefixes_ipv4": [
+        "5.6.7.8/32"
+      ]
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>misc status</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "message": "API is operational",
+    "status": "ok"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "message": "API is operational",
+    "status": "ok"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>misc status</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "message": "API is operational",
+    "status": "ok"
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "message": "API is operational",
+    "status": "ok"
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>investigations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>investigations list</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": []
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge human">human</span>
+    <strong>investigations get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<details data-status="match" class="">
+  <summary>
+    <span class="badge match">Match</span>
+    <span class="badge agent">agent</span>
+    <strong>investigations get</strong>
+  </summary>
+  <div class="detail-content">
+    <div class="side-by-side">
+      <div>
+        <div class="col-header">Go (exit 0)</div>
+        <div class="output-box go">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+      <div>
+        <div class="col-header">Rust (exit 0)</div>
+        <div class="output-box rust">{
+  "status": "success",
+  "data": {
+    "data": {
+      "attributes": {
+        "name": "test"
+      },
+      "id": "test-id",
+      "type": "generic"
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+</details>
+<script>
+function filterRows(status) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('details').forEach(d => {
+    if (status === 'all' || d.dataset.status === status) {
+      d.style.display = '';
+    } else {
+      d.style.display = 'none';
+    }
+  });
+}
+// Auto-expand diffs and failures on load
+document.querySelectorAll('details[data-status="diff"], details[data-status="rust_fail"], details[data-status="go_fail"]').forEach(d => d.open = true);
+</script>
+</body>
+</html>
