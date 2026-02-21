@@ -1,0 +1,49 @@
+[package]
+name = "pup-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Datadog API client (pins reqwest 0.11 + reqwest-middleware 0.2)
+datadog-api-client = "0.27"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+# HTTP (version-matched to DD client)
+reqwest = { version = "0.11", features = ["json"] }
+reqwest-middleware = "0.2"
+async-trait = "0.1"
+task-local-extensions = "0.1"
+
+# Error handling
+anyhow = "1"
+
+# Time
+chrono = "0.4"
+regex = "1"
+
+# Output formatting
+comfy-table = "7"
+
+# Auth — OAuth2 PKCE + token storage
+sha2 = "0.10"
+base64 = "0.22"
+rand = "0.8"
+keyring = { version = "3", features = ["apple-native", "linux-native"] }
+dirs = "5"
+url = "2"
+
+# Crypto for fallback storage
+aes-gcm = "0.10"
+
+# Browser opening for OAuth login
+open = "5"
