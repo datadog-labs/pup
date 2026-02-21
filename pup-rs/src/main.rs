@@ -87,6 +87,21 @@ enum Commands {
     /// Data governance
     #[command(name = "data-governance")]
     DataGovernance { #[command(subcommand)] action: DataGovActions },
+    /// Error tracking
+    #[command(name = "error-tracking")]
+    ErrorTracking { #[command(subcommand)] action: ErrorTrackingActions },
+    /// Code coverage
+    #[command(name = "code-coverage")]
+    CodeCoverage { #[command(subcommand)] action: CodeCoverageActions },
+    /// HAMR (High Availability Multi-Region)
+    Hamr { #[command(subcommand)] action: HamrActions },
+    /// Status pages
+    #[command(name = "status-pages")]
+    StatusPages { #[command(subcommand)] action: StatusPageActions },
+    /// Manage integrations (Jira, ServiceNow)
+    Integrations { #[command(subcommand)] action: IntegrationActions },
+    /// Cloud cost management
+    Cost { #[command(subcommand)] action: CostActions },
     /// Miscellaneous (IP ranges)
     Misc { #[command(subcommand)] action: MiscActions },
     /// Authentication (OAuth2)
@@ -542,6 +557,145 @@ enum DataGovScannerActions {
     List,
 }
 
+// ---- Error Tracking ----
+#[derive(Subcommand)]
+enum ErrorTrackingActions {
+    /// Manage error tracking issues
+    Issues { #[command(subcommand)] action: ErrorTrackingIssueActions },
+}
+
+#[derive(Subcommand)]
+enum ErrorTrackingIssueActions {
+    /// Search issues
+    Search {
+        #[arg(long)] query: Option<String>,
+        #[arg(long, default_value_t = 50)] limit: i32,
+    },
+    /// Get issue details
+    Get { issue_id: String },
+}
+
+// ---- Code Coverage ----
+#[derive(Subcommand)]
+enum CodeCoverageActions {
+    /// Get branch coverage summary
+    #[command(name = "branch-summary")]
+    BranchSummary {
+        #[arg(long)] repo: String,
+        #[arg(long)] branch: String,
+    },
+    /// Get commit coverage summary
+    #[command(name = "commit-summary")]
+    CommitSummary {
+        #[arg(long)] repo: String,
+        #[arg(long)] commit: String,
+    },
+}
+
+// ---- HAMR ----
+#[derive(Subcommand)]
+enum HamrActions {
+    /// Manage HAMR connections
+    Connections { #[command(subcommand)] action: HamrConnectionActions },
+}
+
+#[derive(Subcommand)]
+enum HamrConnectionActions {
+    /// Get HAMR org connection
+    Get,
+}
+
+// ---- Status Pages ----
+#[derive(Subcommand)]
+enum StatusPageActions {
+    /// Manage status pages
+    Pages { #[command(subcommand)] action: StatusPagePageActions },
+    /// Manage page components
+    Components { #[command(subcommand)] action: StatusPageComponentActions },
+    /// Manage degradations
+    Degradations { #[command(subcommand)] action: StatusPageDegradationActions },
+}
+
+#[derive(Subcommand)]
+enum StatusPagePageActions {
+    /// List status pages
+    List,
+    /// Get status page details
+    Get { page_id: String },
+    /// Delete a status page
+    Delete { page_id: String },
+}
+
+#[derive(Subcommand)]
+enum StatusPageComponentActions {
+    /// List components
+    List { page_id: String },
+    /// Get component details
+    Get { page_id: String, component_id: String },
+}
+
+#[derive(Subcommand)]
+enum StatusPageDegradationActions {
+    /// List degradations
+    List,
+    /// Get degradation details
+    Get { page_id: String, degradation_id: String },
+}
+
+// ---- Integrations ----
+#[derive(Subcommand)]
+enum IntegrationActions {
+    /// Jira integration
+    Jira { #[command(subcommand)] action: JiraActions },
+    /// ServiceNow integration
+    Servicenow { #[command(subcommand)] action: ServiceNowActions },
+}
+
+#[derive(Subcommand)]
+enum JiraActions {
+    /// List Jira accounts
+    Accounts,
+    /// Manage Jira templates
+    Templates { #[command(subcommand)] action: JiraTemplateActions },
+}
+
+#[derive(Subcommand)]
+enum JiraTemplateActions {
+    /// List templates
+    List,
+    /// Get template details
+    Get { template_id: String },
+}
+
+#[derive(Subcommand)]
+enum ServiceNowActions {
+    /// List ServiceNow instances
+    Instances,
+    /// Manage ServiceNow templates
+    Templates { #[command(subcommand)] action: ServiceNowTemplateActions },
+}
+
+#[derive(Subcommand)]
+enum ServiceNowTemplateActions {
+    /// List templates
+    List,
+    /// Get template details
+    Get { template_id: String },
+}
+
+// ---- Cost ----
+#[derive(Subcommand)]
+enum CostActions {
+    /// Get projected cost
+    Projected,
+    /// Get cost by org
+    #[command(name = "by-org")]
+    ByOrg {
+        #[arg(long)] start_month: String,
+        #[arg(long)] end_month: Option<String>,
+    },
+}
+
 // ---- Misc ----
 #[derive(Subcommand)]
 enum MiscActions {
@@ -925,6 +1079,110 @@ async fn main() -> anyhow::Result<()> {
                         commands::data_governance::scanner_rules_list(&cfg).await?;
                     }
                 },
+            }
+        }
+        // --- Error Tracking ---
+        Commands::ErrorTracking { action } => {
+            cfg.validate_auth()?;
+            match action {
+                ErrorTrackingActions::Issues { action } => match action {
+                    ErrorTrackingIssueActions::Search { query, limit } => {
+                        commands::error_tracking::issues_search(&cfg, query, limit).await?;
+                    }
+                    ErrorTrackingIssueActions::Get { issue_id } => {
+                        commands::error_tracking::issues_get(&cfg, &issue_id).await?;
+                    }
+                },
+            }
+        }
+        // --- Code Coverage ---
+        Commands::CodeCoverage { action } => {
+            cfg.validate_auth()?;
+            match action {
+                CodeCoverageActions::BranchSummary { repo, branch } => {
+                    commands::code_coverage::branch_summary(&cfg, repo, branch).await?;
+                }
+                CodeCoverageActions::CommitSummary { repo, commit } => {
+                    commands::code_coverage::commit_summary(&cfg, repo, commit).await?;
+                }
+            }
+        }
+        // --- HAMR ---
+        Commands::Hamr { action } => {
+            cfg.validate_auth()?;
+            match action {
+                HamrActions::Connections { action } => match action {
+                    HamrConnectionActions::Get => commands::hamr::connections_get(&cfg).await?,
+                },
+            }
+        }
+        // --- Status Pages ---
+        Commands::StatusPages { action } => {
+            cfg.validate_auth()?;
+            match action {
+                StatusPageActions::Pages { action } => match action {
+                    StatusPagePageActions::List => commands::status_pages::pages_list(&cfg).await?,
+                    StatusPagePageActions::Get { page_id } => {
+                        commands::status_pages::pages_get(&cfg, &page_id).await?;
+                    }
+                    StatusPagePageActions::Delete { page_id } => {
+                        commands::status_pages::pages_delete(&cfg, &page_id).await?;
+                    }
+                },
+                StatusPageActions::Components { action } => match action {
+                    StatusPageComponentActions::List { page_id } => {
+                        commands::status_pages::components_list(&cfg, &page_id).await?;
+                    }
+                    StatusPageComponentActions::Get { page_id, component_id } => {
+                        commands::status_pages::components_get(&cfg, &page_id, &component_id).await?;
+                    }
+                },
+                StatusPageActions::Degradations { action } => match action {
+                    StatusPageDegradationActions::List => {
+                        commands::status_pages::degradations_list(&cfg).await?;
+                    }
+                    StatusPageDegradationActions::Get { page_id, degradation_id } => {
+                        commands::status_pages::degradations_get(&cfg, &page_id, &degradation_id).await?;
+                    }
+                },
+            }
+        }
+        // --- Integrations ---
+        Commands::Integrations { action } => {
+            cfg.validate_auth()?;
+            match action {
+                IntegrationActions::Jira { action } => match action {
+                    JiraActions::Accounts => commands::integrations::jira_accounts_list(&cfg).await?,
+                    JiraActions::Templates { action } => match action {
+                        JiraTemplateActions::List => commands::integrations::jira_templates_list(&cfg).await?,
+                        JiraTemplateActions::Get { template_id } => {
+                            commands::integrations::jira_templates_get(&cfg, &template_id).await?;
+                        }
+                    },
+                },
+                IntegrationActions::Servicenow { action } => match action {
+                    ServiceNowActions::Instances => {
+                        commands::integrations::servicenow_instances_list(&cfg).await?;
+                    }
+                    ServiceNowActions::Templates { action } => match action {
+                        ServiceNowTemplateActions::List => {
+                            commands::integrations::servicenow_templates_list(&cfg).await?;
+                        }
+                        ServiceNowTemplateActions::Get { template_id } => {
+                            commands::integrations::servicenow_templates_get(&cfg, &template_id).await?;
+                        }
+                    },
+                },
+            }
+        }
+        // --- Cost ---
+        Commands::Cost { action } => {
+            cfg.validate_auth()?;
+            match action {
+                CostActions::Projected => commands::cost::projected(&cfg).await?,
+                CostActions::ByOrg { start_month, end_month } => {
+                    commands::cost::by_org(&cfg, start_month, end_month).await?;
+                }
             }
         }
         // --- Misc ---

@@ -27,6 +27,9 @@ task-local-extensions = "0.1"
 # Error handling
 anyhow = "1"
 
+# UUID parsing (version-matched to DD client)
+uuid = "1"
+
 # Time
 chrono = "0.4"
 regex = "1"

@@ -1518,6 +1518,7 @@ dependencies = [
  "task-local-extensions",
  "tokio",
  "url",
+ "uuid",
 ]
 
 [[package]]
