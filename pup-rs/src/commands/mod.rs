@@ -1,5 +1,15 @@
+pub mod audit_logs;
 pub mod auth;
+pub mod dashboards;
+pub mod downtime;
+pub mod events;
 pub mod incidents;
+pub mod infrastructure;
 pub mod logs;
+pub mod metrics;
 pub mod monitors;
+pub mod slos;
+pub mod synthetics;
+pub mod tags;
 pub mod test;
+pub mod users;
