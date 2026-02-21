@@ -1,4 +1,6 @@
+pub mod alias;
 pub mod api_keys;
+pub mod apm;
 pub mod app_keys;
 pub mod audit_logs;
 pub mod auth;
@@ -17,6 +19,7 @@ pub mod hamr;
 pub mod incidents;
 pub mod infrastructure;
 pub mod integrations;
+pub mod investigations;
 pub mod logs;
 pub mod metrics;
 pub mod misc;

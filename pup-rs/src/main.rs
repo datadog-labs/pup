@@ -104,6 +104,12 @@ enum Commands {
     Cost { #[command(subcommand)] action: CostActions },
     /// Miscellaneous (IP ranges)
     Misc { #[command(subcommand)] action: MiscActions },
+    /// APM (Application Performance Monitoring)
+    Apm { #[command(subcommand)] action: ApmActions },
+    /// Manage investigations
+    Investigations { #[command(subcommand)] action: InvestigationActions },
+    /// Manage command aliases
+    Alias { #[command(subcommand)] action: AliasActions },
     /// Authentication (OAuth2)
     Auth { #[command(subcommand)] action: AuthActions },
     /// Show version information
@@ -704,6 +710,52 @@ enum MiscActions {
     IpRanges,
 }
 
+// ---- APM ----
+#[derive(Subcommand)]
+enum ApmActions {
+    /// Manage APM services
+    Services { #[command(subcommand)] action: ApmServiceActions },
+}
+
+#[derive(Subcommand)]
+enum ApmServiceActions {
+    /// List APM services
+    List {
+        #[arg(long)] env: String,
+        #[arg(long, default_value = "1h")] from: String,
+        #[arg(long, default_value = "now")] to: String,
+    },
+    /// Get service stats
+    Stats {
+        #[arg(long)] env: String,
+        #[arg(long)] from: String,
+        #[arg(long)] to: String,
+    },
+}
+
+// ---- Investigations ----
+#[derive(Subcommand)]
+enum InvestigationActions {
+    /// List investigations
+    List {
+        #[arg(long, default_value_t = 50)] page_limit: i64,
+        #[arg(long, default_value_t = 0)] page_offset: i64,
+    },
+    /// Get investigation details
+    Get { investigation_id: String },
+}
+
+// ---- Alias ----
+#[derive(Subcommand)]
+enum AliasActions {
+    /// List all aliases
+    List,
+    /// Set an alias
+    Set { name: String, command: String },
+    /// Delete aliases
+    Delete { names: Vec<String> },
+}
+
 // ---- Auth ----
 #[derive(Subcommand)]
 enum AuthActions {
@@ -1192,6 +1244,38 @@ async fn main() -> anyhow::Result<()> {
                 MiscActions::IpRanges => commands::misc::ip_ranges(&cfg).await?,
             }
         }
+        // --- APM ---
+        Commands::Apm { action } => {
+            cfg.validate_auth()?;
+            match action {
+                ApmActions::Services { action } => match action {
+                    ApmServiceActions::List { env, from, to } => {
+                        commands::apm::services_list(&cfg, env, from, to).await?;
+                    }
+                    ApmServiceActions::Stats { env, from, to } => {
+                        commands::apm::services_stats(&cfg, env, from, to).await?;
+                    }
+                },
+            }
+        }
+        // --- Investigations ---
+        Commands::Investigations { action } => {
+            cfg.validate_auth()?;
+            match action {
+                InvestigationActions::List { page_limit, page_offset } => {
+                    commands::investigations::list(&cfg, page_limit, page_offset).await?;
+                }
+                InvestigationActions::Get { investigation_id } => {
+                    commands::investigations::get(&cfg, &investigation_id).await?;
+                }
+            }
+        }
+        // --- Alias ---
+        Commands::Alias { action } => match action {
+            AliasActions::List => commands::alias::list()?,
+            AliasActions::Set { name, command } => commands::alias::set(name, command)?,
+            AliasActions::Delete { names } => commands::alias::delete(names)?,
+        },
         // --- Auth ---
         Commands::Auth { action } => match action {
             AuthActions::Login => commands::auth::login(&cfg).await?,
