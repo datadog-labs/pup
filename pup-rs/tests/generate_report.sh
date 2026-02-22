@@ -135,7 +135,7 @@ add "fleet schedules list" "fleet schedules list"
 add "fleet schedules get" "fleet schedules get test-id-123"
 add "fleet schedules delete" "fleet schedules delete -y test-id-123"
 # Data governance
-add "data-governance scanner-rules list" "data-governance scanner-rules list"
+add "data-governance scanner rules list" "data-governance scanner-rules list" "data-governance scanner rules list"
 # Error tracking
 add "error-tracking issues search" "error-tracking issues search"
 add "error-tracking issues get" "error-tracking issues get test-id-123"

@@ -119,7 +119,7 @@ declare -a COMMANDS=(
     "fleet schedules get test-id-123"
     "fleet schedules delete test-id-123"
     # Data governance
-    "data-governance scanner-rules list"
+    "data-governance scanner rules list"
     # Error tracking
     "error-tracking issues search"
     "error-tracking issues get test-id-123"

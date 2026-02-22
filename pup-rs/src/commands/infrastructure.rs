@@ -28,3 +28,21 @@ pub async fn hosts_list(
         .map_err(|e| anyhow::anyhow!("failed to list hosts: {e:?}"))?;
     formatter::output(cfg, &resp)
 }
+
+pub async fn hosts_get(cfg: &Config, hostname: &str) -> Result<()> {
+    // The V1 HostsAPI does not have a direct get-host method.
+    // Use list_hosts with a filter to find the specific host.
+    let dd_cfg = client::make_dd_config(cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => HostsAPI::with_client_and_config(dd_cfg, c),
+        None => HostsAPI::with_config(dd_cfg),
+    };
+    let params = ListHostsOptionalParams::default()
+        .filter(hostname.to_string())
+        .count(1);
+    let resp = api
+        .list_hosts(params)
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to get host {hostname}: {e:?}"))?;
+    formatter::output(cfg, &resp)
+}

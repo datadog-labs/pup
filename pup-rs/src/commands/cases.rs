@@ -7,9 +7,11 @@ use datadog_api_client::datadogV2::model::{
     CaseEmptyRequest, CaseNotificationRuleCreateRequest, CaseNotificationRuleUpdateRequest,
     CasePriority, CaseResourceType, CaseStatus, CaseUpdatePriority,
     CaseUpdatePriorityAttributes, CaseUpdatePriorityRequest, CaseUpdateStatus,
-    CaseUpdateStatusAttributes, CaseUpdateStatusRequest, JiraIssueCreateRequest,
+    CaseUpdateStatusAttributes, CaseUpdateStatusRequest, CaseUpdateTitle,
+    CaseUpdateTitleAttributes, CaseUpdateTitleRequest, JiraIssueCreateRequest,
     JiraIssueLinkRequest, ProjectCreate, ProjectCreateAttributes, ProjectCreateRequest,
-    ProjectResourceType, ServiceNowTicketCreateRequest,
+    ProjectRelationship, ProjectRelationshipData, ProjectResourceType, ProjectUpdateRequest,
+    ServiceNowTicketCreateRequest,
 };
 
 use crate::client;
@@ -296,4 +298,49 @@ pub async fn projects_notification_rules_delete(
         .map_err(|e| anyhow::anyhow!("failed to delete notification rule: {e:?}"))?;
     println!("Notification rule '{rule_id}' deleted.");
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Move case to project
+// ---------------------------------------------------------------------------
+
+pub async fn move_to_project(cfg: &Config, case_id: &str, project_id: &str) -> Result<()> {
+    let api = make_api(cfg);
+    let data = ProjectRelationshipData::new(project_id.to_string(), ProjectResourceType::PROJECT);
+    let body = ProjectRelationship::new(data);
+    let resp = api
+        .move_case_to_project(case_id.to_string(), body)
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to move case to project: {e:?}"))?;
+    formatter::output(cfg, &resp)
+}
+
+// ---------------------------------------------------------------------------
+// Update case title
+// ---------------------------------------------------------------------------
+
+pub async fn update_title(cfg: &Config, case_id: &str, title: &str) -> Result<()> {
+    let api = make_api(cfg);
+    let attrs = CaseUpdateTitleAttributes::new(title.to_string());
+    let data = CaseUpdateTitle::new(attrs, CaseResourceType::CASE);
+    let body = CaseUpdateTitleRequest::new(data);
+    let resp = api
+        .update_case_title(case_id.to_string(), body)
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to update case title: {e:?}"))?;
+    formatter::output(cfg, &resp)
+}
+
+// ---------------------------------------------------------------------------
+// Update project
+// ---------------------------------------------------------------------------
+
+pub async fn projects_update(cfg: &Config, project_id: &str, file: &str) -> Result<()> {
+    let api = make_api(cfg);
+    let body: ProjectUpdateRequest = crate::util::read_json_file(file)?;
+    let resp = api
+        .update_project(project_id.to_string(), body)
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to update project: {e:?}"))?;
+    formatter::output(cfg, &resp)
 }

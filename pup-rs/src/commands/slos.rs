@@ -76,3 +76,26 @@ pub async fn delete(cfg: &Config, id: &str) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("failed to delete SLO: {e:?}"))?;
     formatter::output(cfg, &resp)
 }
+
+pub async fn status(cfg: &Config, id: &str, from_ts: i64, to_ts: i64) -> Result<()> {
+    use datadog_api_client::datadogV2::api_service_level_objectives::{
+        GetSloStatusOptionalParams,
+        ServiceLevelObjectivesAPI as SloV2API,
+    };
+
+    let dd_cfg = client::make_dd_config(cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => SloV2API::with_client_and_config(dd_cfg, c),
+        None => SloV2API::with_config(dd_cfg),
+    };
+    let resp = api
+        .get_slo_status(
+            id.to_string(),
+            from_ts,
+            to_ts,
+            GetSloStatusOptionalParams::default(),
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to get SLO status: {e:?}"))?;
+    formatter::output(cfg, &resp)
+}

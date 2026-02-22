@@ -57,17 +57,17 @@ enum Commands {
         #[command(subcommand)]
         action: SloActions,
     },
-    /// Manage Synthetics tests and monitors
+    /// Manage synthetic monitoring
     Synthetics {
         #[command(subcommand)]
         action: SyntheticsActions,
     },
-    /// Manage events
+    /// Manage Datadog events
     Events {
         #[command(subcommand)]
         action: EventActions,
     },
-    /// Manage downtimes
+    /// Manage monitor downtimes
     Downtime {
         #[command(subcommand)]
         action: DowntimeActions,
@@ -82,7 +82,7 @@ enum Commands {
         #[command(subcommand)]
         action: UserActions,
     },
-    /// Query infrastructure hosts and containers
+    /// Manage infrastructure monitoring
     Infrastructure {
         #[command(subcommand)]
         action: InfraActions,
@@ -93,12 +93,12 @@ enum Commands {
         #[command(subcommand)]
         action: AuditLogActions,
     },
-    /// Manage security rules, signals, and findings
+    /// Manage security monitoring
     Security {
         #[command(subcommand)]
         action: SecurityActions,
     },
-    /// Manage organizations
+    /// Manage organization settings
     Organizations {
         #[command(subcommand)]
         action: OrgActions,
@@ -113,7 +113,7 @@ enum Commands {
         #[command(subcommand)]
         action: CaseActions,
     },
-    /// Query the Service Catalog
+    /// Manage service catalog
     #[command(name = "service-catalog")]
     ServiceCatalog {
         #[command(subcommand)]
@@ -131,7 +131,7 @@ enum Commands {
         #[command(subcommand)]
         action: AppKeyActions,
     },
-    /// Query usage and billing data
+    /// Query usage and billing information
     Usage {
         #[command(subcommand)]
         action: UsageActions,
@@ -151,24 +151,24 @@ enum Commands {
         #[command(subcommand)]
         action: CicdActions,
     },
-    /// Manage on-call teams and schedules
+    /// Manage teams and on-call operations
     #[command(name = "on-call")]
     OnCall {
         #[command(subcommand)]
         action: OnCallActions,
     },
-    /// Manage fleet agents and deployments
+    /// Manage Fleet Automation
     Fleet {
         #[command(subcommand)]
         action: FleetActions,
     },
-    /// Manage data governance and sensitive data
+    /// Manage data governance
     #[command(name = "data-governance")]
     DataGovernance {
         #[command(subcommand)]
         action: DataGovActions,
     },
-    /// Manage error tracking issues
+    /// Manage error tracking
     #[command(name = "error-tracking")]
     ErrorTracking {
         #[command(subcommand)]
@@ -180,28 +180,28 @@ enum Commands {
         #[command(subcommand)]
         action: CodeCoverageActions,
     },
-    /// Manage HAMR connections
+    /// Manage High Availability Multi-Region (HAMR)
     Hamr {
         #[command(subcommand)]
         action: HamrActions,
     },
-    /// Manage status pages and incidents
+    /// Manage status pages
     #[command(name = "status-pages")]
     StatusPages {
         #[command(subcommand)]
         action: StatusPageActions,
     },
-    /// Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
+    /// Manage third-party integrations
     Integrations {
         #[command(subcommand)]
         action: IntegrationActions,
     },
-    /// Query cloud cost data
+    /// Manage cost and billing data
     Cost {
         #[command(subcommand)]
         action: CostActions,
     },
-    /// Utility commands (IP ranges, status)
+    /// Miscellaneous API operations
     Misc {
         #[command(subcommand)]
         action: MiscActions,
@@ -211,7 +211,7 @@ enum Commands {
         #[command(subcommand)]
         action: ApmActions,
     },
-    /// Manage security investigations
+    /// Manage Bits AI investigations
     Investigations {
         #[command(subcommand)]
         action: InvestigationActions,
@@ -227,12 +227,12 @@ enum Commands {
         #[command(subcommand)]
         action: ObsPipelinesActions,
     },
-    /// Manage scorecards
+    /// Manage service scorecards
     Scorecards {
         #[command(subcommand)]
         action: ScorecardsActions,
     },
-    /// Query distributed traces
+    /// Query APM traces
     Traces {
         #[command(subcommand)]
         action: TracesActions,
@@ -248,13 +248,13 @@ enum Commands {
         #[command(subcommand)]
         action: AliasActions,
     },
-    /// Submit product analytics events
+    /// Send product analytics events
     #[command(name = "product-analytics")]
     ProductAnalytics {
         #[command(subcommand)]
         action: ProductAnalyticsActions,
     },
-    /// Manage static analysis results
+    /// Manage static analysis
     #[command(name = "static-analysis")]
     StaticAnalysis {
         #[command(subcommand)]
@@ -399,7 +399,7 @@ enum LogCustomDestinationActions {
 enum LogMetricActions {
     /// List log-based metrics
     List,
-    /// Get metric details
+    /// Get log-based metric details
     Get { metric_id: String },
     /// Delete a log-based metric
     Delete { metric_id: String },
@@ -901,17 +901,17 @@ enum CloudActions {
     /// Manage AWS integrations
     Aws {
         #[command(subcommand)]
-        action: CloudSubActions,
+        action: CloudAwsActions,
     },
     /// Manage GCP integrations
     Gcp {
         #[command(subcommand)]
-        action: CloudSubActions,
+        action: CloudGcpActions,
     },
     /// Manage Azure integrations
     Azure {
         #[command(subcommand)]
-        action: CloudSubActions,
+        action: CloudAzureActions,
     },
     /// Manage OCI integrations
     Oci {
@@ -921,8 +921,20 @@ enum CloudActions {
 }
 
 #[derive(Subcommand)]
-enum CloudSubActions {
-    /// List integrations
+enum CloudAwsActions {
+    /// List AWS integrations
+    List,
+}
+
+#[derive(Subcommand)]
+enum CloudGcpActions {
+    /// List GCP integrations
+    List,
+}
+
+#[derive(Subcommand)]
+enum CloudAzureActions {
+    /// List Azure integrations
     List,
 }
 
@@ -935,6 +947,15 @@ enum CloudOciActions {
     },
     /// Manage OCI products
     Products {
+        #[command(subcommand)]
+        action: CloudOciProductActions,
+    },
+}
+
+#[derive(Subcommand)]
+enum CloudOciProductActions {
+    /// List OCI tenancy products
+    List {
         /// Product keys to query
         product_keys: String,
     },
@@ -1007,6 +1028,19 @@ enum CaseActions {
         #[command(subcommand)]
         action: CaseProjectActions,
     },
+    /// Move a case to a different project
+    Move {
+        case_id: String,
+        #[arg(long)]
+        project_id: String,
+    },
+    /// Update case title
+    #[command(name = "update-title")]
+    UpdateTitle {
+        case_id: String,
+        #[arg(long)]
+        title: String,
+    },
     /// Manage Jira integrations for cases
     Jira {
         #[command(subcommand)]
@@ -1034,6 +1068,12 @@ enum CaseProjectActions {
     },
     /// Delete a project
     Delete { project_id: String },
+    /// Update a project
+    Update {
+        project_id: String,
+        #[arg(long)]
+        file: String,
+    },
     /// Manage project notification rules
     #[command(name = "notification-rules")]
     NotificationRules {
@@ -1490,7 +1530,7 @@ enum OnCallTeamActions {
     },
     /// Delete a team
     Delete { team_id: String },
-    /// List team members
+    /// Manage team memberships
     Memberships {
         #[command(subcommand)]
         action: OnCallMembershipActions,
@@ -1606,9 +1646,8 @@ enum FleetScheduleActions {
 // ---- Data Governance ----
 #[derive(Subcommand)]
 enum DataGovActions {
-    /// List scanner rules
-    #[command(name = "scanner-rules")]
-    ScannerRules {
+    /// Manage sensitive data scanner
+    Scanner {
         #[command(subcommand)]
         action: DataGovScannerActions,
     },
@@ -1616,7 +1655,16 @@ enum DataGovActions {
 
 #[derive(Subcommand)]
 enum DataGovScannerActions {
-    /// List rules
+    /// Manage scanning rules
+    Rules {
+        #[command(subcommand)]
+        action: DataGovScannerRuleActions,
+    },
+}
+
+#[derive(Subcommand)]
+enum DataGovScannerRuleActions {
+    /// List scanning rules
     List,
 }
 
@@ -2109,7 +2157,7 @@ enum InvestigationActions {
     },
     /// Get investigation details
     Get { investigation_id: String },
-    /// Trigger an investigation from JSON file
+    /// Trigger a new investigation
     Trigger {
         #[arg(long)]
         file: String,
@@ -2121,12 +2169,12 @@ enum InvestigationActions {
 enum NetworkActions {
     /// List network devices/monitors
     List,
-    /// Network flows
+    /// Query network flows
     Flows {
         #[command(subcommand)]
         action: NetworkFlowActions,
     },
-    /// Network devices
+    /// List network devices
     Devices {
         #[command(subcommand)]
         action: NetworkDeviceActions,
@@ -2150,7 +2198,7 @@ enum NetworkDeviceActions {
 enum ObsPipelinesActions {
     /// List observability pipelines
     List,
-    /// Get observability pipeline details
+    /// Get pipeline details
     Get { pipeline_id: String },
 }
 
@@ -2283,6 +2331,8 @@ enum AuthActions {
     Status,
     /// Print access token
     Token,
+    /// Refresh access token
+    Refresh,
 }
 
 // ---- Agent-mode JSON schema for --help ----
@@ -2885,13 +2935,13 @@ async fn main() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 CloudActions::Aws { action } => match action {
-                    CloudSubActions::List => commands::cloud::aws_list(&cfg).await?,
+                    CloudAwsActions::List => commands::cloud::aws_list(&cfg).await?,
                 },
                 CloudActions::Gcp { action } => match action {
-                    CloudSubActions::List => commands::cloud::gcp_list(&cfg).await?,
+                    CloudGcpActions::List => commands::cloud::gcp_list(&cfg).await?,
                 },
                 CloudActions::Azure { action } => match action {
-                    CloudSubActions::List => commands::cloud::azure_list(&cfg).await?,
+                    CloudAzureActions::List => commands::cloud::azure_list(&cfg).await?,
                 },
                 CloudActions::Oci { action } => match action {
                     CloudOciActions::Tenancies { action } => match action {
@@ -2911,9 +2961,11 @@ async fn main() -> anyhow::Result<()> {
                             commands::cloud::oci_tenancies_delete(&cfg, &tenancy_id).await?;
                         }
                     },
-                    CloudOciActions::Products { product_keys } => {
-                        commands::cloud::oci_products_list(&cfg, &product_keys).await?;
-                    }
+                    CloudOciActions::Products { action } => match action {
+                        CloudOciProductActions::List { product_keys } => {
+                            commands::cloud::oci_products_list(&cfg, &product_keys).await?;
+                        }
+                    },
                 },
             }
         }
@@ -2943,6 +2995,12 @@ async fn main() -> anyhow::Result<()> {
                 CaseActions::UpdateStatus { case_id, status } => {
                     commands::cases::update_status(&cfg, &case_id, &status).await?;
                 }
+                CaseActions::Move { case_id, project_id } => {
+                    commands::cases::move_to_project(&cfg, &case_id, &project_id).await?;
+                }
+                CaseActions::UpdateTitle { case_id, title } => {
+                    commands::cases::update_title(&cfg, &case_id, &title).await?;
+                }
                 CaseActions::Projects { action } => match action {
                     CaseProjectActions::List => commands::cases::projects_list(&cfg).await?,
                     CaseProjectActions::Get { project_id } => {
@@ -2953,6 +3011,9 @@ async fn main() -> anyhow::Result<()> {
                     }
                     CaseProjectActions::Delete { project_id } => {
                         commands::cases::projects_delete(&cfg, &project_id).await?;
+                    }
+                    CaseProjectActions::Update { project_id, file } => {
+                        commands::cases::projects_update(&cfg, &project_id, &file).await?;
                     }
                     CaseProjectActions::NotificationRules { action } => match action {
                         CaseNotificationRuleActions::List { project_id } => {
@@ -3336,10 +3397,12 @@ async fn main() -> anyhow::Result<()> {
         Commands::DataGovernance { action } => {
             cfg.validate_auth()?;
             match action {
-                DataGovActions::ScannerRules { action } => match action {
-                    DataGovScannerActions::List => {
-                        commands::data_governance::scanner_rules_list(&cfg).await?;
-                    }
+                DataGovActions::Scanner { action } => match action {
+                    DataGovScannerActions::Rules { action } => match action {
+                        DataGovScannerRuleActions::List => {
+                            commands::data_governance::scanner_rules_list(&cfg).await?;
+                        }
+                    },
                 },
             }
         }
@@ -3785,6 +3848,7 @@ async fn main() -> anyhow::Result<()> {
             AuthActions::Logout => commands::auth::logout(&cfg).await?,
             AuthActions::Status => commands::auth::status(&cfg)?,
             AuthActions::Token => commands::auth::token(&cfg)?,
+            AuthActions::Refresh => commands::auth::refresh(&cfg).await?,
         },
         // --- Utility ---
         Commands::Completions { shell } => {

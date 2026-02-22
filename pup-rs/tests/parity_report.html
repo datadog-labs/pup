@@ -69,7 +69,7 @@ details[open] summary { border-radius: 6px 6px 0 0; }
 <body>
 <h1>Pup CLI Parity Report</h1>
 <p class="subtitle">Go <code>pup</code> vs Rust <code>pup-rs</code> — End-to-end output comparison against mock Datadog API</p>
-<p class="timestamp">Generated: 2026-02-22 00:14:51 UTC</p>
+<p class="timestamp">Generated: 2026-02-22 01:48:23 UTC</p>
 <h2>Summary</h2>
 <div class="summary">
   <div class="stat"><div class="num">254</div><div class="label">Total Tests</div></div>
@@ -81,8 +81,8 @@ details[open] summary { border-radius: 6px 6px 0 0; }
 </div>
 <div class="alert">
 <h3>Output Differences (inspect these)</h3><ul>
-<li><strong>data-governance scanner-rules list</strong> (human mode)</li>
-<li><strong>data-governance scanner-rules list</strong> (agent mode)</li>
+<li><strong>data-governance scanner rules list</strong> (human mode)</li>
+<li><strong>data-governance scanner rules list</strong> (agent mode)</li>
 <li><strong>help: top-level</strong> (human mode)</li>
 <li><strong>help: top-level</strong> (agent mode)</li>
 <li><strong>help: monitors</strong> (human mode)</li>
@@ -3959,15 +3959,15 @@ details[open] summary { border-radius: 6px 6px 0 0; }
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x1c5ba3222000?, {0x1c5ba3073400, 0x0, 0x10573c650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x3eed7a510000?, {0x3eed7a361400, 0x0, 0x1012dc650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x106657320, {0x1c5ba3073380, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x1021f7320, {0x3eed7a361380, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x106655c20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x1021f5c20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x1c5ba2ff4110, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x3eed7a2e2110, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -4005,15 +4005,15 @@ main.main()
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x38c20080a000?, {0x38c20065b400, 0x0, 0x104c10650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x46867752e000?, {0x46867737f400, 0x0, 0x102eb4650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x105b2b320, {0x38c20065b380, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x103dcf320, {0x46867737f380, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x105b29c20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x103dcdc20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x38c2005dc110, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x468677300110, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -4969,7 +4969,7 @@ main.main()
   <summary>
     <span class="badge diff">Diff</span>
     <span class="badge human">human</span>
-    <strong>data-governance scanner-rules list</strong>
+    <strong>data-governance scanner rules list</strong>
   </summary>
   <div class="detail-content">
     <table class="env-table"><tr><td class="env-key">PUP_MOCK_SERVER</td><td class="env-eq">=</td><td class="env-val">http://localhost:19880</td></tr><tr><td class="env-key">DD_API_KEY</td><td class="env-eq">=</td><td class="env-val">test-key</td></tr><tr><td class="env-key">DD_APP_KEY</td><td class="env-eq">=</td><td class="env-val">test-app-key</td></tr><tr><td class="env-key">DD_SITE</td><td class="env-eq">=</td><td class="env-val">datadoghq.com</td></tr></table>
@@ -5013,7 +5013,7 @@ Use "pup data-governance [command] --help" for more information about a command.
       </div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
-        <div class="cmd-box">$ pup-rs -o json data-governance scanner-rules list</div>
+        <div class="cmd-box">$ pup-rs -o json data-governance scanner rules list</div>
         <div class="output-box rust">{
   "data": {
     "attributes": {},
@@ -5035,7 +5035,7 @@ Use "pup data-governance [command] --help" for more information about a command.
   <summary>
     <span class="badge diff">Diff</span>
     <span class="badge agent">agent</span>
-    <strong>data-governance scanner-rules list</strong>
+    <strong>data-governance scanner rules list</strong>
   </summary>
   <div class="detail-content">
     <table class="env-table"><tr><td class="env-key">PUP_MOCK_SERVER</td><td class="env-eq">=</td><td class="env-val">http://localhost:19880</td></tr><tr><td class="env-key">DD_API_KEY</td><td class="env-eq">=</td><td class="env-val">test-key</td></tr><tr><td class="env-key">DD_APP_KEY</td><td class="env-eq">=</td><td class="env-val">test-app-key</td></tr><tr><td class="env-key">DD_SITE</td><td class="env-eq">=</td><td class="env-val">datadoghq.com</td></tr><tr><td class="env-key">FORCE_AGENT_MODE</td><td class="env-eq">=</td><td class="env-val">1</td></tr></table>
@@ -5079,7 +5079,7 @@ Use "pup data-governance [command] --help" for more information about a command.
       </div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
-        <div class="cmd-box">$ pup-rs -o json data-governance scanner-rules list</div>
+        <div class="cmd-box">$ pup-rs -o json data-governance scanner rules list</div>
         <div class="output-box rust">{
   "status": "success",
   "data": {
@@ -6194,44 +6194,44 @@ Commands:
   dashboards         Manage dashboards
   metrics            Query and manage metrics
   slos               Manage Service Level Objectives
-  synthetics         Manage Synthetics tests and monitors
-  events             Manage events
-  downtime           Manage downtimes
+  synthetics         Manage synthetic monitoring
+  events             Manage Datadog events
+  downtime           Manage monitor downtimes
   tags               Manage host tags
   users              Manage users and access
-  infrastructure     Query infrastructure hosts and containers
+  infrastructure     Manage infrastructure monitoring
   audit-logs         Query audit logs
-  security           Manage security rules, signals, and findings
-  organizations      Manage organizations
+  security           Manage security monitoring
+  organizations      Manage organization settings
   cloud              Manage cloud integrations
   cases              Manage case management cases and projects
-  service-catalog    Query the Service Catalog
+  service-catalog    Manage service catalog
   api-keys           Manage API keys
   app-keys           Manage app key registrations
-  usage              Query usage and billing data
+  usage              Query usage and billing information
   notebooks          Manage notebooks
   rum                Manage Real User Monitoring (RUM)
   cicd               Manage CI/CD visibility
-  on-call            Manage on-call teams and schedules
-  fleet              Manage fleet agents and deployments
-  data-governance    Manage data governance and sensitive data
-  error-tracking     Manage error tracking issues
+  on-call            Manage teams and on-call operations
+  fleet              Manage Fleet Automation
+  data-governance    Manage data governance
+  error-tracking     Manage error tracking
   code-coverage      Query code coverage data
-  hamr               Manage HAMR connections
-  status-pages       Manage status pages and incidents
-  integrations       Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
-  cost               Query cloud cost data
-  misc               Utility commands (IP ranges, status)
+  hamr               Manage High Availability Multi-Region (HAMR)
+  status-pages       Manage status pages
+  integrations       Manage third-party integrations
+  cost               Manage cost and billing data
+  misc               Miscellaneous API operations
   apm                Manage APM services and entities
-  investigations     Manage security investigations
+  investigations     Manage Bits AI investigations
   network            Manage network monitoring
   obs-pipelines      Manage observability pipelines
-  scorecards         Manage scorecards
-  traces             Query distributed traces
+  scorecards         Manage service scorecards
+  traces             Query APM traces
   agent              Agent tooling: schema, guide, and diagnostics for AI coding assistants
   alias              Create shortcuts for pup commands
-  product-analytics  Submit product analytics events
-  static-analysis    Manage static analysis results
+  product-analytics  Send product analytics events
+  static-analysis    Manage static analysis
   auth               OAuth2 authentication commands
   completions        Generate shell completions
   version            Print version information
@@ -8514,7 +8514,7 @@ Use "pup synthetics [command] --help" for more information about a command.</div
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json synthetics --help</div>
-        <div class="output-box rust">Manage Synthetics tests and monitors
+        <div class="output-box rust">Manage synthetic monitoring
 
 Usage: pup-rs synthetics [OPTIONS] &lt;COMMAND&gt;
 
@@ -8769,7 +8769,7 @@ Use "pup events [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json events --help</div>
-        <div class="output-box rust">Manage events
+        <div class="output-box rust">Manage Datadog events
 
 Usage: pup-rs events [OPTIONS] &lt;COMMAND&gt;
 
@@ -9026,7 +9026,7 @@ Use "pup downtime [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json downtime --help</div>
-        <div class="output-box rust">Manage downtimes
+        <div class="output-box rust">Manage monitor downtimes
 
 Usage: pup-rs downtime [OPTIONS] &lt;COMMAND&gt;
 
@@ -9793,7 +9793,7 @@ Use "pup infrastructure [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json infrastructure --help</div>
-        <div class="output-box rust">Query infrastructure hosts and containers
+        <div class="output-box rust">Manage infrastructure monitoring
 
 Usage: pup-rs infrastructure [OPTIONS] &lt;COMMAND&gt;
 
@@ -10299,7 +10299,7 @@ Use "pup security [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json security --help</div>
-        <div class="output-box rust">Manage security rules, signals, and findings
+        <div class="output-box rust">Manage security monitoring
 
 Usage: pup-rs security [OPTIONS] &lt;COMMAND&gt;
 
@@ -10550,7 +10550,7 @@ Use "pup organizations [command] --help" for more information about a command.</
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json organizations --help</div>
-        <div class="output-box rust">Manage organizations
+        <div class="output-box rust">Manage organization settings
 
 Usage: pup-rs organizations [OPTIONS] &lt;COMMAND&gt;
 
@@ -11100,6 +11100,8 @@ Commands:
   update-priority  Update case priority
   update-status    Update case status
   projects         Manage case projects
+  move             Move a case to a different project
+  update-title     Update case title
   jira             Manage Jira integrations for cases
   servicenow       Manage ServiceNow integrations for cases
   help             Print this message or the help of the given subcommand(s)
@@ -11346,7 +11348,7 @@ Use "pup service-catalog [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json service-catalog --help</div>
-        <div class="output-box rust">Query the Service Catalog
+        <div class="output-box rust">Manage service catalog
 
 Usage: pup-rs service-catalog [OPTIONS] &lt;COMMAND&gt;
 
@@ -12957,7 +12959,7 @@ Use "pup on-call [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json on-call --help</div>
-        <div class="output-box rust">Manage on-call teams and schedules
+        <div class="output-box rust">Manage teams and on-call operations
 
 Usage: pup-rs on-call [OPTIONS] &lt;COMMAND&gt;
 
@@ -13218,7 +13220,7 @@ Use "pup fleet [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json fleet --help</div>
-        <div class="output-box rust">Manage fleet agents and deployments
+        <div class="output-box rust">Manage Fleet Automation
 
 Usage: pup-rs fleet [OPTIONS] &lt;COMMAND&gt;
 
@@ -13466,13 +13468,13 @@ Use "pup data-governance [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json data-governance --help</div>
-        <div class="output-box rust">Manage data governance and sensitive data
+        <div class="output-box rust">Manage data governance
 
 Usage: pup-rs data-governance [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  scanner-rules  List scanner rules
-  help           Print this message or the help of the given subcommand(s)
+  scanner  Manage sensitive data scanner
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
@@ -13713,7 +13715,7 @@ Use "pup error-tracking [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json error-tracking --help</div>
-        <div class="output-box rust">Manage error tracking issues
+        <div class="output-box rust">Manage error tracking
 
 Usage: pup-rs error-tracking [OPTIONS] &lt;COMMAND&gt;
 
@@ -13956,7 +13958,7 @@ Use "pup hamr [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json hamr --help</div>
-        <div class="output-box rust">Manage HAMR connections
+        <div class="output-box rust">Manage High Availability Multi-Region (HAMR)
 
 Usage: pup-rs hamr [OPTIONS] &lt;COMMAND&gt;
 
@@ -14212,7 +14214,7 @@ Use "pup integrations [command] --help" for more information about a command.</d
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json integrations --help</div>
-        <div class="output-box rust">Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
+        <div class="output-box rust">Manage third-party integrations
 
 Usage: pup-rs integrations [OPTIONS] &lt;COMMAND&gt;
 
@@ -14470,7 +14472,7 @@ Use "pup cost [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cost --help</div>
-        <div class="output-box rust">Query cloud cost data
+        <div class="output-box rust">Manage cost and billing data
 
 Usage: pup-rs cost [OPTIONS] &lt;COMMAND&gt;
 
@@ -14719,7 +14721,7 @@ Use "pup misc [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json misc --help</div>
-        <div class="output-box rust">Utility commands (IP ranges, status)
+        <div class="output-box rust">Miscellaneous API operations
 
 Usage: pup-rs misc [OPTIONS] &lt;COMMAND&gt;
 
@@ -14973,14 +14975,14 @@ Use "pup investigations [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json investigations --help</div>
-        <div class="output-box rust">Manage security investigations
+        <div class="output-box rust">Manage Bits AI investigations
 
 Usage: pup-rs investigations [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   list     List investigations
   get      Get investigation details
-  trigger  Trigger an investigation from JSON file
+  trigger  Trigger a new investigation
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -15500,7 +15502,7 @@ Use "pup product-analytics [command] --help" for more information about a comman
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json product-analytics --help</div>
-        <div class="output-box rust">Submit product analytics events
+        <div class="output-box rust">Send product analytics events
 
 Usage: pup-rs product-analytics [OPTIONS] &lt;COMMAND&gt;
 
@@ -15746,7 +15748,7 @@ Use "pup static-analysis [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json static-analysis --help</div>
-        <div class="output-box rust">Manage static analysis results
+        <div class="output-box rust">Manage static analysis
 
 Usage: pup-rs static-analysis [OPTIONS] &lt;COMMAND&gt;
 
@@ -16046,11 +16048,12 @@ MULTI-SITE SUPPORT:
 Usage: pup-rs auth [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  login   Login via OAuth2
-  logout  Logout and clear tokens
-  status  Check authentication status
-  token   Print access token
-  help    Print this message or the help of the given subcommand(s)
+  login    Login via OAuth2
+  logout   Logout and clear tokens
+  status   Check authentication status
+  token    Print access token
+  refresh  Refresh access token
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]

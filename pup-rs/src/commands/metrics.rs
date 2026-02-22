@@ -115,3 +115,21 @@ pub async fn submit(cfg: &Config, file: &str) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("failed to submit metrics: {e:?}"))?;
     formatter::output(cfg, &resp)
 }
+
+pub async fn tags_list(cfg: &Config, metric_name: &str) -> Result<()> {
+    use datadog_api_client::datadogV2::api_metrics::ListTagsByMetricNameOptionalParams;
+
+    let dd_cfg = client::make_dd_config(cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => MetricsV2API::with_client_and_config(dd_cfg, c),
+        None => MetricsV2API::with_config(dd_cfg),
+    };
+    let resp = api
+        .list_tags_by_metric_name(
+            metric_name.to_string(),
+            ListTagsByMetricNameOptionalParams::default(),
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to list tags for metric {metric_name}: {e:?}"))?;
+    formatter::output(cfg, &resp)
+}

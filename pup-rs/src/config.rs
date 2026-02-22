@@ -98,11 +98,26 @@ impl Config {
 
     /// Returns the API host (e.g., "api.datadoghq.com").
     pub fn api_host(&self) -> String {
+        if let Ok(mock) = std::env::var("PUP_MOCK_SERVER") {
+            let host = mock
+                .trim_start_matches("http://")
+                .trim_start_matches("https://");
+            return host.to_string();
+        }
         if self.site.contains("oncall") {
             self.site.clone()
         } else {
             format!("api.{}", self.site)
         }
+    }
+
+    /// Returns the full API base URL (e.g., "https://api.datadoghq.com").
+    /// Respects PUP_MOCK_SERVER for testing.
+    pub fn api_base_url(&self) -> String {
+        if let Ok(mock) = std::env::var("PUP_MOCK_SERVER") {
+            return mock;
+        }
+        format!("https://{}", self.api_host())
     }
 }
 

@@ -160,3 +160,7 @@ pub fn token(cfg: &Config) -> Result<()> {
         None => bail!("no token available — run 'pup auth login' or set DD_ACCESS_TOKEN"),
     })
 }
+
+pub async fn refresh(_cfg: &Config) -> Result<()> {
+    anyhow::bail!("token refresh not yet implemented — use 'pup auth login' to re-authenticate")
+}
