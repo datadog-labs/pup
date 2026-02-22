@@ -1,0 +1,153 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: pup
+report_sizes: true
+
+before:
+  hooks:
+    - rustup default stable
+    - cargo install --locked cargo-zigbuild
+    - cargo fetch --locked
+    # Verify Cargo.toml version matches git tag
+    - sh -c 'CARGO_VER=$(grep "^version" Cargo.toml | head -1 | sed "s/.*\"\(.*\)\"/\1/"); TAG_VER="${GORELEASER_CURRENT_TAG#v}"; if [ "$CARGO_VER" != "$TAG_VER" ]; then echo "ERROR: Cargo.toml version ($CARGO_VER) does not match git tag ($TAG_VER)"; exit 1; fi'
+    # Build WASM targets (not supported by cargo-zigbuild)
+    - rustup target add wasm32-wasip2 wasm32-unknown-unknown
+    - cargo build --release --target wasm32-wasip2 --no-default-features --features wasi
+    - sh -c 'cp target/wasm32-wasip2/release/pup.wasm dist/pup_wasi.wasm || mkdir -p dist && cp target/wasm32-wasip2/release/pup.wasm dist/pup_wasi.wasm'
+    - cargo install wasm-pack
+    - wasm-pack build --target web --no-default-features --features browser
+    - sh -c 'tar czf dist/pup_browser_wasm.tar.gz -C pkg .'
+
+builds:
+  - builder: rust
+    binary: pup
+    targets:
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
+    flags:
+      - --release
+      - --features=vendored-openssl
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE
+      - LICENSE-3rdparty.csv
+      - README.md
+
+extra_files:
+  - glob: dist/pup_wasi.wasm
+  - glob: dist/pup_browser_wasm.tar.gz
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+  extra_files:
+    - glob: dist/pup_wasi.wasm
+    - glob: dist/pup_browser_wasm.tar.gz
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: tar.gz
+
+sboms:
+  - artifacts: archive
+    cmd: syft
+    args:
+      - "${artifact}"
+      - "--output"
+      - "spdx-json=${document}"
+    documents:
+      - "{{ .ArtifactName }}.sbom.json"
+
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args:
+      - "sign-blob"
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - typo
+  groups:
+    - title: "Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Security"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "Other Changes"
+      order: 999
+
+release:
+  github:
+    owner: datadog-labs
+    name: pup
+  draft: false
+  prerelease: auto
+  mode: append
+  name_template: "Release {{ .Version }}"
+  header: |
+    ## Pup {{ .Version }}
+
+    ### Installation
+
+    ```bash
+    # macOS (Apple Silicon)
+    curl -L https://github.com/datadog-labs/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Darwin_arm64.tar.gz | tar xz
+
+    # macOS (Intel)
+    curl -L https://github.com/datadog-labs/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Darwin_x86_64.tar.gz | tar xz
+
+    # Linux (x86_64)
+    curl -L https://github.com/datadog-labs/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Linux_x86_64.tar.gz | tar xz
+
+    # Linux (arm64)
+    curl -L https://github.com/datadog-labs/pup/releases/download/{{ .Tag }}/pup_{{ .Version }}_Linux_arm64.tar.gz | tar xz
+    ```
+
+    ### WASM
+
+    - **WASI** (`pup_wasi.wasm`): Run in Wasmtime or any WASI Preview 2 runtime
+    - **Browser WASM** (`pup_browser_wasm.tar.gz`): npm-ready package with `PupClient` JS class and TypeScript definitions
+
+    ### Verifying
+
+    ```bash
+    # Verify checksums
+    sha256sum -c pup_{{ .Version }}_checksums.txt
+
+    # Verify signature (requires cosign)
+    cosign verify-blob \
+      --bundle pup_{{ .Version }}_checksums.txt.sigstore.json \
+      pup_{{ .Version }}_checksums.txt
+    ```
+
+  footer: |
+    **Full Changelog**: https://github.com/datadog-labs/pup/compare/{{ .PreviousTag }}...{{ .Tag }}

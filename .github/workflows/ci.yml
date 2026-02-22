@@ -1,249 +1,201 @@
 name: CI
 
 on:
-  pull_request:
-    branches:
-      - '**'
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
 
-permissions:
-  contents: write  # Needed to commit coverage badge on main branch
-  pull-requests: write
-  security-events: write  # Needed for Datadog SAST results
-  id-token: write # Needed to federate STS token to upload coverage
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  DD_ENV: ci
-  DD_SERVICE: pup
+  CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test and Coverage
+  check:
+    name: Check & Lint
     runs-on: ubuntu-latest
-    # TODO: Re-enable DD env vars when dd-sts is fixed
-    # env:
-    #   DD_API_KEY: ${{ secrets.DD_API_KEY }}
-    #   DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
-    #   DD_CIVISIBILITY_AGENTLESS_ENABLED: true
-    #   DD_CIVISIBILITY_GIT_UPLOAD_ENABLED: true
-    #   DD_CIVISIBILITY_ENABLED: true
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
-          fetch-depth: 0  # Fetch full git history for Datadog CI Visibility
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-check-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-check-
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component clippy,rustfmt
+          rustup default stable
+      - name: Format check
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+      - name: Build
+        run: cargo build --release
+      - name: Report binary size
+        run: |
+          ls -lh target/release/pup
+          strip target/release/pup
+          echo "Stripped:"
+          ls -lh target/release/pup
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
-          go-version: '1.25'
-          cache: true
-
-      # TODO: Re-enable dd-sts + orchestrion + datadog-ci when STS policy is fixed (401 errors)
-      # - name: Get Datadog credentials
-      #   if: github.ref == 'refs/heads/main'
-      #   id: dd-sts
-      #   uses: DataDog/dd-sts-action@main
-      #   with:
-      #     policy: public-datadog-pup-sts
-      #
-      # - name: Configure Datadog Test Optimization
-      #   if: github.ref == 'refs/heads/main'
-      #   uses: datadog/test-visibility-github-action@v2
-      #   with:
-      #     languages: go
-      #     api_key: ${{ steps.dd-sts.outputs.api_key }}
-      #     site: datadoghq.com
-      #
-      # - name: Install Datadog CI tools
-      #   if: github.ref == 'refs/heads/main'
-      #   run: |
-      #     # Install orchestrion for Go test instrumentation
-      #     go install github.com/DataDog/orchestrion@latest
-      #     echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      #
-      #     # Install datadog-ci CLI for coverage upload
-      #     npm install -g @datadog/datadog-ci
-
-      - name: Install bc for floating-point math
-        run: sudo apt-get update && sudo apt-get install -y bc
-
-      - name: Run tests with coverage
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-test-
+      - name: Install Rust
         run: |
-          # Run tests on all packages with race detection
-          go test -v -race ./...
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Run tests
+        run: cargo test --verbose -- --test-threads=1
 
-          # Coverage collection
-          go test -count=1 -coverprofile=coverage.out -covermode=atomic ./pkg/...
-
-          # Generate HTML coverage report
-          go tool cover -html=coverage.out -o coverage.html
-
-      - name: Calculate coverage
-        id: coverage
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-cov-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-cov-
+      - name: Install Rust
         run: |
-          # Calculate total coverage
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-          echo "Total coverage: $COVERAGE%"
-
-          # Calculate coverage by package
-          echo "## Coverage by Package" > coverage_report.txt
-          echo "" >> coverage_report.txt
-          go tool cover -func=coverage.out | grep -v "total:" | awk '{print $1, $3}' | sort -t: -k1,1 -u | while read line; do
-            echo "- $line" >> coverage_report.txt
-          done
-
-          # Get coverage summary
-          echo "" >> coverage_report.txt
-          echo "## Summary" >> coverage_report.txt
-          echo "" >> coverage_report.txt
-          go tool cover -func=coverage.out | tail -1 >> coverage_report.txt
-
-      # TODO: Re-enable when dd-sts is fixed
-      # - name: Upload coverage to Datadog
-      #   if: github.ref == 'refs/heads/main'
-      #   env:
-      #     DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
-      #     DD_SITE: datadoghq.com
-      #   run: |
-      #     datadog-ci coverage upload --format=go-coverprofile coverage.out
-
-      - name: Check coverage threshold
-        run: |
-          COVERAGE=${{ steps.coverage.outputs.coverage }}
-          # Lower threshold to account for skipped keychain tests in CI (headless environment)
-          # Local macOS coverage is ~87%, CI is ~77% due to keychain tests being skipped
-          THRESHOLD=75.0
-
-          echo "Coverage: $COVERAGE%"
-          echo "Threshold: $THRESHOLD%"
-
-          # Use bc for floating point comparison
-          if [ $(echo "$COVERAGE < $THRESHOLD" | bc -l) -eq 1 ]; then
-            echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
-            exit 1
-          else
-            echo "✅ Coverage $COVERAGE% meets threshold $THRESHOLD%"
-          fi
-
-      - name: Generate coverage badge for main branch
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        env:
-          COVERAGE: ${{ steps.coverage.outputs.coverage }}
-        run: |
-          # Determine badge color
-          if [ $(echo "$COVERAGE >= 90" | bc -l) -eq 1 ]; then
-            COLOR="brightgreen"
-          elif [ $(echo "$COVERAGE >= 80" | bc -l) -eq 1 ]; then
-            COLOR="green"
-          elif [ $(echo "$COVERAGE >= 70" | bc -l) -eq 1 ]; then
-            COLOR="yellow"
-          elif [ $(echo "$COVERAGE >= 60" | bc -l) -eq 1 ]; then
-            COLOR="orange"
-          else
-            COLOR="red"
-          fi
-
-          # Create badge JSON for shields.io endpoint schema
-          mkdir -p .github/badges
-          cat > .github/badges/coverage.json << EOF
-          {
-            "schemaVersion": 1,
-            "label": "coverage",
-            "message": "${COVERAGE}%",
-            "color": "${COLOR}"
-          }
-          EOF
-
-          echo "Generated coverage badge: ${COVERAGE}% (${COLOR})"
-
-      # Note: Auto-committing badge disabled due to branch protection requiring signed commits
-      # Badge can be updated manually or via a separate workflow with appropriate permissions
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v6
+          rustup toolchain install stable --profile minimal --component llvm-tools-preview
+          rustup default stable
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+      - name: Generate coverage
+        run: cargo llvm-cov --lcov --output-path lcov.info --ignore-filename-regex 'main\.rs|auth/' -- --test-threads=1
+      - name: Coverage summary
+        run: cargo llvm-cov report --ignore-filename-regex 'main\.rs|auth/'
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
+          path: lcov.info
+
+  cross-compile-linux:
+    name: Cross Compile (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
           path: |
-            coverage.out
-            coverage.html
-            coverage_report.txt
-          retention-days: 30
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.25'
-          cache: true
-
-      - name: Install golangci-lint
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-cross-linux-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-cross-linux-
+      - name: Install Rust
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add aarch64-unknown-linux-gnu
+      - name: Install Zig
+        run: |
+          ZIG_VERSION="0.13.0"
+          curl -sL "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" | tar xJ
+          echo "$PWD/zig-linux-x86_64-${ZIG_VERSION}" >> "$GITHUB_PATH"
+      - name: Install cargo-zigbuild
+        run: cargo install --locked cargo-zigbuild
+      - name: Build all targets
+        run: |
+          for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
+            echo "::group::Building ${target}"
+            cargo zigbuild --release --target "${target}" --features vendored-openssl
+            echo "::endgroup::"
+          done
+      - name: Report sizes
+        run: |
+          for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
+            echo "${target}:"
+            ls -lh "target/${target}/release/pup"
+          done
 
-      - name: Run golangci-lint
-        run: golangci-lint run --timeout=5m
+  cross-compile-macos:
+    name: Cross Compile (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-cross-macos-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-cross-macos-
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-apple-darwin aarch64-apple-darwin
+      - name: Build all targets
+        run: |
+          for target in x86_64-apple-darwin aarch64-apple-darwin; do
+            echo "::group::Building ${target}"
+            cargo build --release --target "${target}"
+            echo "::endgroup::"
+          done
+      - name: Report sizes
+        run: |
+          for target in x86_64-apple-darwin aarch64-apple-darwin; do
+            echo "${target}:"
+            ls -lh "target/${target}/release/pup"
+          done
 
-  build:
-    name: Build
+  wasm:
+    name: WASM (WASI + Browser)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
-          go-version: '1.25'
-          cache: true
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Build CLI binary
-        run: go build -o pup .
-
-      - name: Verify binary
-        run: ./pup --version
-
-      - name: Build WASM binary
-        env:
-          GOOS: js
-          GOARCH: wasm
-        run: go build -o pup.wasm .
-
-  # TODO: Re-enable SAST when dd-sts/datadog-ci is fixed
-  # sast:
-  #   name: Datadog Static Analysis
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'pull_request'
-  #   env:
-  #     DD_API_KEY: ${{ secrets.DD_API_KEY }}
-  #     DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
-  #     DD_SITE: ${{ secrets.DD_SITE || 'datadoghq.com' }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0
-  #
-  #     - name: Run Datadog Static Analysis
-  #       if: env.DD_API_KEY != ''
-  #       run: |
-  #         npm install -g @datadog/datadog-ci
-  #         datadog-ci sast scan --service=${{ env.DD_SERVICE }} --env=${{ env.DD_ENV }}
-  #
-  #     - name: SAST disabled notice
-  #       if: env.DD_API_KEY == ''
-  #       run: |
-  #         echo "Datadog Static Analysis skipped: DD_API_KEY not configured"
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-wasm-
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-wasip2 wasm32-unknown-unknown
+      - name: Build WASI
+        run: cargo build --target wasm32-wasip2 --no-default-features --features wasi --release
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Build browser WASM
+        run: wasm-pack build --target web --no-default-features --features browser
+      - name: Report sizes
+        run: |
+          echo "WASI:"
+          ls -lh target/wasm32-wasip2/release/pup.wasm
+          echo "Browser WASM:"
+          ls -lh pkg/pup_wasm_bg.wasm

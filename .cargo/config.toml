@@ -1,0 +1,6 @@
+[target.wasm32-wasip2]
+runner = "wasmtime run --"
+
+# getrandom 0.3 requires explicit backend selection for browser WASM
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']

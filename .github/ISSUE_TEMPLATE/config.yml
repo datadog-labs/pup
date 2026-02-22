@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Datadog Community
+    url: https://community.datadoghq.com/
+    about: Ask questions and discuss with the Datadog community
+  - name: Datadog Support
+    url: https://www.datadoghq.com/support/
+    about: Get help from Datadog support team

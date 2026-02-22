@@ -3,7 +3,7 @@
 **NOTICE: This is in Preview mode, we are fine tuning the interactions and bugs that arise. Please file issues or submit PRs. Thank you for your early interest!**
 
 [![CI](https://github.com/datadog-labs/pup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/datadog-labs/pup/actions/workflows/ci.yml)
-[![Go Version](https://img.shields.io/badge/go-1.25+-00ADD8?logo=go)](https://go.dev/)
+[![Rust](https://img.shields.io/badge/rust-stable-orange?logo=rust)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 Every AI agent needs a loyal companion. Meet Pup — the CLI that gives your agents full access to Datadog's observability platform (because even autonomous agents need good tooling, not just tricks).
@@ -35,7 +35,7 @@ pup metrics query --query="avg:system.cpu.user{*}"   # Track the metrics tail
 
 :dog: **TL;DR**: We built a comprehensive CLI so AI agents can use Datadog like a pro. Give your agent a pup. They're housetrained, loyal, and know way more tricks than you'd expect.
 
-*P.S. No actual puppies were harmed in the making of this CLI. Just a lot of Go code and API endpoints.*
+*P.S. No actual puppies were harmed in the making of this CLI. Just a lot of Rust code and API endpoints.*
 
 ## API Coverage
 
@@ -174,17 +174,19 @@ See [docs/COMMANDS.md](docs/COMMANDS.md) for detailed command reference.
 
 ## Installation
 
-### Homebrew (macOS/Linux) - Coming soon!
+### Homebrew (macOS/Linux)
 
 ```bash
 brew tap datadog-labs/pack
 brew install datadog-labs/pack/pup
 ```
 
-### Go Install
+### Build from Source
 
 ```bash
-go install github.com/datadog-labs/pup@latest
+git clone https://github.com/datadog-labs/pup.git && cd pup
+cargo build --release
+cp target/release/pup /usr/local/bin/pup
 ```
 
 ### Manual Download
@@ -392,15 +394,16 @@ If you are integrating pup into an AI agent workflow, make sure the appropriate 
 
 ## WASM
 
-Pup compiles to WebAssembly (`GOOS=js GOARCH=wasm`) for use in browser-like runtimes such as Deno, Bun, and Cloudflare Workers.
+Pup compiles to WebAssembly via the `wasm32-wasip2` target for use in WASI-compatible runtimes such as Wasmtime, Wasmer, and Cloudflare Workers.
 
 ### Building
 
 ```bash
-GOOS=js GOARCH=wasm go build -o pup.wasm .
+# Install the WASI target
+rustup target add wasm32-wasip2
 
-# Copy the Go WASM support file
-cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" .
+# Build for WASI
+cargo build --target wasm32-wasip2 --no-default-features --features wasi --release
 ```
 
 ### Authentication
@@ -409,10 +412,10 @@ The WASM build supports **stateless authentication** — keychain storage and br
 
 ```bash
 # Option 1: Bearer token
-DD_ACCESS_TOKEN="your-token" DD_SITE="datadoghq.com" deno run pup.wasm monitors list
+DD_ACCESS_TOKEN="your-token" DD_SITE="datadoghq.com" wasmtime run target/wasm32-wasip2/release/pup.wasm -- monitors list
 
 # Option 2: API keys
-DD_API_KEY="your-api-key" DD_APP_KEY="your-app-key" deno run pup.wasm monitors list
+DD_API_KEY="your-api-key" DD_APP_KEY="your-app-key" wasmtime run target/wasm32-wasip2/release/pup.wasm -- monitors list
 ```
 
 The `pup auth status` command works in WASM and reports which credentials are configured. The `login`, `logout`, and `refresh` subcommands return guidance to use `DD_ACCESS_TOKEN`.
@@ -421,35 +424,39 @@ The `pup auth status` command works in WASM and reports which credentials are co
 
 - No local token storage (keychain/file) — use `DD_ACCESS_TOKEN` or API keys
 - No browser-based OAuth login flow
-- Networking relies on the host runtime's Fetch API
+- Networking relies on the host runtime's networking capabilities
 
-### Running with Deno
+### Running with Wasmtime
 
-```javascript
-import "./wasm_exec.js";
+```bash
+# Run directly
+wasmtime run --env DD_ACCESS_TOKEN="your-token" target/wasm32-wasip2/release/pup.wasm -- monitors list
 
-const go = new Go();
-const wasm = await Deno.readFile("pup.wasm");
-const result = await WebAssembly.instantiate(wasm, go.importObject);
-go.run(result.instance);
+# Or with API keys
+wasmtime run --env DD_API_KEY="key" --env DD_APP_KEY="key" target/wasm32-wasip2/release/pup.wasm -- --help
 ```
-
-Pre-built WASM archives (including `wasm_exec.js`) are available in [GitHub Releases](https://github.com/datadog-labs/pup/releases).
 
 ## Development
 
 ```bash
 # Run tests
-go test ./...
+cargo test
 
 # Build
-go build -o pup .
+cargo build --release
+
+# Lint
+cargo clippy -- -D warnings
+
+# Format check
+cargo fmt --check
 
 # Build WASM
-GOOS=js GOARCH=wasm go build -o pup.wasm .
+rustup target add wasm32-wasip2
+cargo build --target wasm32-wasip2 --no-default-features --features wasi
 
 # Run without building
-go run main.go monitors list
+cargo run -- monitors list
 ```
 
 ## License

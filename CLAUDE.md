@@ -1,13 +1,12 @@
 # Pup - Datadog API CLI
 
-Go-based CLI wrapper for Datadog APIs. Provides OAuth2 + API key authentication for 29 command groups with 200+ subcommands across 34 API domains.
+Rust-based CLI wrapper for Datadog APIs. Provides OAuth2 + API key authentication for 48 command groups with 283+ subcommands across 37 API domains.
 
 ## Documentation Index
 
 - **[COMMANDS.md](docs/COMMANDS.md)** - Complete command reference with all 33 domains
 - **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Git workflow, PR process, commit format
 - **[TESTING.md](docs/TESTING.md)** - Test strategy, coverage requirements, CI/CD
-- **[DATADOG_CI.md](docs/DATADOG_CI.md)** - Datadog CI products integration (Test Visibility, Code Coverage, SAST)
 - **[OAUTH2.md](docs/OAUTH2.md)** - OAuth2 implementation details (DCR, PKCE, token storage)
 - **[EXAMPLES.md](docs/EXAMPLES.md)** - Usage examples and common workflows
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Design decisions and technical details
@@ -22,7 +21,8 @@ brew install pup
 
 # Or clone and build from source
 git clone https://github.com/datadog-labs/pup.git && cd pup
-go build -o pup .
+cargo build --release
+cp target/release/pup /usr/local/bin/pup
 
 # Authenticate (OAuth2 recommended)
 pup auth login
@@ -39,16 +39,20 @@ pup metrics query --query="avg:system.cpu.user{*}" --from="1h"
 
 ```
 pup/
-├── cmd/                    # 28 command files (metrics, logs, monitors, etc.)
-│   ├── root.go            # Root command + global flags
-│   └── auth.go            # OAuth2 authentication
-├── pkg/
-│   ├── auth/              # OAuth2 + DCR + token storage
-│   ├── client/            # Datadog API client wrapper
-│   ├── config/            # Configuration management
-│   ├── formatter/         # Output formatting (JSON, YAML, table)
-│   └── util/              # Time parsing, validation
-└── docs/                  # Extended documentation
+├── src/
+│   ├── main.rs            # CLI entry point, clap enums, command routing
+│   ├── commands/           # 47 command modules (monitors.rs, logs.rs, etc.)
+│   ├── auth/              # OAuth2 + DCR + PKCE + token storage
+│   ├── client.rs          # Datadog API client wrapper
+│   ├── config.rs          # Configuration management
+│   ├── formatter.rs       # Output formatting (JSON, YAML, table, agent envelope)
+│   ├── useragent.rs       # AI agent detection (FORCE_AGENT_MODE, Claude Code, etc.)
+│   ├── util.rs            # Time parsing, validation
+│   └── version.rs         # Version and build info
+├── tests/                 # E2E parity report
+├── docs/                  # Extended documentation
+├── Cargo.toml             # Rust dependencies
+└── Cargo.lock
 ```
 
 ## Command Structure
@@ -82,28 +86,28 @@ git checkout -b <type>/<description>
 ### 2. Code Changes
 
 **Code Style:**
-- Follow Go conventions and idioms
-- Use `gofmt` and `golangci-lint`
+- Follow Rust conventions and idioms
+- Use `cargo fmt` and `cargo clippy`
 - Keep functions small and focused
 - Write clear, self-documenting code
 
 **Error Handling:**
-- Use standard Go error patterns
-- Wrap errors with context: `fmt.Errorf("context: %w", err)`
+- Use `anyhow` for application errors: `anyhow::bail!("context")`
+- Wrap errors with context: `.map_err(|e| anyhow::anyhow!("context: {e:?}"))`
 - Never expose API keys in errors
 
 **Testing:**
 - Write unit tests for public functions
-- Use table-driven tests
+- Use `#[test]` with `assert_eq!`
 - Mock external dependencies
-- Maintain >80% coverage (CI enforced)
+- Run with `cargo test`
 
 ### 3. Commit
 
 Stage specific files and commit with conventional format:
 
 ```bash
-git add pkg/specific/files.go
+git add src/commands/specific_file.rs
 git commit -m "$(cat <<'EOF'
 <type>(<scope>): <subject>
 
@@ -129,7 +133,7 @@ gh pr create \
 1-2 sentences describing what and why.
 
 ## Changes
-- Change 1 with file reference (file.go:123)
+- Change 1 with file reference (src/commands/foo.rs:123)
 - Change 2 with file reference
 
 ## Testing
@@ -171,33 +175,33 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed workflow and examples.
 ## CI/CD Requirements
 
 **All PRs must pass:**
-- Tests with race detection
-- Code coverage ≥80% (enforced)
-- `golangci-lint` checks
-- Build verification
-
-**Coverage badge auto-updates on main branch.**
+- `cargo test` (60 unit tests)
+- `cargo clippy -- -D warnings`
+- `cargo fmt --check`
+- Cross-compilation for 4 targets
 
 See [TESTING.md](docs/TESTING.md) for details.
 
 ## Core Dependencies
 
-- **Go 1.25+**
-- **datadog-api-client-go** - Official API client
-- **cobra** - CLI framework
-- **viper** - Configuration
-- **keyring** - OS keychain integration
+- **Rust (stable)**
+- **datadog-api-client-rust** v0.27.0 - Official API client
+- **clap** v4 - CLI framework (derive macros)
+- **tokio** - Async runtime
+- **serde** + **serde_json** + **serde_yaml** - Serialization
+- **keyring** v3 - OS keychain integration
+- **reqwest** - HTTP client
 
 ## Implementation Status
 
-- **32 command files** implemented
-- **274+ subcommands** across 37 domains
-- **93.9% test coverage** in pkg/
-- **35/37 commands** fully working
-- **0/37 commands** blocked by API client library issues
-- **2/37 commands** placeholder (API endpoints pending)
+- **47 command modules** implemented
+- **283 leaf subcommands** across 48 command groups
+- **60 unit tests** passing
+- **155/155 API output** matches Go version exactly
+- **390/390 command descriptions** match Go version
+- **31% smaller binary**, 16% faster startup, 25% less memory vs Go
 
-See [COMMANDS.md](docs/COMMANDS.md) for detailed status.
+See [BENCHMARKS.md](docs/BENCHMARKS.md) for performance details.
 
 ## License
 

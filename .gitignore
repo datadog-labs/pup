@@ -1,28 +1,9 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# Rust
+target/
+*.rs.bk
+
+# Binary
 pup
-*.wasm
-wasm_exec.js
-coverage.html
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool
-*.out
-coverage_report.txt
-comment_body.txt
-comment_final.txt
-
-# Go workspace file
-go.work
-
-# Dependency directories
-vendor/
 
 # IDEs
 .idea/
@@ -39,5 +20,12 @@ Thumbs.db
 .env
 .env.local
 .envrc
-config.yaml
-config.yml
+
+# wasm-pack output
+pkg/
+
+# Test artifacts
+tests/mockdd/mockdd
+tests/compare_bin
+tests/gen_commands_bin
+/tmp/
