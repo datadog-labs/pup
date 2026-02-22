@@ -346,4 +346,202 @@ mod tests {
         let msg = format_api_error("query", Some(429), None);
         assert!(msg.contains("rate limited"));
     }
+
+    #[test]
+    fn test_format_api_error_401() {
+        let msg = format_api_error("query", Some(401), None);
+        assert!(msg.contains("authentication failed"));
+    }
+
+    #[test]
+    fn test_format_api_error_400() {
+        let msg = format_api_error("query", Some(400), None);
+        assert!(msg.contains("invalid request"));
+    }
+
+    #[test]
+    fn test_format_api_error_empty_body() {
+        let msg = format_api_error("query", Some(500), Some(""));
+        assert!(!msg.contains("API response:"));
+    }
+
+    #[test]
+    fn test_sort_json_value_flat_object() {
+        let val = serde_json::json!({"z": 1, "a": 2, "m": 3});
+        let sorted = sort_json_value(val);
+        let keys: Vec<_> = sorted.as_object().unwrap().keys().collect();
+        assert_eq!(keys, vec!["a", "m", "z"]);
+    }
+
+    #[test]
+    fn test_sort_json_value_nested_object() {
+        let val = serde_json::json!({"b": {"z": 1, "a": 2}, "a": 1});
+        let sorted = sort_json_value(val);
+        let outer_keys: Vec<_> = sorted.as_object().unwrap().keys().collect();
+        assert_eq!(outer_keys, vec!["a", "b"]);
+        let inner_keys: Vec<_> = sorted["b"].as_object().unwrap().keys().collect();
+        assert_eq!(inner_keys, vec!["a", "z"]);
+    }
+
+    #[test]
+    fn test_sort_json_value_array() {
+        let val = serde_json::json!([{"z": 1, "a": 2}, {"b": 3}]);
+        let sorted = sort_json_value(val);
+        let first_keys: Vec<_> = sorted[0].as_object().unwrap().keys().collect();
+        assert_eq!(first_keys, vec!["a", "z"]);
+    }
+
+    #[test]
+    fn test_sort_json_value_primitives() {
+        assert_eq!(
+            sort_json_value(serde_json::json!(42)),
+            serde_json::json!(42)
+        );
+        assert_eq!(
+            sort_json_value(serde_json::json!("hello")),
+            serde_json::json!("hello")
+        );
+        assert_eq!(
+            sort_json_value(serde_json::json!(true)),
+            serde_json::json!(true)
+        );
+        assert_eq!(
+            sort_json_value(serde_json::json!(null)),
+            serde_json::json!(null)
+        );
+    }
+
+    #[test]
+    fn test_go_html_escape_ampersand() {
+        assert_eq!(go_html_escape("a&b"), r"a\u0026b");
+    }
+
+    #[test]
+    fn test_go_html_escape_angle_brackets() {
+        assert_eq!(go_html_escape("<div>"), r"\u003cdiv\u003e");
+    }
+
+    #[test]
+    fn test_go_html_escape_no_change() {
+        assert_eq!(go_html_escape("hello world"), "hello world");
+    }
+
+    #[test]
+    fn test_go_html_escape_all_chars() {
+        assert_eq!(
+            go_html_escape("<a href=\"&\">"),
+            r#"\u003ca href="\u0026"\u003e"#
+        );
+    }
+
+    #[test]
+    fn test_format_and_print_json() {
+        let data = serde_json::json!({"name": "test"});
+        let result = format_and_print(&data, &OutputFormat::Json, false, None);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_format_and_print_yaml() {
+        let data = serde_json::json!({"name": "test"});
+        let result = format_and_print(&data, &OutputFormat::Yaml, false, None);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_format_and_print_table() {
+        let data = serde_json::json!([{"id": 1, "name": "test"}]);
+        let result = format_and_print(&data, &OutputFormat::Table, false, None);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_format_and_print_agent_mode() {
+        let data = serde_json::json!({"name": "test"});
+        let meta = Metadata {
+            count: Some(1),
+            truncated: false,
+            command: Some("test".into()),
+            next_action: None,
+        };
+        let result = format_and_print(&data, &OutputFormat::Json, true, Some(&meta));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_format_and_print_agent_mode_no_meta() {
+        let data = serde_json::json!({"name": "test"});
+        let result = format_and_print(&data, &OutputFormat::Json, true, None);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_print_json_sorted() {
+        let data = serde_json::json!({"z": 1, "a": 2});
+        assert!(print_json(&data).is_ok());
+    }
+
+    #[test]
+    fn test_print_table_empty() {
+        let data = serde_json::json!([]);
+        assert!(print_table(&data).is_ok());
+    }
+
+    #[test]
+    fn test_print_table_no_rows() {
+        let data = serde_json::json!(42);
+        assert!(print_table(&data).is_ok());
+    }
+
+    #[test]
+    fn test_extract_rows_primitive() {
+        assert!(extract_rows(&serde_json::json!(42)).is_empty());
+    }
+
+    #[test]
+    fn test_format_cell_bool() {
+        assert_eq!(format_cell(Some(&serde_json::json!(true))), "true");
+        assert_eq!(format_cell(Some(&serde_json::json!(false))), "false");
+    }
+
+    #[test]
+    fn test_format_cell_three_item_array() {
+        assert_eq!(
+            format_cell(Some(&serde_json::json!([1, 2, 3]))),
+            "[1, 2, 3]"
+        );
+    }
+
+    #[test]
+    fn test_output_helper() {
+        let cfg = crate::config::Config {
+            api_key: None,
+            app_key: None,
+            access_token: None,
+            site: "datadoghq.com".into(),
+            output_format: OutputFormat::Json,
+            auto_approve: false,
+            agent_mode: false,
+        };
+        let data = serde_json::json!({"hello": "world"});
+        assert!(output(&cfg, &data).is_ok());
+    }
+
+    #[test]
+    fn test_print_table_with_priority_fields() {
+        let data = serde_json::json!([
+            {"id": 1, "name": "Test", "status": "ok", "type": "metric", "extra": "val"}
+        ]);
+        assert!(print_table(&data).is_ok());
+    }
+
+    #[test]
+    fn test_print_table_many_columns() {
+        let mut obj = serde_json::Map::new();
+        for i in 0..15 {
+            obj.insert(format!("col_{i}"), serde_json::json!(i));
+        }
+        let data = serde_json::json!([obj]);
+        assert!(print_table(&data).is_ok());
+    }
 }

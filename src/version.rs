@@ -14,3 +14,52 @@ pub fn build_info() -> String {
 fn rustc_version() -> &'static str {
     option_env!("RUSTC_VERSION").unwrap_or("unknown")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_version_non_empty() {
+        assert!(!VERSION.is_empty());
+    }
+
+    #[test]
+    fn test_version_is_semver() {
+        let parts: Vec<&str> = VERSION.split('.').collect();
+        assert!(parts.len() >= 2, "version should be semver-like: {VERSION}");
+        assert!(parts[0].parse::<u32>().is_ok());
+        assert!(parts[1].parse::<u32>().is_ok());
+    }
+
+    #[test]
+    fn test_build_info_contains_pup() {
+        let info = build_info();
+        assert!(
+            info.contains("Pup"),
+            "build_info should contain 'Pup': {info}"
+        );
+    }
+
+    #[test]
+    fn test_build_info_contains_rust() {
+        let info = build_info();
+        assert!(
+            info.contains("rust"),
+            "build_info should contain 'rust': {info}"
+        );
+    }
+
+    #[test]
+    fn test_build_info_contains_os_arch() {
+        let info = build_info();
+        assert!(info.contains(std::env::consts::OS));
+        assert!(info.contains(std::env::consts::ARCH));
+    }
+
+    #[test]
+    fn test_rustc_version_not_empty() {
+        let v = rustc_version();
+        assert!(!v.is_empty());
+    }
+}

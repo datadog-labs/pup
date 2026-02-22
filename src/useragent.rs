@@ -141,4 +141,100 @@ mod tests {
         assert!(!AGENT_DETECTORS.is_empty());
         assert_eq!(AGENT_DETECTORS[0].name, "claude-code");
     }
+
+    #[test]
+    fn test_detect_agent_info_no_agent() {
+        // Clear all agent env vars
+        for det in AGENT_DETECTORS {
+            for var in det.env_vars {
+                std::env::remove_var(var);
+            }
+        }
+        std::env::remove_var("FORCE_AGENT_MODE");
+
+        let info = detect_agent_info();
+        assert!(!info.detected);
+        assert!(info.name.is_empty());
+    }
+
+    #[test]
+    fn test_detect_agent_info_claude_code() {
+        std::env::set_var("CLAUDE_CODE", "1");
+        let info = detect_agent_info();
+        assert!(info.detected);
+        assert_eq!(info.name, "claude-code");
+        std::env::remove_var("CLAUDE_CODE");
+    }
+
+    #[test]
+    fn test_detect_agent_info_cursor() {
+        // Clear higher-priority detectors
+        std::env::remove_var("CLAUDECODE");
+        std::env::remove_var("CLAUDE_CODE");
+        std::env::set_var("CURSOR_AGENT", "true");
+        let info = detect_agent_info();
+        assert!(info.detected);
+        assert_eq!(info.name, "cursor");
+        std::env::remove_var("CURSOR_AGENT");
+    }
+
+    #[test]
+    fn test_is_agent_mode_force() {
+        std::env::set_var("FORCE_AGENT_MODE", "1");
+        assert!(is_agent_mode());
+        std::env::remove_var("FORCE_AGENT_MODE");
+    }
+
+    #[test]
+    fn test_is_agent_mode_via_detector() {
+        std::env::remove_var("FORCE_AGENT_MODE");
+        std::env::set_var("CLAUDE_CODE", "true");
+        assert!(is_agent_mode());
+        std::env::remove_var("CLAUDE_CODE");
+    }
+
+    #[test]
+    fn test_is_agent_mode_false() {
+        std::env::remove_var("FORCE_AGENT_MODE");
+        for det in AGENT_DETECTORS {
+            for var in det.env_vars {
+                std::env::remove_var(var);
+            }
+        }
+        assert!(!is_agent_mode());
+    }
+
+    #[test]
+    fn test_user_agent_with_detected_agent() {
+        std::env::set_var("CLAUDE_CODE", "1");
+        let ua = get();
+        assert!(
+            ua.contains("ai-agent claude-code"),
+            "ua should contain agent info: {ua}"
+        );
+        std::env::remove_var("CLAUDE_CODE");
+    }
+
+    #[test]
+    fn test_user_agent_without_agent() {
+        for det in AGENT_DETECTORS {
+            for var in det.env_vars {
+                std::env::remove_var(var);
+            }
+        }
+        let ua = get();
+        assert!(
+            !ua.contains("ai-agent"),
+            "ua should not contain agent info: {ua}"
+        );
+        assert!(ua.ends_with(')'));
+    }
+
+    #[test]
+    fn test_all_detectors_have_names() {
+        for det in AGENT_DETECTORS {
+            assert!(!det.name.is_empty());
+            assert!(!det.env_vars.is_empty());
+        }
+    }
 }

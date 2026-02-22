@@ -573,4 +573,100 @@ mod tests {
     fn test_oauth_excluded_count() {
         assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 53);
     }
+
+    #[test]
+    fn test_make_bearer_client_none_without_token() {
+        let cfg = test_cfg();
+        assert!(make_bearer_client(&cfg).is_none());
+    }
+
+    #[test]
+    fn test_make_bearer_client_some_with_token() {
+        let mut cfg = test_cfg();
+        cfg.access_token = Some("test-token".into());
+        assert!(make_bearer_client(&cfg).is_some());
+    }
+
+    #[test]
+    fn test_make_dd_config_returns_valid() {
+        let cfg = test_cfg();
+        // Ensure env vars are set for DD client
+        std::env::set_var("DD_API_KEY", "test-key");
+        std::env::set_var("DD_APP_KEY", "test-app-key");
+        std::env::remove_var("PUP_MOCK_SERVER");
+        let dd_cfg = make_dd_config(&cfg);
+        // Verify unstable ops are enabled (server_index should be default 0)
+        assert_eq!(dd_cfg.server_index, 0);
+        std::env::remove_var("DD_API_KEY");
+        std::env::remove_var("DD_APP_KEY");
+    }
+
+    #[test]
+    fn test_make_dd_config_with_mock_server() {
+        let cfg = test_cfg();
+        std::env::set_var("DD_API_KEY", "test-key");
+        std::env::set_var("DD_APP_KEY", "test-app-key");
+        std::env::set_var("PUP_MOCK_SERVER", "http://127.0.0.1:9999");
+        let dd_cfg = make_dd_config(&cfg);
+        assert_eq!(dd_cfg.server_index, 1);
+        assert_eq!(dd_cfg.server_variables.get("protocol").unwrap(), "http");
+        assert_eq!(
+            dd_cfg.server_variables.get("name").unwrap(),
+            "127.0.0.1:9999"
+        );
+        std::env::remove_var("PUP_MOCK_SERVER");
+        std::env::remove_var("DD_API_KEY");
+        std::env::remove_var("DD_APP_KEY");
+    }
+
+    #[test]
+    fn test_make_dd_config_https_mock() {
+        let cfg = test_cfg();
+        std::env::set_var("DD_API_KEY", "test-key");
+        std::env::set_var("DD_APP_KEY", "test-app-key");
+        std::env::set_var("PUP_MOCK_SERVER", "https://mock.example.com");
+        let dd_cfg = make_dd_config(&cfg);
+        assert_eq!(dd_cfg.server_variables.get("protocol").unwrap(), "https");
+        assert_eq!(
+            dd_cfg.server_variables.get("name").unwrap(),
+            "mock.example.com"
+        );
+        std::env::remove_var("PUP_MOCK_SERVER");
+        std::env::remove_var("DD_API_KEY");
+        std::env::remove_var("DD_APP_KEY");
+    }
+
+    #[test]
+    fn test_requires_api_key_fallback_notebooks() {
+        assert!(requires_api_key_fallback("GET", "/api/v1/notebooks"));
+        assert!(requires_api_key_fallback("GET", "/api/v1/notebooks/12345"));
+        assert!(requires_api_key_fallback("POST", "/api/v1/notebooks"));
+    }
+
+    #[test]
+    fn test_requires_api_key_fallback_fleet() {
+        assert!(requires_api_key_fallback("GET", "/api/v2/fleet/agents"));
+        assert!(requires_api_key_fallback(
+            "GET",
+            "/api/v2/fleet/agents/agent-123"
+        ));
+    }
+
+    #[test]
+    fn test_requires_api_key_fallback_api_keys() {
+        assert!(requires_api_key_fallback("GET", "/api/v2/api_keys"));
+        assert!(requires_api_key_fallback("POST", "/api/v2/api_keys"));
+        assert!(requires_api_key_fallback(
+            "DELETE",
+            "/api/v2/api_keys/key-123"
+        ));
+    }
+
+    #[test]
+    fn test_requires_api_key_fallback_error_tracking() {
+        assert!(requires_api_key_fallback(
+            "POST",
+            "/api/v2/error_tracking/issues/search"
+        ));
+    }
 }

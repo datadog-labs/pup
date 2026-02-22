@@ -298,4 +298,98 @@ mod tests {
     fn test_env_or_no_fallback() {
         assert_eq!(env_or("__PUP_TEST_NONEXISTENT__", None), None);
     }
+
+    #[test]
+    fn test_api_base_url_standard() {
+        let cfg = make_cfg(None, None, Some("t"));
+        // Clear mock server env if set
+        std::env::remove_var("PUP_MOCK_SERVER");
+        assert_eq!(cfg.api_base_url(), "https://api.datadoghq.com");
+    }
+
+    #[test]
+    fn test_api_base_url_eu() {
+        std::env::remove_var("PUP_MOCK_SERVER");
+        let mut cfg = make_cfg(None, None, Some("t"));
+        cfg.site = "datadoghq.eu".into();
+        assert_eq!(cfg.api_base_url(), "https://api.datadoghq.eu");
+    }
+
+    #[test]
+    fn test_api_base_url_oncall() {
+        std::env::remove_var("PUP_MOCK_SERVER");
+        let mut cfg = make_cfg(None, None, Some("t"));
+        cfg.site = "navy.oncall.datadoghq.com".into();
+        assert_eq!(cfg.api_base_url(), "https://navy.oncall.datadoghq.com");
+    }
+
+    #[test]
+    fn test_api_base_url_mock_server() {
+        std::env::set_var("PUP_MOCK_SERVER", "http://127.0.0.1:1234");
+        let cfg = make_cfg(None, None, Some("t"));
+        assert_eq!(cfg.api_base_url(), "http://127.0.0.1:1234");
+        std::env::remove_var("PUP_MOCK_SERVER");
+    }
+
+    #[test]
+    fn test_api_host_mock_server() {
+        std::env::set_var("PUP_MOCK_SERVER", "http://127.0.0.1:5678");
+        let cfg = make_cfg(None, None, Some("t"));
+        assert_eq!(cfg.api_host(), "127.0.0.1:5678");
+        std::env::remove_var("PUP_MOCK_SERVER");
+    }
+
+    #[test]
+    fn test_env_bool_true() {
+        std::env::set_var("__PUP_TEST_BOOL_TRUE__", "true");
+        assert!(env_bool("__PUP_TEST_BOOL_TRUE__"));
+        std::env::remove_var("__PUP_TEST_BOOL_TRUE__");
+    }
+
+    #[test]
+    fn test_env_bool_one() {
+        std::env::set_var("__PUP_TEST_BOOL_ONE__", "1");
+        assert!(env_bool("__PUP_TEST_BOOL_ONE__"));
+        std::env::remove_var("__PUP_TEST_BOOL_ONE__");
+    }
+
+    #[test]
+    fn test_env_bool_false() {
+        std::env::set_var("__PUP_TEST_BOOL_FALSE__", "false");
+        assert!(!env_bool("__PUP_TEST_BOOL_FALSE__"));
+        std::env::remove_var("__PUP_TEST_BOOL_FALSE__");
+    }
+
+    #[test]
+    fn test_env_bool_missing() {
+        assert!(!env_bool("__PUP_TEST_BOOL_MISSING__"));
+    }
+
+    #[test]
+    fn test_config_dir_returns_path() {
+        let dir = config_dir();
+        // On native builds, dirs::config_dir() should return Some
+        assert!(dir.is_some());
+        assert!(dir.unwrap().ends_with("pup"));
+    }
+
+    #[test]
+    fn test_env_or_with_env_value() {
+        std::env::set_var("__PUP_TEST_ENV_OR__", "env-value");
+        assert_eq!(
+            env_or("__PUP_TEST_ENV_OR__", Some("fallback".into())),
+            Some("env-value".into())
+        );
+        std::env::remove_var("__PUP_TEST_ENV_OR__");
+    }
+
+    #[test]
+    fn test_env_or_empty_env_uses_fallback() {
+        std::env::set_var("__PUP_TEST_ENV_EMPTY__", "");
+        assert_eq!(
+            env_or("__PUP_TEST_ENV_EMPTY__", Some("fallback".into())),
+            Some("fallback".into())
+        );
+        std::env::remove_var("__PUP_TEST_ENV_EMPTY__");
+    }
 }

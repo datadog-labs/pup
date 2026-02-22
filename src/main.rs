@@ -9,6 +9,9 @@ mod useragent;
 mod util;
 mod version;
 
+#[cfg(test)]
+mod test_commands;
+
 use clap::{CommandFactory, Parser, Subcommand};
 
 #[derive(Parser)]

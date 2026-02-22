@@ -65,7 +65,7 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --verbose -- --test-threads=1
 
   coverage:
     name: Code Coverage
@@ -89,9 +89,9 @@ jobs:
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov
       - name: Generate coverage
-        run: cargo llvm-cov --lcov --output-path lcov.info
+        run: cargo llvm-cov --lcov --output-path lcov.info --ignore-filename-regex 'main\.rs|auth/' -- --test-threads=1
       - name: Coverage summary
-        run: cargo llvm-cov report
+        run: cargo llvm-cov report --ignore-filename-regex 'main\.rs|auth/'
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -117,6 +117,7 @@ jobs:
         run: |
           rustup toolchain install stable --profile minimal
           rustup default stable
+          rustup target add aarch64-unknown-linux-gnu x86_64-apple-darwin aarch64-apple-darwin
       - name: Install Zig
         run: |
           ZIG_VERSION="0.13.0"

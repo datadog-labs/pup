@@ -143,4 +143,86 @@ mod tests {
         assert!(parse_time_to_unix_millis("invalid").is_err());
         assert!(parse_time_to_unix_millis("").is_err());
     }
+
+    #[test]
+    fn test_parse_time_to_unix_returns_seconds() {
+        let secs = parse_time_to_unix("1700000000000").unwrap();
+        assert_eq!(secs, 1700000000);
+    }
+
+    #[test]
+    fn test_parse_time_to_unix_now() {
+        let secs = parse_time_to_unix("now").unwrap();
+        let expected = Utc::now().timestamp();
+        assert!((secs - expected).abs() < 2);
+    }
+
+    #[test]
+    fn test_relative_days() {
+        let ms = parse_time_to_unix_millis("7d").unwrap();
+        let expected = (Utc::now().timestamp() - 7 * 86400) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_relative_weeks() {
+        let ms = parse_time_to_unix_millis("1w").unwrap();
+        let expected = (Utc::now().timestamp() - 7 * 86400) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_relative_seconds() {
+        let ms = parse_time_to_unix_millis("30s").unwrap();
+        let expected = (Utc::now().timestamp() - 30) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_relative_long_hours() {
+        let ms = parse_time_to_unix_millis("2hours").unwrap();
+        let expected = (Utc::now().timestamp() - 7200) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_relative_long_days() {
+        let ms = parse_time_to_unix_millis("3days").unwrap();
+        let expected = (Utc::now().timestamp() - 3 * 86400) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_relative_long_weeks() {
+        let ms = parse_time_to_unix_millis("1week").unwrap();
+        let expected = (Utc::now().timestamp() - 7 * 86400) * 1000;
+        assert!((ms - expected).abs() < 2000);
+    }
+
+    #[test]
+    fn test_read_json_file_missing() {
+        let result: Result<serde_json::Value> = read_json_file("/tmp/__pup_nonexistent__.json");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("failed to read"));
+    }
+
+    #[test]
+    fn test_read_json_file_invalid_json() {
+        let path = "/tmp/__pup_test_invalid__.json";
+        std::fs::write(path, "not json").unwrap();
+        let result: Result<serde_json::Value> = read_json_file(path);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("failed to parse"));
+        std::fs::remove_file(path).ok();
+    }
+
+    #[test]
+    fn test_read_json_file_valid() {
+        let path = "/tmp/__pup_test_valid__.json";
+        std::fs::write(path, r#"{"name": "test"}"#).unwrap();
+        let result: Result<serde_json::Value> = read_json_file(path);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap()["name"], "test");
+        std::fs::remove_file(path).ok();
+    }
 }
