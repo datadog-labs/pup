@@ -76,7 +76,7 @@ details[open] summary { border-radius: 6px 6px 0 0; }
 <body>
 <h1>Pup CLI Parity Report</h1>
 <p class="subtitle">Go <code>pup</code> vs Rust <code>pup-rs</code> — End-to-end output comparison against mock Datadog API</p>
-<p class="timestamp">Generated: 2026-02-22 02:45:15 UTC</p>
+<p class="timestamp">Generated: 2026-02-22 03:00:30 UTC</p>
 <h2>Summary</h2>
 <div class="summary">
   <div class="stat"><div class="num">206</div><div class="label">Total Tests</div></div>
@@ -4040,15 +4040,15 @@ details[open] summary { border-radius: 6px 6px 0 0; }
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x2432c5f4c000?, {0x2432c5e753c0, 0x0, 0x1029a8650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x1c904fd4c000?, {0x1c904fc773c0, 0x0, 0x102eb0650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x1038c3320, {0x2432c5e75340, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x103dcb320, {0x1c904fc77340, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x1038c1c20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x103dc9c20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x2432c5e32010, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x1c904fc32010, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -4069,21 +4069,21 @@ main.main()
 }</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_get_human.txt	2026-02-21 20:45:10</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_get_human.txt	2026-02-21 20:45:10</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_get_human.txt	2026-02-21 21:00:25</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_get_human.txt	2026-02-21 21:00:25</div>
 <div class="diff-line hdr">@@ -1,17 +1,9 @@</div>
 <div class="diff-line del">-panic: runtime error: index out of range [0] with length 0</div>
 <div class="diff-line del">-</div>
 <div class="diff-line del">-goroutine 1 [running]:</div>
-<div class="diff-line del">-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x2432c5f4c000?, {0x2432c5e753c0, 0x0, 0x1029a8650?})</div>
+<div class="diff-line del">-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x1c904fd4c000?, {0x1c904fc773c0, 0x0, 0x102eb0650?})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec</div>
-<div class="diff-line del">-github.com/spf13/cobra.(*Command).execute(0x1038c3320, {0x2432c5e75340, 0x4, 0x4})</div>
+<div class="diff-line del">-github.com/spf13/cobra.(*Command).execute(0x103dcb320, {0x1c904fc77340, 0x4, 0x4})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814</div>
-<div class="diff-line del">-github.com/spf13/cobra.(*Command).ExecuteC(0x1038c1c20)</div>
+<div class="diff-line del">-github.com/spf13/cobra.(*Command).ExecuteC(0x103dc9c20)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350</div>
 <div class="diff-line del">-github.com/spf13/cobra.(*Command).Execute(...)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071</div>
-<div class="diff-line del">-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x2432c5e32010, 0x7, 0x7})</div>
+<div class="diff-line del">-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x1c904fc32010, 0x7, 0x7})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204</div>
 <div class="diff-line del">-github.com/datadog-labs/pup/cmd.Execute(...)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70</div>
@@ -4115,15 +4115,15 @@ main.main()
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x23e9baac2000?, {0x23e9ba91b400, 0x0, 0x102b5c650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x18a071ad4000?, {0x18a0719ff3c0, 0x0, 0x102ed4650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x103a77320, {0x23e9ba91b380, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x103def320, {0x18a0719ff340, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x103a75c20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x103dedc20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x23e9ba894110, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x18a0719bc010, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -4147,21 +4147,21 @@ main.main()
 }</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_get_agent.txt	2026-02-21 20:45:10</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_get_agent.txt	2026-02-21 20:45:10</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_get_agent.txt	2026-02-21 21:00:25</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_get_agent.txt	2026-02-21 21:00:25</div>
 <div class="diff-line hdr">@@ -1,17 +1,12 @@</div>
 <div class="diff-line del">-panic: runtime error: index out of range [0] with length 0</div>
 <div class="diff-line del">-</div>
 <div class="diff-line del">-goroutine 1 [running]:</div>
-<div class="diff-line del">-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x23e9baac2000?, {0x23e9ba91b400, 0x0, 0x102b5c650?})</div>
+<div class="diff-line del">-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x18a071ad4000?, {0x18a0719ff3c0, 0x0, 0x102ed4650?})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec</div>
-<div class="diff-line del">-github.com/spf13/cobra.(*Command).execute(0x103a77320, {0x23e9ba91b380, 0x4, 0x4})</div>
+<div class="diff-line del">-github.com/spf13/cobra.(*Command).execute(0x103def320, {0x18a0719ff340, 0x4, 0x4})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814</div>
-<div class="diff-line del">-github.com/spf13/cobra.(*Command).ExecuteC(0x103a75c20)</div>
+<div class="diff-line del">-github.com/spf13/cobra.(*Command).ExecuteC(0x103dedc20)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350</div>
 <div class="diff-line del">-github.com/spf13/cobra.(*Command).Execute(...)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071</div>
-<div class="diff-line del">-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x23e9ba894110, 0x7, 0x7})</div>
+<div class="diff-line del">-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x18a0719bc010, 0x7, 0x7})</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204</div>
 <div class="diff-line del">-github.com/datadog-labs/pup/cmd.Execute(...)</div>
 <div class="diff-line del">-	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70</div>
@@ -4201,8 +4201,8 @@ main.main()
         <div class="output-box rust">RUM metric test-id-123 deleted.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_delete_human.txt	2026-02-21 20:45:10</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_delete_human.txt	2026-02-21 20:45:10</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_delete_human.txt	2026-02-21 21:00:25</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_delete_human.txt	2026-02-21 21:00:25</div>
 <div class="diff-line hdr">@@ -1 +1 @@</div>
 <div class="diff-line del">-Error: RUM metrics delete is not yet implemented - API client types require additional mapping</div>
 <div class="diff-line add">+RUM metric test-id-123 deleted.</div></div>
@@ -4228,8 +4228,8 @@ main.main()
         <div class="output-box rust">RUM metric test-id-123 deleted.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_delete_agent.txt	2026-02-21 20:45:10</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_delete_agent.txt	2026-02-21 20:45:10</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_rum_metrics_delete_agent.txt	2026-02-21 21:00:25</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_rum_metrics_delete_agent.txt	2026-02-21 21:00:25</div>
 <div class="diff-line hdr">@@ -1 +1 @@</div>
 <div class="diff-line del">-Error: RUM metrics delete is not yet implemented - API client types require additional mapping</div>
 <div class="diff-line add">+RUM metric test-id-123 deleted.</div></div>
@@ -5207,8 +5207,8 @@ Use "pup data-governance [command] --help" for more information about a command.
 }</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_data-governance_scanner_rules_list_human.txt	2026-02-21 20:45:11</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_data-governance_scanner_rules_list_human.txt	2026-02-21 20:45:11</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_data-governance_scanner_rules_list_human.txt	2026-02-21 21:00:27</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_data-governance_scanner_rules_list_human.txt	2026-02-21 21:00:27</div>
 <div class="diff-line hdr">@@ -1,33 +1,13 @@</div>
 <div class="diff-line del">-Manage data governance, sensitive data scanning, and data deletion.</div>
 <div class="diff-line del">-</div>
@@ -5325,8 +5325,8 @@ Use "pup data-governance [command] --help" for more information about a command.
 }</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_data-governance_scanner_rules_list_agent.txt	2026-02-21 20:45:11</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_data-governance_scanner_rules_list_agent.txt	2026-02-21 20:45:11</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_data-governance_scanner_rules_list_agent.txt	2026-02-21 21:00:27</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_data-governance_scanner_rules_list_agent.txt	2026-02-21 21:00:27</div>
 <div class="diff-line hdr">@@ -1,33 +1,16 @@</div>
 <div class="diff-line del">-Manage data governance, sensitive data scanning, and data deletion.</div>
 <div class="diff-line del">-</div>
@@ -6587,8 +6587,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_top-level_agent.txt	2026-02-21 20:45:12</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_top-level_agent.txt	2026-02-21 20:45:12</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_top-level_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_top-level_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -6867,8 +6867,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_monitors_agent.txt	2026-02-21 20:45:12</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_monitors_agent.txt	2026-02-21 20:45:12</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_monitors_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_monitors_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -7147,8 +7147,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_monitors_list_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_monitors_list_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_monitors_list_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_monitors_list_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -7427,8 +7427,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_dashboards_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_dashboards_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_dashboards_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_dashboards_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -7707,8 +7707,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_logs_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_logs_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_logs_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_logs_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -7987,8 +7987,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_logs_search_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_logs_search_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_logs_search_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_logs_search_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -8267,8 +8267,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_metrics_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_metrics_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_metrics_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_metrics_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -8547,8 +8547,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_slos_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_slos_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_slos_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_slos_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -8827,8 +8827,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_synthetics_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_synthetics_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_synthetics_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_synthetics_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -9107,8 +9107,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_events_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_events_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_events_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_events_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -9387,8 +9387,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_downtime_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_downtime_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_downtime_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_downtime_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -9667,8 +9667,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_tags_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_tags_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_tags_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_tags_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -9947,8 +9947,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_users_agent.txt	2026-02-21 20:45:13</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_users_agent.txt	2026-02-21 20:45:13</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_users_agent.txt	2026-02-21 21:00:28</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_users_agent.txt	2026-02-21 21:00:28</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -10227,8 +10227,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_infrastructure_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_infrastructure_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_infrastructure_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_infrastructure_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -10507,8 +10507,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_audit-logs_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_audit-logs_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_audit-logs_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_audit-logs_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -10787,8 +10787,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_security_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_security_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_security_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_security_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -11067,8 +11067,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_organizations_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_organizations_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_organizations_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_organizations_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -11347,8 +11347,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cloud_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cloud_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cloud_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cloud_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -11627,8 +11627,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cases_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cases_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cases_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cases_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -11907,8 +11907,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_service-catalog_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_service-catalog_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_service-catalog_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_service-catalog_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -12187,8 +12187,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_api-keys_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_api-keys_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_api-keys_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_api-keys_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -12467,8 +12467,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_app-keys_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_app-keys_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_app-keys_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_app-keys_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -12747,8 +12747,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_notebooks_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_notebooks_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_notebooks_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_notebooks_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -13027,8 +13027,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_rum_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_rum_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_rum_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_rum_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -13307,8 +13307,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cicd_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cicd_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cicd_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cicd_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -13587,8 +13587,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_on-call_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_on-call_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_on-call_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_on-call_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -13867,8 +13867,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_fleet_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_fleet_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_fleet_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_fleet_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -14147,8 +14147,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_data-governance_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_data-governance_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_data-governance_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_data-governance_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -14427,8 +14427,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_error-tracking_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_error-tracking_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_error-tracking_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_error-tracking_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -14707,8 +14707,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_hamr_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_hamr_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_hamr_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_hamr_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -14987,8 +14987,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_integrations_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_integrations_agent.txt	2026-02-21 20:45:14</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_integrations_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_integrations_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -15267,8 +15267,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cost_agent.txt	2026-02-21 20:45:14</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cost_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_cost_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_cost_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -15547,8 +15547,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_misc_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_misc_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_misc_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_misc_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -15827,8 +15827,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_investigations_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_investigations_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_investigations_agent.txt	2026-02-21 21:00:29</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_investigations_agent.txt	2026-02-21 21:00:29</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -16107,8 +16107,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_apm_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_apm_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_apm_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_apm_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -16387,8 +16387,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_product-analytics_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_product-analytics_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_product-analytics_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_product-analytics_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -16667,8 +16667,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_static-analysis_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_static-analysis_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_static-analysis_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_static-analysis_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -16947,8 +16947,8 @@ Use "pup data-governance [command] --help" for more information about a command.
           "name": "list",</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_auth_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_auth_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_help:_auth_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_help:_auth_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -42,14 +42,6 @@</div>
 <div class="diff-line ctx">           "name": "schema",</div>
 <div class="diff-line ctx">           "full_path": "agent schema",</div>
@@ -17074,8 +17074,8 @@ Usage: pup-rs monitors get &lt;MONITOR_ID&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_monitors_get_(no_id)_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_monitors_get_(no_id)_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_monitors_get_(no_id)_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_monitors_get_(no_id)_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1 +1,6 @@</div>
 <div class="diff-line del">-Error: accepts 1 arg(s), received 0</div>
 <div class="diff-line add">+error: the following required arguments were not provided:</div>
@@ -17111,8 +17111,8 @@ Usage: pup-rs dashboards get &lt;ID&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_dashboards_get_(no_id)_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_dashboards_get_(no_id)_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_dashboards_get_(no_id)_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_dashboards_get_(no_id)_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1 +1,6 @@</div>
 <div class="diff-line del">-Error: accepts 1 arg(s), received 0</div>
 <div class="diff-line add">+error: the following required arguments were not provided:</div>
@@ -17148,8 +17148,8 @@ Usage: pup-rs logs search --query &lt;QUERY&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_logs_search_(no_query)_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_logs_search_(no_query)_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_logs_search_(no_query)_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_logs_search_(no_query)_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1 +1,6 @@</div>
 <div class="diff-line del">-Error: required flag(s) "query" not set</div>
 <div class="diff-line add">+error: the following required arguments were not provided:</div>
@@ -17340,8 +17340,8 @@ Usage: pup-rs [OPTIONS] &lt;COMMAND&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_invalid_output_format_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_invalid_output_format_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_invalid_output_format_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_invalid_output_format_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1,16 +1,5 @@</div>
 <div class="diff-line del">-{</div>
 <div class="diff-line del">-  "status": "success",</div>
@@ -17390,8 +17390,8 @@ Usage: pup-rs monitors list [OPTIONS]
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_flag_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_flag_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_flag_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_flag_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1 +1,5 @@</div>
 <div class="diff-line del">-Error: unknown flag: --bogus-flag</div>
 <div class="diff-line add">+error: unexpected argument '--bogus-flag' found</div>
@@ -17489,8 +17489,8 @@ Usage: pup-rs monitors [OPTIONS] &lt;COMMAND&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_subcommand_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_subcommand_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_subcommand_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_subcommand_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1,65 +1,5 @@</div>
 <div class="diff-line del">-Manage Datadog monitors for alerting and notifications.</div>
 <div class="diff-line add">+error: unrecognized subcommand 'bogus'</div>
@@ -17587,8 +17587,8 @@ Usage: pup-rs [OPTIONS] &lt;COMMAND&gt;
 For more information, try '--help'.</div>
       </div>
     </div>
-    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_top-level_agent.txt	2026-02-21 20:45:15</div>
-<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_top-level_agent.txt	2026-02-21 20:45:15</div>
+    <h3 style="font-size:13px;margin:12px 0 4px;color:#8b949e">Unified Diff (Go → Rust)</h3><div class="diff-view"><div class="diff-line del">--- /tmp/pup_report_data/go_error:_unknown_top-level_agent.txt	2026-02-21 21:00:30</div>
+<div class="diff-line add">+++ /tmp/pup_report_data/rs_error:_unknown_top-level_agent.txt	2026-02-21 21:00:30</div>
 <div class="diff-line hdr">@@ -1,2 +1,5 @@</div>
 <div class="diff-line del">-Error: unknown command "nonexistent" for "pup"</div>
 <div class="diff-line del">-Run 'pup --help' for usage.</div>

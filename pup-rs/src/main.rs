@@ -28,251 +28,286 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Manage monitors
+    #[command(after_help = "EXAMPLES:\n  # List all monitors\n  pup monitors list\n\n  # Filter monitors by name\n  pup monitors list --name=\"CPU\"\n\n  # Filter monitors by tags\n  pup monitors list --tags=\"env:production,team:backend\"\n\n  # Get detailed information about a specific monitor\n  pup monitors get 12345678\n\n  # Delete a monitor with confirmation prompt\n  pup monitors delete 12345678\n\n  # Delete a monitor without confirmation (automation)\n  pup monitors delete 12345678 --yes")]
     Monitors {
         #[command(subcommand)]
         action: MonitorActions,
     },
     /// Search and analyze logs
+    #[command(after_help = "EXAMPLES:\n  # Search for error logs in the last hour\n  pup logs search --query=\"status:error\" --from=\"1h\"\n\n  # Search Flex logs specifically\n  pup logs search --query=\"status:error\" --from=\"1h\" --storage=\"flex\"\n\n  # Query logs from a specific service\n  pup logs query --query=\"service:web-app\" --from=\"4h\" --to=\"now\"\n\n  # Query online archives\n  pup logs query --query=\"service:web-app\" --from=\"30d\" --storage=\"online-archives\"\n\n  # Aggregate logs by status\n  pup logs aggregate --query=\"*\" --compute=\"count\" --group-by=\"status\"\n\n  # List log archives\n  pup logs archives list\n\n  # List log-based metrics\n  pup logs metrics list\n\n  # List custom destinations\n  pup logs custom-destinations list\n\n  # List restriction queries\n  pup logs restriction-queries list")]
     Logs {
         #[command(subcommand)]
         action: LogActions,
     },
     /// Manage incidents
+    #[command(after_help = "EXAMPLES:\n  # List all incidents\n  pup incidents list\n\n  # List incidents with a limit\n  pup incidents list --limit=10\n\n  # Get incident details\n  pup incidents get <incident-id>\n\n  # List incident attachments\n  pup incidents attachments list <incident-id>\n\n  # View global incident settings\n  pup incidents settings get\n\n  # List postmortem templates\n  pup incidents postmortem-templates list")]
     Incidents {
         #[command(subcommand)]
         action: IncidentActions,
     },
     /// Manage dashboards
+    #[command(after_help = "EXAMPLES:\n  # List all dashboards\n  pup dashboards list\n\n  # Get detailed dashboard configuration\n  pup dashboards get abc-def-123\n\n  # Get dashboard and save to file\n  pup dashboards get abc-def-123 > dashboard.json\n\n  # Delete a dashboard with confirmation\n  pup dashboards delete abc-def-123\n\n  # Delete a dashboard without confirmation (automation)\n  pup dashboards delete abc-def-123 --yes")]
     Dashboards {
         #[command(subcommand)]
         action: DashboardActions,
     },
     /// Query and manage metrics
+    #[command(after_help = "EXAMPLES:\n  # Query metrics\n  pup metrics query --query=\"avg:system.cpu.user{*}\" --from=\"1h\" --to=\"now\"\n  pup metrics query --query=\"sum:app.requests{env:prod} by {service}\" --from=\"4h\"\n\n  # List metrics\n  pup metrics list\n  pup metrics list --filter=\"system.*\"\n\n  # Get metric metadata\n  pup metrics metadata get system.cpu.user\n\n  # Submit custom metrics\n  pup metrics submit --name=\"custom.metric\" --value=123 --tags=\"env:prod,team:backend\"\n\n  # List metric tags\n  pup metrics tags list system.cpu.user")]
     Metrics {
         #[command(subcommand)]
         action: MetricActions,
     },
     /// Manage Service Level Objectives
+    #[command(after_help = "EXAMPLES:\n  # List all SLOs\n  pup slos list\n\n  # Get detailed SLO information\n  pup slos get abc-123-def\n\n  # Get SLO history and status\n  pup slos get abc-123-def | jq '.data'\n\n  # Delete an SLO with confirmation\n  pup slos delete abc-123-def\n\n  # Delete an SLO without confirmation (automation)\n  pup slos delete abc-123-def --yes")]
     Slos {
         #[command(subcommand)]
         action: SloActions,
     },
     /// Manage synthetic monitoring
+    #[command(after_help = "EXAMPLES:\n  # List all synthetic tests\n  pup synthetics tests list\n\n  # Search tests by creator or team\n  pup synthetics tests search --text='creator:\"Jane Doe\"'\n  pup synthetics tests search --text=\"team:my-team\"\n\n  # Get test details\n  pup synthetics tests get test-id\n\n  # List available locations\n  pup synthetics locations list")]
     Synthetics {
         #[command(subcommand)]
         action: SyntheticsActions,
     },
     /// Manage Datadog events
+    #[command(after_help = "EXAMPLES:\n  # List recent events\n  pup events list\n\n  # Search for deployment events\n  pup events search --query=\"tags:deployment\"\n\n  # Get specific event\n  pup events get 1234567890")]
     Events {
         #[command(subcommand)]
         action: EventActions,
     },
     /// Manage monitor downtimes
+    #[command(after_help = "EXAMPLES:\n  # List all active downtimes\n  pup downtime list\n\n  # Get downtime details\n  pup downtime get abc-123-def\n\n  # Cancel a downtime\n  pup downtime cancel abc-123-def")]
     Downtime {
         #[command(subcommand)]
         action: DowntimeActions,
     },
     /// Manage host tags
+    #[command(after_help = "EXAMPLES:\n  # List all host tags\n  pup tags list\n\n  # Get tags for a host\n  pup tags get my-host\n\n  # Add tags to a host\n  pup tags add my-host env:prod team:backend")]
     Tags {
         #[command(subcommand)]
         action: TagActions,
     },
     /// Manage users and access
+    #[command(after_help = "EXAMPLES:\n  # List all users\n  pup users list\n\n  # Get user details\n  pup users get user-id\n\n  # List roles\n  pup users roles list")]
     Users {
         #[command(subcommand)]
         action: UserActions,
     },
     /// Manage infrastructure monitoring
+    #[command(after_help = "EXAMPLES:\n  # List all hosts\n  pup infrastructure hosts list\n\n  # Search for hosts by tag\n  pup infrastructure hosts list --filter=\"env:production\"\n\n  # Get host details\n  pup infrastructure hosts get my-host")]
     Infrastructure {
         #[command(subcommand)]
         action: InfraActions,
     },
     /// Query audit logs
-    #[command(name = "audit-logs")]
+    #[command(name = "audit-logs", after_help = "EXAMPLES:\n  # List recent audit logs\n  pup audit-logs list\n\n  # Search for specific user actions\n  pup audit-logs search --query=\"@usr.name:admin@example.com\"\n\n  # Search for failed actions\n  pup audit-logs search --query=\"@evt.outcome:error\"")]
     AuditLogs {
         #[command(subcommand)]
         action: AuditLogActions,
     },
     /// Manage security monitoring
+    #[command(after_help = "EXAMPLES:\n  # List security monitoring rules\n  pup security rules list\n\n  # Get rule details\n  pup security rules get rule-id\n\n  # List security signals\n  pup security signals list")]
     Security {
         #[command(subcommand)]
         action: SecurityActions,
     },
     /// Manage organization settings
+    #[command(after_help = "EXAMPLES:\n  # Get organization details\n  pup organizations get\n\n  # List child organizations\n  pup organizations list")]
     Organizations {
         #[command(subcommand)]
         action: OrgActions,
     },
     /// Manage cloud integrations
+    #[command(after_help = "EXAMPLES:\n  # List AWS integrations\n  pup cloud aws list\n\n  # List GCP integrations\n  pup cloud gcp list\n\n  # List Azure integrations\n  pup cloud azure list")]
     Cloud {
         #[command(subcommand)]
         action: CloudActions,
     },
     /// Manage case management cases and projects
+    #[command(after_help = "EXAMPLES:\n  # Search cases\n  pup cases search --query=\"bug\"\n\n  # Get case details\n  pup cases get case-123\n\n  # Create a new case\n  pup cases create --title=\"Bug report\" --type-id=\"type-uuid\" --priority=P2\n\n  # List projects\n  pup cases projects list")]
     Cases {
         #[command(subcommand)]
         action: CaseActions,
     },
     /// Manage service catalog
-    #[command(name = "service-catalog")]
+    #[command(name = "service-catalog", after_help = "EXAMPLES:\n  # List all services\n  pup service-catalog list\n\n  # Get service details\n  pup service-catalog get service-name")]
     ServiceCatalog {
         #[command(subcommand)]
         action: ServiceCatalogActions,
     },
     /// Manage API keys
-    #[command(name = "api-keys")]
+    #[command(name = "api-keys", after_help = "EXAMPLES:\n  # List all API keys\n  pup api-keys list\n\n  # Get API key details\n  pup api-keys get key-id\n\n  # Create new API key\n  pup api-keys create --name=\"Production Key\"\n\n  # Delete an API key (with confirmation prompt)\n  pup api-keys delete key-id")]
     ApiKeys {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
     /// Manage app key registrations
-    #[command(name = "app-keys")]
+    #[command(name = "app-keys", after_help = "EXAMPLES:\n  # List all registered app keys\n  pup app-keys list\n\n  # Get app key registration details\n  pup app-keys get <app-key-id>\n\n  # Register an application key\n  pup app-keys register <app-key-id>\n\n  # Unregister an application key\n  pup app-keys unregister <app-key-id>")]
     AppKeys {
         #[command(subcommand)]
         action: AppKeyActions,
     },
     /// Query usage and billing information
+    #[command(after_help = "EXAMPLES:\n  # Get usage summary for the last 30 days\n  pup usage summary\n\n  # Get usage summary for a specific period\n  pup usage summary --start=\"60d\" --end=\"now\"\n\n  # Get hourly usage for the last day\n  pup usage hourly\n\n  # Get hourly usage for a specific period\n  pup usage hourly --start=\"2d\" --end=\"1d\"")]
     Usage {
         #[command(subcommand)]
         action: UsageActions,
     },
     /// Manage notebooks
+    #[command(after_help = "EXAMPLES:\n  # List all notebooks\n  pup notebooks list\n\n  # Get notebook details\n  pup notebooks get notebook-id\n\n  # Create a notebook from file\n  pup notebooks create --body @notebook.json\n\n  # Create from stdin\n  cat notebook.json | pup notebooks create --body -\n\n  # Update a notebook\n  pup notebooks update 12345 --body @updated.json\n\n  # Delete a notebook\n  pup notebooks delete 12345")]
     Notebooks {
         #[command(subcommand)]
         action: NotebookActions,
     },
     /// Manage Real User Monitoring (RUM)
+    #[command(after_help = "EXAMPLES:\n  # List all RUM applications\n  pup rum apps list\n\n  # Get RUM application details\n  pup rum apps get --app-id=\"abc-123-def\"\n\n  # Create a new browser RUM application\n  pup rum apps create --name=\"my-web-app\" --type=\"browser\"\n\n  # List RUM custom metrics\n  pup rum metrics list\n\n  # List retention filters\n  pup rum retention-filters list\n\n  # Query session replay data\n  pup rum sessions list --from=\"1h\"")]
     Rum {
         #[command(subcommand)]
         action: RumActions,
     },
     /// Manage CI/CD visibility
+    #[command(after_help = "EXAMPLES:\n  # List recent pipelines\n  pup cicd pipelines list\n\n  # Get pipeline details\n  pup cicd pipelines get --pipeline-id=\"abc-123\"\n\n  # Search for failed pipelines\n  pup cicd events search --query=\"@ci.status:error\" --from=\"1h\"\n\n  # Aggregate by status\n  pup cicd events aggregate --query=\"*\" --compute=\"count\" --group-by=\"@ci.status\"\n\n  # List recent test events\n  pup cicd tests list --from=\"1h\"\n\n  # Search flaky tests\n  pup cicd flaky-tests search --query=\"flaky_test_state:active\"")]
     Cicd {
         #[command(subcommand)]
         action: CicdActions,
     },
     /// Manage teams and on-call operations
-    #[command(name = "on-call")]
+    #[command(name = "on-call", after_help = "EXAMPLES:\n  # List all teams\n  pup on-call teams list\n\n  # Create a new team\n  pup on-call teams create --name=\"SRE Team\" --handle=\"sre-team\"\n\n  # Add a member to a team\n  pup on-call teams memberships add <team-id> --user-id=<uuid> --role=member\n\n  # List team members\n  pup on-call teams memberships list <team-id>")]
     OnCall {
         #[command(subcommand)]
         action: OnCallActions,
     },
     /// Manage Fleet Automation
+    #[command(after_help = "EXAMPLES:\n  # List fleet agents\n  pup fleet agents list\n\n  # Get agent details\n  pup fleet agents get <agent-key>\n\n  # List deployments\n  pup fleet deployments list\n\n  # Deploy a configuration change\n  pup fleet deployments configure --file=config.json\n\n  # List schedules\n  pup fleet schedules list")]
     Fleet {
         #[command(subcommand)]
         action: FleetActions,
     },
     /// Manage data governance
-    #[command(name = "data-governance")]
+    #[command(name = "data-governance", after_help = "EXAMPLES:\n  # List scanning rules\n  pup data-governance scanner rules list\n\n  # Get rule details\n  pup data-governance scanner rules get rule-id")]
     DataGovernance {
         #[command(subcommand)]
         action: DataGovActions,
     },
     /// Manage error tracking
-    #[command(name = "error-tracking")]
+    #[command(name = "error-tracking", after_help = "EXAMPLES:\n  # Search error issues\n  pup error-tracking issues search\n\n  # Get issue details\n  pup error-tracking issues get issue-id")]
     ErrorTracking {
         #[command(subcommand)]
         action: ErrorTrackingActions,
     },
     /// Query code coverage data
-    #[command(name = "code-coverage")]
+    #[command(name = "code-coverage", after_help = "EXAMPLES:\n  # Get branch coverage summary\n  pup code-coverage branch-summary --repo=\"my-org/my-repo\" --branch=\"main\"\n\n  # Get commit coverage summary\n  pup code-coverage commit-summary --repo=\"my-org/my-repo\" --commit=\"abc123def\"")]
     CodeCoverage {
         #[command(subcommand)]
         action: CodeCoverageActions,
     },
     /// Manage High Availability Multi-Region (HAMR)
+    #[command(after_help = "EXAMPLES:\n  # Get HAMR connection status\n  pup hamr connections get\n\n  # Create a HAMR connection\n  pup hamr connections create --file=connection.json")]
     Hamr {
         #[command(subcommand)]
         action: HamrActions,
     },
     /// Manage status pages
-    #[command(name = "status-pages")]
+    #[command(name = "status-pages", after_help = "EXAMPLES:\n  # List all status pages\n  pup status-pages pages list\n\n  # Get status page details\n  pup status-pages pages get <page-id>\n\n  # Create a status page\n  pup status-pages pages create --file=page.json\n\n  # List status page components\n  pup status-pages components list <page-id>\n\n  # List degradations\n  pup status-pages degradations list <page-id>\n\n  # View third-party outage signals\n  pup status-pages third-party list")]
     StatusPages {
         #[command(subcommand)]
         action: StatusPageActions,
     },
     /// Manage third-party integrations
+    #[command(after_help = "EXAMPLES:\n  # List Slack integrations\n  pup integrations slack list\n\n  # List PagerDuty integrations\n  pup integrations pagerduty list\n\n  # List webhooks\n  pup integrations webhooks list")]
     Integrations {
         #[command(subcommand)]
         action: IntegrationActions,
     },
     /// Manage cost and billing data
+    #[command(after_help = "EXAMPLES:\n  # Get projected costs for current month\n  pup cost projected\n\n  # Get cost attribution by team tag\n  pup cost attribution --start-month=2024-01 --fields=team\n\n  # Get actual costs for a specific month\n  pup cost by-org --start-month=2024-01")]
     Cost {
         #[command(subcommand)]
         action: CostActions,
     },
     /// Miscellaneous API operations
+    #[command(after_help = "EXAMPLES:\n  # Get Datadog IP ranges\n  pup misc ip-ranges\n\n  # Check API status\n  pup misc status")]
     Misc {
         #[command(subcommand)]
         action: MiscActions,
     },
     /// Manage APM services and entities
+    #[command(after_help = "EXAMPLES:\n  # List services with stats\n  pup apm services stats --start $(date -d '1 hour ago' +%s) --end $(date +%s)\n\n  # Query entities with filtering\n  pup apm entities list --start $(date -d '1 hour ago' +%s) --end $(date +%s) --env prod\n\n  # View service dependencies\n  pup apm dependencies list --env prod --start $(date -d '1 hour ago' +%s) --end $(date +%s)")]
     Apm {
         #[command(subcommand)]
         action: ApmActions,
     },
     /// Manage Bits AI investigations
+    #[command(after_help = "EXAMPLES:\n  # Trigger investigation from a monitor alert\n  pup investigations trigger --type=monitor_alert --monitor-id=123456 --event-id=\"evt-abc\" --event-ts=1706918956000\n\n  # Get investigation details\n  pup investigations get <investigation-id>\n\n  # List investigations\n  pup investigations list --page-limit=20")]
     Investigations {
         #[command(subcommand)]
         action: InvestigationActions,
     },
     /// Manage network monitoring
+    #[command(after_help = "EXAMPLES:\n  # List network devices/monitors\n  pup network list\n\n  # List network flows\n  pup network flows list\n\n  # List network devices\n  pup network devices list")]
     Network {
         #[command(subcommand)]
         action: NetworkActions,
     },
     /// Manage observability pipelines
-    #[command(name = "obs-pipelines")]
+    #[command(name = "obs-pipelines", after_help = "EXAMPLES:\n  # List observability pipelines\n  pup obs-pipelines list\n\n  # Get pipeline details\n  pup obs-pipelines get <pipeline-id>")]
     ObsPipelines {
         #[command(subcommand)]
         action: ObsPipelinesActions,
     },
     /// Manage service scorecards
+    #[command(after_help = "EXAMPLES:\n  # List scorecards\n  pup scorecards list\n\n  # Get scorecard details\n  pup scorecards get <scorecard-id>")]
     Scorecards {
         #[command(subcommand)]
         action: ScorecardsActions,
     },
     /// Query APM traces
+    #[command(after_help = "EXAMPLES:\n  # List recent traces\n  pup traces list")]
     Traces {
         #[command(subcommand)]
         action: TracesActions,
     },
     /// Agent tooling: schema, guide, and diagnostics for AI coding assistants
-    #[command(name = "agent")]
+    #[command(name = "agent", after_help = "EXAMPLES:\n  # Output command schema as JSON (for AI coding assistants)\n  pup agent schema\n\n  # Output the comprehensive steering guide\n  pup agent guide")]
     Agent {
         #[command(subcommand)]
         action: AgentActions,
     },
     /// Create shortcuts for pup commands
+    #[command(after_help = "EXAMPLES:\n  # List your aliases\n  pup alias list\n\n  # Create a shortcut for a frequently used command\n  pup alias set prod-monitors \"monitors list --tags=env:production\"\n\n  # Delete an alias\n  pup alias delete prod-monitors\n\n  # Import aliases from a YAML file\n  pup alias import --file=aliases.yaml")]
     Alias {
         #[command(subcommand)]
         action: AliasActions,
     },
     /// Send product analytics events
-    #[command(name = "product-analytics")]
+    #[command(name = "product-analytics", after_help = "EXAMPLES:\n  # Send a basic event\n  pup product-analytics events send --app-id=my-app --event=button_clicked\n\n  # Send event with properties and user context\n  pup product-analytics events send --app-id=my-app --event=purchase_completed --properties='{\"amount\":99.99,\"currency\":\"USD\"}' --user-id=user-123")]
     ProductAnalytics {
         #[command(subcommand)]
         action: ProductAnalyticsActions,
     },
     /// Manage static analysis
-    #[command(name = "static-analysis")]
+    #[command(name = "static-analysis", after_help = "EXAMPLES:\n  # List custom rulesets\n  pup static-analysis custom-rulesets list\n\n  # Get ruleset details\n  pup static-analysis custom-rulesets get abc-123")]
     StaticAnalysis {
         #[command(subcommand)]
         action: StaticAnalysisActions,
     },
     /// OAuth2 authentication commands
+    #[command(after_help = "EXAMPLES:\n  # Login with OAuth2\n  pup auth login\n\n  # Check authentication status\n  pup auth status\n\n  # Refresh access token\n  pup auth refresh\n\n  # Logout and clear credentials\n  pup auth logout\n\n  # Login to different Datadog site\n  DD_SITE=datadoghq.eu pup auth login")]
     Auth {
         #[command(subcommand)]
         action: AuthActions,
     },
     /// Generate shell completions
+    #[command(after_help = "EXAMPLES:\n  # Generate bash completions\n  pup completions bash > /etc/bash_completion.d/pup\n\n  # Generate zsh completions\n  pup completions zsh > ~/.zfunc/_pup\n\n  # Generate fish completions\n  pup completions fish > ~/.config/fish/completions/pup.fish")]
     Completions {
         /// Shell to generate completions for
         shell: clap_complete::Shell,
     },
     /// Print version information
+    #[command(after_help = "EXAMPLES:\n  # Print version\n  pup version")]
     Version,
     /// Test connection and credentials
+    #[command(after_help = "EXAMPLES:\n  # Test connection and credentials\n  pup test")]
     Test,
 }
 
