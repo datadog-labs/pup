@@ -21,6 +21,9 @@ Thumbs.db
 .env.local
 .envrc
 
+# Zig toolchain (extracted by cargo-zigbuild)
+zig-*/
+
 # wasm-pack output
 pkg/
 
