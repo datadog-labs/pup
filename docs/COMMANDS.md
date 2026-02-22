@@ -19,52 +19,52 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 
 | Domain | Subcommands | File | Status |
 |--------|-------------|------|--------|
-| auth | login, logout, status, refresh | cmd/auth.go | ✅ |
-| metrics | query, list, get, search | cmd/metrics.go | ✅ |
-| logs | search, list, aggregate | cmd/logs.go | ✅ |
-| traces | - | cmd/traces_simple.go | ❌ |
-| monitors | list, get, delete, search | cmd/monitors.go | ✅ |
-| dashboards | list, get, delete, url | cmd/dashboards.go | ✅ |
-| slos | list, get, delete, status | cmd/slos.go | ✅ |
-| incidents | list, get, attachments, settings, handles, postmortem-templates | cmd/incidents.go | ✅ |
-| rum | apps, metrics, retention-filters, sessions, playlists, heatmaps | cmd/rum.go | ✅ |
-| cicd | pipelines, events, tests, dora, flaky-tests | cmd/cicd.go | ✅ |
-| static-analysis | custom-rulesets | cmd/vulnerabilities.go | ✅ |
-| downtime | list, get, cancel | cmd/downtime.go | ✅ |
-| tags | list, get, add, update, delete | cmd/tags.go | ✅ |
-| events | list, search, get | cmd/events.go | ✅ |
-| on-call | teams (CRUD, memberships) | cmd/on_call.go | ✅ |
-| audit-logs | list, search | cmd/audit_logs.go | ✅ |
-| api-keys | list, get, create, delete | cmd/api_keys.go | ✅ |
-| app-keys | list, get, register, unregister | cmd/app_keys.go | ✅ |
-| infrastructure | hosts (list, get) | cmd/infrastructure.go | ✅ |
-| synthetics | tests, locations, suites | cmd/synthetics.go | ✅ |
-| users | list, get, roles | cmd/users.go | ✅ |
-| notebooks | list, get, delete | cmd/notebooks.go | ✅ |
-| security | rules, signals, findings, content-packs, risk-scores | cmd/security.go | ✅ |
-| organizations | get, list | cmd/organizations.go | ✅ |
-| service-catalog | list, get | cmd/service_catalog.go | ✅ |
-| error-tracking | issues (search, get) | cmd/error_tracking.go | ✅ |
-| scorecards | list, get | cmd/scorecards.go | ✅ |
-| usage | summary, hourly | cmd/usage.go | ✅ |
-| apm | services (list, stats, operations, resources), entities (list), dependencies (list), flow-map | cmd/apm.go | ✅ |
-| cost | projected, attribution, by-org | cmd/cost.go | ✅ |
-| product-analytics | events send | cmd/product_analytics.go | ✅ |
-| data-governance | scanner-rules (list) | cmd/data_governance.go | ✅ |
-| obs-pipelines | list, get | cmd/obs_pipelines.go | ⏳ |
-| network | flows, devices | cmd/network.go | ⏳ |
-| cloud | aws, gcp, azure, oci | cmd/cloud.go | ✅ |
-| integrations | slack, pagerduty, webhooks, jira, servicenow | cmd/integrations.go | ✅ |
-| misc | ip-ranges, status | cmd/miscellaneous.go | ✅ |
-| cases | create, get, search, assign, archive, projects, jira, servicenow, move | cmd/cases.go | ✅ |
-| status-pages | pages, components, degradations | cmd/status_pages.go | ✅ |
-| code-coverage | branch-summary, commit-summary | cmd/code_coverage.go | ✅ |
-| hamr | connections (get, create) | cmd/hamr.go | ✅ |
-| fleet | agents (list, get, versions), deployments (list, get, configure, upgrade, cancel), schedules (list, get, create, update, delete, trigger) | cmd/fleet.go | ✅ |
+| auth | login, logout, status, refresh | src/commands/auth.rs | ✅ |
+| metrics | query, list, get, search | src/commands/metrics.rs | ✅ |
+| logs | search, list, aggregate | src/commands/logs.rs | ✅ |
+| traces | - | - | ❌ |
+| monitors | list, get, delete, search | src/commands/monitors.rs | ✅ |
+| dashboards | list, get, delete, url | src/commands/dashboards.rs | ✅ |
+| slos | list, get, delete, status | src/commands/slos.rs | ✅ |
+| incidents | list, get, attachments, settings, handles, postmortem-templates | src/commands/incidents.rs | ✅ |
+| rum | apps, metrics, retention-filters, sessions, playlists, heatmaps | src/commands/rum.rs | ✅ |
+| cicd | pipelines, events, tests, dora, flaky-tests | src/commands/cicd.rs | ✅ |
+| static-analysis | custom-rulesets | src/commands/static_analysis.rs | ✅ |
+| downtime | list, get, cancel | src/commands/downtime.rs | ✅ |
+| tags | list, get, add, update, delete | src/commands/tags.rs | ✅ |
+| events | list, search, get | src/commands/events.rs | ✅ |
+| on-call | teams (CRUD, memberships) | src/commands/on_call.rs | ✅ |
+| audit-logs | list, search | src/commands/audit_logs.rs | ✅ |
+| api-keys | list, get, create, delete | src/commands/api_keys.rs | ✅ |
+| app-keys | list, get, register, unregister | src/commands/app_keys.rs | ✅ |
+| infrastructure | hosts (list, get) | src/commands/infrastructure.rs | ✅ |
+| synthetics | tests, locations, suites | src/commands/synthetics.rs | ✅ |
+| users | list, get, roles | src/commands/users.rs | ✅ |
+| notebooks | list, get, delete | src/commands/notebooks.rs | ✅ |
+| security | rules, signals, findings, content-packs, risk-scores | src/commands/security.rs | ✅ |
+| organizations | get, list | src/commands/organizations.rs | ✅ |
+| service-catalog | list, get | src/commands/service_catalog.rs | ✅ |
+| error-tracking | issues (search, get) | src/commands/error_tracking.rs | ✅ |
+| scorecards | list, get | src/commands/scorecards.rs | ✅ |
+| usage | summary, hourly | src/commands/usage.rs | ✅ |
+| apm | services (list, stats, operations, resources), entities (list), dependencies (list), flow-map | src/commands/apm.rs | ✅ |
+| cost | projected, attribution, by-org | src/commands/cost.rs | ✅ |
+| product-analytics | events send | src/commands/product_analytics.rs | ✅ |
+| data-governance | scanner-rules (list) | src/commands/data_governance.rs | ✅ |
+| obs-pipelines | list, get | src/commands/obs_pipelines.rs | ⏳ |
+| network | flows, devices | src/commands/network.rs | ⏳ |
+| cloud | aws, gcp, azure, oci | src/commands/cloud.rs | ✅ |
+| integrations | slack, pagerduty, webhooks, jira, servicenow | src/commands/integrations.rs | ✅ |
+| misc | ip-ranges, status | src/commands/misc.rs | ✅ |
+| cases | create, get, search, assign, archive, projects, jira, servicenow, move | src/commands/cases.rs | ✅ |
+| status-pages | pages, components, degradations | src/commands/status_pages.rs | ✅ |
+| code-coverage | branch-summary, commit-summary | src/commands/code_coverage.rs | ✅ |
+| hamr | connections (get, create) | src/commands/hamr.rs | ✅ |
+| fleet | agents (list, get, versions), deployments (list, get, configure, upgrade, cancel), schedules (list, get, create, update, delete, trigger) | src/commands/fleet.rs | ✅ |
 
 **Summary:** 38 working, 0 API-blocked, 2 placeholders
 
-**Note:** RUM command (cmd/rum.go) is fully operational. Apps and sessions work completely. Metrics and retention-filters support list/get operations (create/update/delete operations pending due to complex API type structures).
+**Note:** RUM command is fully operational. Apps and sessions work completely. Metrics and retention-filters support list/get operations (create/update/delete operations pending due to complex API type structures).
 
 ## Common Patterns
 
@@ -181,9 +181,9 @@ Available on all commands:
 --yes                Skip confirmation prompts
 ```
 
-## Recent Enhancements (v2.55.0 API Client Update)
+## Recent Enhancements
 
-The upgrade to datadog-api-client-go v2.55.0 adds 3 new command groups and ~60 new subcommands across 9 existing domains.
+Recent API client updates added 3 new command groups and ~60 new subcommands across 9 existing domains.
 
 ### New Command Groups
 - ✅ **status-pages** - Status page management (pages, components, degradations CRUD)

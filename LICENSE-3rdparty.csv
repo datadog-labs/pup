@@ -1,34 +1,25 @@
 Component,Origin,License,Copyright
-github.com/99designs/go-keychain,https://github.com/99designs/go-keychain,MIT,Copyright (c) 2019 99designs
-github.com/99designs/keyring,https://github.com/99designs/keyring,MIT,Copyright (c) 2019 99designs
-github.com/cespare/xxhash/v2,https://github.com/cespare/xxhash,MIT,Copyright (c) 2016 Caleb Spare
-github.com/clipperhouse/displaywidth,https://github.com/clipperhouse/displaywidth,MIT,Copyright (c) 2025 Matt Sherman
-github.com/clipperhouse/stringish,https://github.com/clipperhouse/stringish,MIT,Copyright (c) 2025 Matt Sherman
-github.com/clipperhouse/uax29/v2,https://github.com/clipperhouse/uax29,MIT,Copyright (c) 2020 Matt Sherman
-github.com/danieljoos/wincred,https://github.com/danieljoos/wincred,MIT,Copyright (c) 2018 Daniel Joos
-github.com/DataDog/datadog-api-client-go/v2,https://github.com/DataDog/datadog-api-client-go,Apache-2.0,Copyright 2019-Present Datadog Inc.
-github.com/DataDog/zstd,https://github.com/DataDog/zstd,BSD-3-Clause,Copyright (c) 2016-Present Datadog Inc.
-github.com/davecgh/go-spew,https://github.com/davecgh/go-spew,ISC,Copyright (c) 2012-2016 Dave Collins
-github.com/dvsekhvalnov/jose2go,https://github.com/dvsekhvalnov/jose2go,MIT,Copyright (c) 2015 Dmitry Vsekhvalnov
-github.com/fatih/color,https://github.com/fatih/color,MIT,Copyright (c) 2013 Fatih Arslan
-github.com/goccy/go-json,https://github.com/goccy/go-json,MIT,Copyright (c) 2020 Masaaki Goshima
-github.com/godbus/dbus,https://github.com/godbus/dbus,BSD-2-Clause,Copyright (c) 2013-Present godbus contributors
-github.com/google/uuid,https://github.com/google/uuid,BSD-3-Clause,Copyright (c) 2009-2018 The Go Authors
-github.com/gsterjov/go-libsecret,https://github.com/gsterjov/go-libsecret,MIT,Copyright (c) 2016 Georgi Sterjov
-github.com/inconshreveable/mousetrap,https://github.com/inconshreveable/mousetrap,Apache-2.0,Copyright 2012 Alan Shreve
-github.com/mattn/go-colorable,https://github.com/mattn/go-colorable,MIT,Copyright (c) 2016 Yasuhiro Matsumoto
-github.com/mattn/go-isatty,https://github.com/mattn/go-isatty,MIT,Copyright (c) Yasuhiro MATSUMOTO
-github.com/mattn/go-runewidth,https://github.com/mattn/go-runewidth,MIT,Copyright (c) 2016 Yasuhiro Matsumoto
-github.com/mtibben/percent,https://github.com/mtibben/percent,MIT,Copyright (c) 2015 Michael Tibben
-github.com/olekukonko/cat,https://github.com/olekukonko/cat,MIT,Copyright (c) 2025 Oleku Konko
-github.com/olekukonko/errors,https://github.com/olekukonko/errors,MIT,Copyright (c) 2025 Oleku Konko
-github.com/olekukonko/ll,https://github.com/olekukonko/ll,MIT,Copyright (c) 2025 Oleku Konko
-github.com/olekukonko/tablewriter,https://github.com/olekukonko/tablewriter,MIT,Copyright (c) 2014 Oleku Konko
-github.com/pmezard/go-difflib,https://github.com/pmezard/go-difflib,BSD-3-Clause,Copyright (c) 2013 Patrick Mezard
-github.com/spf13/cobra,https://github.com/spf13/cobra,Apache-2.0,Copyright 2013-Present Steve Francia
-github.com/spf13/pflag,https://github.com/spf13/pflag,BSD-3-Clause,Copyright (c) 2012 Alex Ogier / Copyright (c) 2012 The Go Authors
-github.com/stretchr/testify,https://github.com/stretchr/testify,MIT,Copyright (c) 2012-2020 Mat Ryer and Tyler Bunnell and contributors
-golang.org/x/oauth2,https://pkg.go.dev/golang.org/x/oauth2,BSD-3-Clause,Copyright (c) 2009 The Go Authors
-golang.org/x/sys,https://pkg.go.dev/golang.org/x/sys,BSD-3-Clause,Copyright (c) 2009 The Go Authors
-golang.org/x/term,https://pkg.go.dev/golang.org/x/term,BSD-3-Clause,Copyright (c) 2009 The Go Authors
-gopkg.in/yaml.v3,https://github.com/go-yaml/yaml,MIT AND Apache-2.0,Copyright (c) 2006-2011 Kirill Simonov / Copyright (c) 2011-2019 Canonical Ltd
+datadog-api-client,crate,Apache-2.0,Copyright Datadog Inc.
+clap,crate,MIT OR Apache-2.0,Copyright clap contributors
+tokio,crate,MIT,Copyright Tokio Contributors
+serde,crate,MIT OR Apache-2.0,Copyright Serde contributors
+serde_json,crate,MIT OR Apache-2.0,Copyright Serde contributors
+serde_yaml,crate,MIT OR Apache-2.0,Copyright David Tolnay
+reqwest,crate,MIT OR Apache-2.0,Copyright Sean McArthur
+reqwest-middleware,crate,MIT OR Apache-2.0,Copyright TrueLayer
+anyhow,crate,MIT OR Apache-2.0,Copyright David Tolnay
+uuid,crate,MIT OR Apache-2.0,Copyright uuid-rs contributors
+chrono,crate,MIT OR Apache-2.0,Copyright Kang Seonghoon and chrono contributors
+regex,crate,MIT OR Apache-2.0,Copyright Andrew Gallant
+comfy-table,crate,MIT,Copyright Arne Beer
+sha2,crate,MIT OR Apache-2.0,Copyright RustCrypto contributors
+base64,crate,MIT OR Apache-2.0,Copyright Alice Maz and Marshall Pierce
+rand,crate,MIT OR Apache-2.0,Copyright Rust project developers
+keyring,crate,MIT OR Apache-2.0,Copyright hwchen
+dirs,crate,MIT OR Apache-2.0,Copyright Simon Ochsenreither
+url,crate,MIT OR Apache-2.0,Copyright The rust-url developers
+aes-gcm,crate,MIT OR Apache-2.0,Copyright RustCrypto contributors
+open,crate,MIT,Copyright Byron
+clap_complete,crate,MIT OR Apache-2.0,Copyright clap contributors
+async-trait,crate,MIT OR Apache-2.0,Copyright David Tolnay
+task-local-extensions,crate,MIT OR Apache-2.0,Copyright TrueLayer

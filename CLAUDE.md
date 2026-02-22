@@ -7,7 +7,6 @@ Rust-based CLI wrapper for Datadog APIs. Provides OAuth2 + API key authenticatio
 - **[COMMANDS.md](docs/COMMANDS.md)** - Complete command reference with all 33 domains
 - **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Git workflow, PR process, commit format
 - **[TESTING.md](docs/TESTING.md)** - Test strategy, coverage requirements, CI/CD
-- **[DATADOG_CI.md](docs/DATADOG_CI.md)** - Datadog CI products integration (Test Visibility, Code Coverage, SAST)
 - **[OAUTH2.md](docs/OAUTH2.md)** - OAuth2 implementation details (DCR, PKCE, token storage)
 - **[EXAMPLES.md](docs/EXAMPLES.md)** - Usage examples and common workflows
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Design decisions and technical details
@@ -108,7 +107,7 @@ git checkout -b <type>/<description>
 Stage specific files and commit with conventional format:
 
 ```bash
-git add pkg/specific/files.go
+git add src/commands/specific_file.rs
 git commit -m "$(cat <<'EOF'
 <type>(<scope>): <subject>
 
@@ -134,7 +133,7 @@ gh pr create \
 1-2 sentences describing what and why.
 
 ## Changes
-- Change 1 with file reference (file.go:123)
+- Change 1 with file reference (src/commands/foo.rs:123)
 - Change 2 with file reference
 
 ## Testing

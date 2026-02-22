@@ -9,17 +9,14 @@ Guidelines for contributing to Pup.
 git clone https://github.com/datadog-labs/pup.git
 cd pup
 
-# Install dependencies
-go mod download
-
 # Build
-go build -o pup .
+cargo build
 
 # Run tests
-go test ./...
+cargo test
 
 # Run with local changes
-go run main.go <command>
+cargo run -- <command>
 ```
 
 ## Development Workflow
@@ -50,58 +47,61 @@ git checkout -b docs/update-readme-oauth
 
 Follow code style guidelines:
 
-**Go Style:**
-- Follow standard Go conventions
-- Use `gofmt` to format code
-- Run `golangci-lint run` before committing
+**Rust Style:**
+- Follow standard Rust conventions
+- Use `cargo fmt` to format code
+- Run `cargo clippy` before committing
 - Keep functions small and focused
 - Use clear, descriptive names
 
 **Error Handling:**
-```go
+```rust
 // Good: wrap errors with context
-if err != nil {
-    return fmt.Errorf("failed to query metrics: %w", err)
+use anyhow::{Context, Result};
+
+fn query_metrics(query: &str) -> Result<Response> {
+    let resp = client.get(url)
+        .send()
+        .context("failed to query metrics")?;
+    Ok(resp)
 }
 
 // Bad: lose context
-if err != nil {
-    return err
+fn query_metrics(query: &str) -> Result<Response> {
+    let resp = client.get(url).send()?;
+    Ok(resp)
 }
 
 // Bad: expose secrets
-if err != nil {
-    return fmt.Errorf("auth failed with key %s: %w", apiKey, err)
+fn query_metrics(api_key: &str) -> Result<Response> {
+    // Never include secrets in error messages
+    anyhow::bail!("auth failed with key {}", api_key);
 }
 ```
 
 **Testing:**
 - Write unit tests for all public functions
-- Use table-driven tests for multiple cases
-- Mock external dependencies (Datadog API)
+- Use `#[cfg(test)]` modules
+- Mock external dependencies
 - Maintain >80% coverage (CI enforced)
 
-Example table-driven test:
-```go
-func TestParseTimeParam(t *testing.T) {
-    tests := []struct {
-        name    string
-        input   string
-        want    time.Time
-        wantErr bool
-    }{
-        {"relative hour", "1h", time.Now().Add(-1 * time.Hour), false},
-        {"invalid", "bad", time.Time{}, true},
+Example test:
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_time_param_relative_hour() {
+        let result = parse_time_param("1h").unwrap();
+        // Assert result is approximately 1 hour ago
+        assert!(result > chrono::Utc::now() - chrono::Duration::hours(1) - chrono::Duration::seconds(5));
     }
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            got, err := parseTimeParam(tt.input)
-            if (err != nil) != tt.wantErr {
-                t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-            }
-            // Assert got matches want
-        })
+    #[test]
+    fn test_parse_time_param_invalid() {
+        let result = parse_time_param("bad");
+        assert!(result.is_err());
     }
 }
 ```
@@ -110,7 +110,7 @@ func TestParseTimeParam(t *testing.T) {
 
 **Stage specific files** (avoid `git add .`):
 ```bash
-git add pkg/auth/oauth/client.go pkg/auth/oauth/client_test.go
+git add src/auth/oauth.rs src/auth/mod.rs
 ```
 
 **Commit with conventional format:**
@@ -166,7 +166,7 @@ gh pr create \
 Brief overview of what this PR does (1-2 sentences).
 
 ## Changes
-- Specific change 1 with file reference (file.go:123)
+- Specific change 1 with file reference (src/auth/oauth.rs:123)
 - Specific change 2 with file reference
 - Specific change 3 with file reference
 
@@ -180,7 +180,7 @@ Closes #<issue-number>
 Fixes #<issue-number>
 
 ---
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )" \
   --label "<labels>"
@@ -208,10 +208,10 @@ gh pr create \
 Implements automatic OAuth2 token refresh using PKCE flow to maintain authentication without user intervention.
 
 ## Changes
-- Added token refresher in pkg/auth/refresh/refresher.go:45
+- Added token refresher in src/auth/refresh.rs:45
 - Implemented background refresh scheduler
-- Added unit tests in pkg/auth/refresh/refresher_test.go
-- Updated OAuth client to use refresh tokens in pkg/auth/oauth/client.go:123
+- Added unit tests in src/auth/refresh.rs (tests module)
+- Updated OAuth client to use refresh tokens in src/auth/oauth.rs:123
 
 ## Testing
 - Unit tests verify refresh token exchange (98% coverage)
@@ -223,7 +223,7 @@ Implements automatic OAuth2 token refresh using PKCE flow to maintain authentica
 Closes #42
 
 ---
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )" \
   --label "enhancement,auth"
@@ -242,9 +242,9 @@ EOF
 All PRs must:
 - Pass all existing tests
 - Add tests for new functionality
-- Maintain ≥80% code coverage
-- Pass `golangci-lint` checks
-- Build successfully
+- Maintain >=80% code coverage
+- Pass `cargo clippy` checks
+- Build successfully with `cargo build`
 
 See [TESTING.md](TESTING.md) for detailed testing guidelines.
 

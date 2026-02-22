@@ -18,7 +18,7 @@ Pup auto-detects AI coding agents and switches to **agent mode**, which changes 
 
 | Behavior | Human Mode | Agent Mode |
 |----------|-----------|------------|
-| `--help` output | Cobra text help | Structured JSON schema |
+| `--help` output | Standard text help | Structured JSON schema |
 | Confirmation prompts | Interactive stdin | Auto-approved (no hangs) |
 | Error format | Human text with suggestions | Structured JSON with error codes |
 | API response wrapping | Raw API response | Envelope with metadata (count, truncation, warnings) |
@@ -309,47 +309,37 @@ Error responses in agent mode:
 
 ### Agent detection
 
-- Implementation: `pkg/useragent/useragent.go`
+- Implementation: `src/useragent.rs`
 - Table-driven detector registry; first match wins
-- `IsAgentMode()` checks `FORCE_AGENT_MODE` first, then agent env vars
-- `DetectAgentInfo()` returns `AgentInfo{Name, Detected}`
+- `is_agent_mode()` checks `FORCE_AGENT_MODE` first, then agent env vars
+- `detect_agent_info()` returns agent name and detection status
 
 ### Schema generation
 
-- Implementation: `pkg/agenthelp/agenthelp.go`
-- Walks the Cobra command tree via `rootCmd.Commands()` recursion
+- Implementation: `src/commands/agent.rs`
+- Walks the clap command tree to generate schema
 - Schema stays in sync automatically as commands are added
 - Subtree schemas filter to a single domain + relevant query syntax
 
 ### Output envelope
 
-- Implementation: `pkg/formatter/envelope.go`
-- `WrapForAgent(data, metadata)` wraps responses in `AgentEnvelope`
-- `FormatAgentError(operation, statusCode, message, apiBody)` formats structured errors
-- Only activated when `cfg.AgentMode == true`
-
-### Steering content
-
-- Query syntax, time formats, workflows, best practices, anti-patterns: `pkg/agenthelp/steering.go`
-- Embedded guide document: `pkg/agenthelp/guide.md` (loaded via `go:embed`)
-- Guide sections retrievable by domain: `agenthelp.GetGuideSection("logs")`
+- Implementation: `src/formatter.rs`
+- Agent envelope wraps responses with metadata (count, truncation, warnings)
+- Structured error formatting for agent consumption
+- Only activated when agent mode is true
 
 ### Help interception
 
-- `cmd/root.go:ExecuteWithArgs()` intercepts `--help`/`-h` before Cobra processes args
-- When `useragent.IsAgentMode()` is true, calls `printAgentSchema()` instead of Cobra help
-- `firstNonFlagArg()` extracts the domain name for subtree schemas
+- `src/main.rs` intercepts `--help`/`-h` before clap processes args
+- When agent mode is detected, outputs structured JSON schema instead of text help
+- Extracts the domain name for subtree schemas
 
 ## File Map
 
 | File | Purpose |
 |------|---------|
-| `pkg/useragent/useragent.go` | Agent detection (11 agents + FORCE_AGENT_MODE) |
-| `pkg/agenthelp/agenthelp.go` | Schema generation (Cobra tree walker) |
-| `pkg/agenthelp/steering.go` | Query syntax, workflows, best practices |
-| `pkg/agenthelp/guide.go` | Embedded guide document (`go:embed`) |
-| `pkg/agenthelp/guide.md` | Runtime steering guide content |
-| `pkg/formatter/envelope.go` | Agent envelope and structured errors |
-| `pkg/config/config.go` | `AgentMode` field on Config |
-| `cmd/root.go` | `--agent` flag, help interception, `formatAndPrint()`, `formatAPIError()` |
-| `cmd/agent.go` | `pup agent schema`, `pup agent guide` commands |
+| `src/useragent.rs` | Agent detection (11 agents + FORCE_AGENT_MODE) |
+| `src/commands/agent.rs` | Schema generation, `pup agent schema`, `pup agent guide` |
+| `src/formatter.rs` | Agent envelope and structured errors |
+| `src/config.rs` | `agent_mode` field on Config |
+| `src/main.rs` | `--agent` flag, help interception, output formatting |

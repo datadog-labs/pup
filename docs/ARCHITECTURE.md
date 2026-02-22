@@ -4,43 +4,37 @@ Technical architecture and design rationale for Pup CLI.
 
 ## Technology Choices
 
-### Why Go?
+### Why Rust?
 
 **Benefits:**
-1. **Performance** - Compiled binary with fast startup (<100ms)
+1. **Performance** - Compiled binary with fast startup (~3ms vs ~45ms in Go)
 2. **Cross-platform** - Single binary for macOS, Linux, Windows
-3. **Standard library** - Excellent networking, crypto, and HTTP support
-4. **Concurrency** - Built-in goroutines for parallel operations
-5. **Static typing** - Catch errors at compile time
-6. **Small binaries** - ~15-20MB compiled size
+3. **Memory safety** - No garbage collector, zero-cost abstractions
+4. **Concurrency** - Async/await with tokio runtime
+5. **Small binaries** - ~26MB stripped (31% smaller than Go version)
+6. **Strong type system** - Catch errors at compile time with rich enums
 
 **Tradeoffs:**
-- More verbose than dynamic languages
-- Requires compilation step (not interpreted)
-- Less flexible than scripting languages
+- Steeper learning curve than Go
+- Longer compile times
+- Smaller ecosystem for some domains
 
-### Why Cobra?
+### Why Clap?
 
 **Benefits:**
-1. **Industry standard** - Used by kubectl, hugo, gh, docker
-2. **Rich features** - Subcommands, flags, aliases, help generation
-3. **Shell completion** - Built-in bash/zsh/fish completion
-4. **Community** - Large ecosystem and community support
+1. **Industry standard** - Most popular Rust CLI framework
+2. **Rich features** - Subcommands, flags, derive macros, help generation
+3. **Shell completion** - Built-in bash/zsh/fish completion via clap_complete
+4. **Type safety** - Derive-based argument parsing
 5. **Documentation** - Excellent docs and examples
 
-**Alternative considered:**
-- `urfave/cli` - Simpler but less feature-rich
-
-### Why Viper?
+### Why Serde + serde_yaml?
 
 **Benefits:**
-1. **Configuration management** - Handles config files, env vars, flags
-2. **Precedence handling** - Clear priority: flags > env > config > defaults
-3. **Multiple formats** - YAML, JSON, TOML support
-4. **Watch functionality** - Can watch config file for changes
-
-**Alternative considered:**
-- Manual config parsing - Too much boilerplate
+1. **Configuration management** - Handles YAML config files
+2. **Serialization** - Unified serialize/deserialize across JSON, YAML
+3. **Derive macros** - Zero-boilerplate struct serialization
+4. **Performance** - Fast parsing with compile-time code generation
 
 ### Why OAuth2 over API Keys?
 
@@ -60,29 +54,36 @@ Technical architecture and design rationale for Pup CLI.
 
 ```
 pup/
-├── cmd/                    # Command implementations
-│   ├── root.go            # Root command + global flags
-│   ├── auth.go            # OAuth2 authentication
-│   ├── metrics.go         # Metrics domain
-│   ├── monitors.go        # Monitors domain
-│   └── ...                # 28 total command files
-├── pkg/                   # Reusable packages
+├── src/                    # Rust source code
+│   ├── main.rs            # Entry point + clap command registration
+│   ├── client.rs          # Datadog API client wrapper
+│   ├── config.rs          # Configuration management
+│   ├── formatter.rs       # Output formatting (JSON, YAML, table)
+│   ├── util.rs            # Time parsing, validation
+│   ├── useragent.rs       # User agent + AI agent detection
+│   ├── version.rs         # Version information
 │   ├── auth/              # Authentication logic
-│   │   ├── dcr/          # Dynamic Client Registration
-│   │   ├── oauth/        # OAuth2 flow + PKCE
-│   │   ├── storage/      # Token storage
-│   │   └── callback/     # OAuth callback server
-│   ├── client/           # Datadog API client wrapper
-│   ├── config/           # Configuration management
-│   ├── formatter/        # Output formatting
-│   └── util/             # Utilities (time, validation)
-└── docs/                 # Documentation
+│   │   ├── mod.rs         # Auth module
+│   │   ├── oauth.rs       # OAuth2 flow + PKCE
+│   │   ├── dcr.rs         # Dynamic Client Registration
+│   │   ├── storage.rs     # Token storage (keychain + file)
+│   │   └── callback.rs    # OAuth callback server
+│   └── commands/          # Command implementations
+│       ├── mod.rs         # Command registration
+│       ├── metrics.rs     # Metrics domain
+│       ├── monitors.rs    # Monitors domain
+│       └── ...            # ~47 command modules
+├── Cargo.toml             # Dependencies and metadata
+├── tests/                 # Integration tests
+│   ├── compare/           # Output comparison tests
+│   └── ...
+└── docs/                  # Documentation
 ```
 
 **Design principles:**
-- `cmd/` contains Cobra commands (thin layer)
-- `pkg/` contains business logic (testable)
-- `internal/` for truly private code (currently just version)
+- `src/commands/` contains clap command definitions (thin layer)
+- `src/client.rs`, `src/auth/`, etc. contain business logic (testable)
+- `#[cfg(test)]` modules co-located with source for unit tests
 
 ## Authentication Architecture
 
@@ -90,12 +91,12 @@ pup/
 
 **Priority order:**
 1. **OS Keychain** (primary) - Most secure
-   - macOS: Keychain
+   - macOS: Keychain (via `keyring` crate with `apple-native` feature)
    - Windows: Credential Manager
-   - Linux: Secret Service / Keyring
+   - Linux: Secret Service / Keyring (via `linux-native` feature)
 2. **Encrypted file** (fallback) - When keychain unavailable
    - Location: `~/.config/pup/tokens.enc`
-   - Encryption: AES-256-GCM
+   - Encryption: AES-256-GCM (via `aes-gcm` crate)
    - Key derivation: Machine-specific data
 
 **Why not plaintext?**
@@ -107,13 +108,13 @@ pup/
 Based on [RFC 6749](https://tools.ietf.org/html/rfc6749) and [RFC 7636](https://tools.ietf.org/html/rfc7636) (PKCE):
 
 ```
-1. DCR Registration → client_id, client_secret
-2. PKCE Generation → verifier, challenge
-3. Authorization URL → user approval
-4. Callback Server → receive code
-5. Token Exchange → access + refresh tokens
-6. Secure Storage → keychain or encrypted file
-7. Auto Refresh → before expiration
+1. DCR Registration -> client_id, client_secret
+2. PKCE Generation -> verifier, challenge
+3. Authorization URL -> user approval
+4. Callback Server -> receive code
+5. Token Exchange -> access + refresh tokens
+6. Secure Storage -> keychain or encrypted file
+7. Auto Refresh -> before expiration
 ```
 
 **Why PKCE?**
@@ -143,52 +144,42 @@ Custom user agent identifies pup CLI and detects AI coding assistants:
 
 **Format:**
 ```
-pup/v0.1.0 (go go1.25.0; os darwin; arch arm64)                        # Without agent
-pup/v0.1.0 (go go1.25.0; os darwin; arch arm64; ai-agent claude-code)  # With agent
+pup/v0.1.0 (rust; os darwin; arch arm64)                        # Without agent
+pup/v0.1.0 (rust; os darwin; arch arm64; ai-agent claude-code)  # With agent
 ```
 
-**AI Agent Detection** (`pkg/useragent`):
+**AI Agent Detection** (`src/useragent.rs`):
 
 Table-driven registry detecting 11 agents via environment variables. First match wins:
 - Claude Code (`CLAUDECODE`, `CLAUDE_CODE`), Cursor (`CURSOR_AGENT`), Codex (`CODEX`, `OPENAI_CODEX`), OpenCode (`OPENCODE`), Aider (`AIDER`), Cline (`CLINE`), Windsurf (`WINDSURF_AGENT`), GitHub Copilot (`GITHUB_COPILOT`), Amazon Q (`AMAZON_Q`, `AWS_Q_DEVELOPER`), Gemini Code Assist (`GEMINI_CODE_ASSIST`), Sourcegraph Cody (`SRC_CODY`)
 - Manual override: `FORCE_AGENT_MODE=1` or `--agent` flag
 
 **Agent Mode Behavior** (when detected):
-- `--help` returns structured JSON schema instead of Cobra text
+- `--help` returns structured JSON schema instead of text
 - Confirmation prompts auto-approved (prevents stdin hangs)
 - API responses wrapped in metadata envelope (count, truncation, warnings)
 - Errors returned as structured JSON with suggestions
 
-**Agent Operability Packages:**
-- `pkg/agenthelp/` — Schema generation (Cobra tree walker), steering content, embedded guide
-- `pkg/formatter/envelope.go` — Agent envelope and structured error formatting
-- `cmd/agent.go` — `pup agent schema`, `pup agent guide` commands
-
-See [LLM_GUIDE.md](docs/LLM_GUIDE.md) for the complete agent guide.
+See [LLM_GUIDE.md](LLM_GUIDE.md) for the complete agent guide.
 
 ## API Client Wrapper
 
 ### Design Pattern
 
-Thin wrapper around `datadog-api-client-go`:
+Thin wrapper around `datadog-api-client` Rust crate:
 
-```go
-type Client struct {
-    apiClient  *datadog.APIClient
-    authConfig *config.AuthConfig
+```rust
+pub struct Client {
+    config: datadog_api_client::configuration::Configuration,
 }
 
-func (c *Client) QueryMetrics(ctx context.Context, query string) (*Response, error) {
-    // Handle authentication
-    ctx = c.withAuth(ctx)
-
-    // Call Datadog API
-    resp, _, err := c.apiClient.MetricsAPI.QueryMetrics(ctx).
-        Query(query).
-        Execute()
-
-    // Handle errors
-    return resp, handleAPIError(err)
+impl Client {
+    pub async fn query_metrics(&self, query: &str) -> Result<Response> {
+        let api = datadog_api_client::apis::MetricsApi::new(&self.config);
+        let resp = api.query_metrics(query).await
+            .context("failed to query metrics")?;
+        Ok(resp)
+    }
 }
 ```
 
@@ -200,10 +191,15 @@ func (c *Client) QueryMetrics(ctx context.Context, query string) (*Response, err
 
 ### Error Handling
 
-**Error wrapping pattern:**
-```go
-if err != nil {
-    return fmt.Errorf("failed to query metrics: %w", err)
+**Error wrapping pattern (using anyhow):**
+```rust
+use anyhow::{Context, Result};
+
+fn query_metrics(query: &str) -> Result<Response> {
+    let resp = client.get(url)
+        .send()
+        .context("failed to query metrics")?;
+    Ok(resp)
 }
 ```
 
@@ -217,23 +213,23 @@ if err != nil {
 ### Patterns
 
 **Simple commands:**
-```go
-metricsCmd
-├── queryCmd      # pup metrics query
-├── listCmd       # pup metrics list
-└── getCmd        # pup metrics get
+```
+metrics
+  |-- query      # pup metrics query
+  |-- list       # pup metrics list
+  +-- get        # pup metrics get
 ```
 
 **Nested commands:**
-```go
-rumCmd
-├── appsCmd
-│   ├── listCmd   # pup rum apps list
-│   └── getCmd    # pup rum apps get
-├── metricsCmd
-│   └── getCmd    # pup rum metrics get
-└── sessionsCmd
-    └── searchCmd # pup rum sessions search
+```
+rum
+  |-- apps
+  |   |-- list   # pup rum apps list
+  |   +-- get    # pup rum apps get
+  |-- metrics
+  |   +-- get    # pup rum metrics get
+  +-- sessions
+      +-- search # pup rum sessions search
 ```
 
 ### Flag Consistency
@@ -266,21 +262,9 @@ Domain-specific flags:
 - Good for config files
 
 **Table:**
-- Compact display
+- Compact display (via `comfy-table` crate)
 - Truncates long values
 - Good for terminals
-
-### Formatter Design
-
-```go
-type Formatter interface {
-    Format(data interface{}) ([]byte, error)
-}
-
-type JSONFormatter struct{}
-type YAMLFormatter struct{}
-type TableFormatter struct{}
-```
 
 ## Configuration Management
 
@@ -310,89 +294,30 @@ default_to: now
 
 ## Performance Considerations
 
-### Concurrency
+### Async Runtime
 
-**Parallel API requests:**
-```go
-var wg sync.WaitGroup
-results := make(chan Result, len(ids))
+Pup uses tokio for async I/O:
 
-for _, id := range ids {
-    wg.Add(1)
-    go func(id string) {
-        defer wg.Done()
-        result, err := client.Get(ctx, id)
-        results <- Result{data: result, err: err}
-    }(id)
+```rust
+#[tokio::main]
+async fn main() -> Result<()> {
+    // All API calls are async
+    let monitors = client.list_monitors().await?;
+    Ok(())
 }
-
-wg.Wait()
-close(results)
 ```
 
 **Rate limiting:**
 - Respect Datadog API limits (depends on plan)
 - Implement exponential backoff for retries
-- Use connection pooling
-
-### Caching
-
-**Considered but not implemented:**
-- Metric metadata cache (reduce API calls)
-- Monitor definition cache (improve list perf)
-- TTL-based invalidation
-
-**Reason:**
-- Adds complexity
-- Stale data risk
-- CLI typically one-off operations
+- Use connection pooling (reqwest default)
 
 ### Memory Management
 
-**Streaming large results:**
-```go
-// Bad: load all into memory
-results, _ := client.ListAll(ctx)
-for _, r := range results {
-    process(r)
-}
-
-// Good: stream with pagination
-for page := 0; ; page++ {
-    results, _ := client.List(ctx, page, 100)
-    for _, r := range results {
-        process(r)
-    }
-    if len(results) < 100 {
-        break
-    }
-}
-```
-
-## Testing Strategy
-
-### Package Tests (pkg/)
-
-**High coverage (93.9% average):**
-- Unit tests for all public functions
-- Table-driven tests
-- Mock external dependencies
-- Test error paths
-
-### Command Tests (cmd/)
-
-**Structural tests:**
-- Verify command hierarchy
-- Check flags are registered
-- Validate help text
-- Test parent-child relationships
-
-### Integration Tests (planned)
-
-**Mock Datadog API:**
-- `httptest.NewServer` for mock responses
-- Test end-to-end command execution
-- Validate request/response handling
+Rust's ownership system ensures:
+- No garbage collection pauses
+- Predictable memory usage
+- Zero-cost abstractions for iterators and streaming
 
 ## Security Architecture
 
@@ -418,67 +343,9 @@ for page := 0; ; page++ {
 4. **Use HTTPS** - All API calls over TLS
 5. **Minimal scopes** - Request only needed permissions
 
-## Future Enhancements
-
-### Planned Features
-
-1. **Shell completion** - Bash, zsh, fish
-2. **Interactive mode** - TUI for complex operations
-3. **Batch operations** - Process multiple resources
-4. **Query caching** - Local cache for repeated queries
-5. **Plugin system** - Extensible command system
-
-### Considered but Deferred
-
-1. **WebSocket support** - Real-time event streaming
-2. **Local database** - SQLite for caching
-3. **Desktop GUI** - Electron wrapper
-4. **Web dashboard** - Browser-based UI
-
-## Design Tradeoffs
-
-### CLI vs. GUI
-
-**Chose CLI because:**
-- Easier to automate
-- Scriptable workflows
-- Lower resource usage
-- Faster development
-
-**GUI would provide:**
-- Better discoverability
-- Visual data representation
-- Lower learning curve
-
-### Monolith vs. Plugins
-
-**Chose monolith because:**
-- Simpler deployment (single binary)
-- Faster startup (no plugin loading)
-- Easier testing
-- Consistent UX
-
-**Plugins would provide:**
-- Extensibility
-- Community contributions
-- Modular updates
-
-### JSON vs. Protobuf
-
-**Chose JSON because:**
-- Human-readable
-- Universal support
-- Easier debugging
-- Datadog API uses JSON
-
-**Protobuf would provide:**
-- Smaller payload size
-- Faster parsing
-- Schema validation
-
 ## References
 
-- [Cobra Documentation](https://github.com/spf13/cobra)
-- [Viper Documentation](https://github.com/spf13/viper)
-- [Go Project Layout](https://github.com/golang-standards/project-layout)
-- [Datadog API Client Go](https://github.com/DataDog/datadog-api-client-go)
+- [Clap Documentation](https://docs.rs/clap)
+- [Tokio Documentation](https://tokio.rs)
+- [Serde Documentation](https://serde.rs)
+- [Datadog API Client Rust](https://crates.io/crates/datadog-api-client)

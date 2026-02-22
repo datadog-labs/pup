@@ -267,61 +267,55 @@ pup metrics query --query="avg:system.cpu.user{*}" --from="1h"
 
 **Symptoms:**
 ```
-# go build
-./cmd/foo.go:123: undefined: SomeType
+error[E0433]: failed to resolve: use of undeclared type
 ```
 
 **Solutions:**
 ```bash
 # Clean and rebuild
-go clean
-go mod tidy
-go build -o pup .
+cargo clean
+cargo build
 
 # Update dependencies
-go get -u github.com/DataDog/datadog-api-client-go/v2
-go mod tidy
+cargo update
 ```
 
 ### Missing Dependencies
 
 **Symptoms:**
 ```
-go: missing go.sum entry for module
+error: failed to select a version for `some-crate`
 ```
 
 **Solutions:**
 ```bash
-# Download missing dependencies
-go mod download
+# Update the lock file
+cargo update
 
-# Regenerate go.sum
-go mod tidy
-
-# Verify module checksums
-go mod verify
+# Check dependency tree
+cargo tree
 ```
 
 ### Test Failures
 
 **Symptoms:**
 ```
-FAIL: TestSomething
+test result: FAILED
 ```
 
 **Solutions:**
 ```bash
 # Run tests with verbose output
-go test -v ./...
+cargo test -- --nocapture
 
 # Run specific test
-go test -v ./pkg/auth/... -run TestOAuthFlow
+cargo test test_oauth_flow
 
-# Run with race detection
-go test -race ./...
+# Run tests in specific module
+cargo test auth::
 
-# Check test coverage
-go test -cover ./...
+# Check test output
+cargo test 2>&1 | less
 ```
 
 ## Output Issues
@@ -503,8 +497,8 @@ When opening a GitHub issue, include:
    # OS version
    uname -a
 
-   # Go version
-   go version
+   # Rust version
+   rustc --version
 
    # Environment variables (redact keys!)
    env | grep DD_SITE

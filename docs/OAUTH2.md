@@ -384,12 +384,12 @@ This indicates a potential security issue. Run `pup auth login` again to start a
 ### Code Structure
 
 ```
-pkg/auth/
-├── types/         # Common types and interfaces
-├── dcr/           # Dynamic Client Registration
-├── oauth/         # OAuth2 flow and PKCE
-├── storage/       # Token and credential storage
-└── callback/      # Local callback server
+src/auth/
+├── mod.rs         # Auth module and common types
+├── dcr.rs         # Dynamic Client Registration
+├── oauth.rs       # OAuth2 flow and PKCE
+├── storage.rs     # Token and credential storage
+└── callback.rs    # Local callback server
 ```
 
 ## References
