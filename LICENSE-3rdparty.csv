@@ -1,25 +1,32 @@
 Component,Origin,License,Copyright
-datadog-api-client,crate,Apache-2.0,Copyright Datadog Inc.
+aes-gcm,crate,Apache-2.0 OR MIT,Copyright RustCrypto Developers
+anyhow,crate,MIT OR Apache-2.0,Copyright David Tolnay
+async-trait,crate,MIT OR Apache-2.0,Copyright David Tolnay
+base64,crate,MIT OR Apache-2.0,Copyright Alice Maz and Marshall Pierce
+chrono,crate,MIT OR Apache-2.0,Copyright Kang Seonghoon and chrono contributors
 clap,crate,MIT OR Apache-2.0,Copyright clap contributors
-tokio,crate,MIT,Copyright Tokio Contributors
-serde,crate,MIT OR Apache-2.0,Copyright Serde contributors
-serde_json,crate,MIT OR Apache-2.0,Copyright Serde contributors
-serde_yaml,crate,MIT OR Apache-2.0,Copyright David Tolnay
+clap_complete,crate,MIT OR Apache-2.0,Copyright clap contributors
+comfy-table,crate,MIT,Copyright Arne Beer
+datadog-api-client,crate,Apache-2.0,Copyright Datadog Inc.
+dirs,crate,MIT OR Apache-2.0,Copyright Simon Ochsenreither
+getrandom,crate,MIT OR Apache-2.0,Copyright The Rand Project Developers
+js-sys,crate,MIT OR Apache-2.0,Copyright The wasm-bindgen Developers
+keyring,crate,MIT OR Apache-2.0,Copyright Walther Chen and Daniel Brotsky
+open,crate,MIT,Copyright Byron
+openssl,crate,Apache-2.0,Copyright Steven Fackler
+rand,crate,MIT OR Apache-2.0,Copyright The Rand Project Developers
+regex,crate,MIT OR Apache-2.0,Copyright Andrew Gallant
 reqwest,crate,MIT OR Apache-2.0,Copyright Sean McArthur
 reqwest-middleware,crate,MIT OR Apache-2.0,Copyright TrueLayer
-anyhow,crate,MIT OR Apache-2.0,Copyright David Tolnay
-uuid,crate,MIT OR Apache-2.0,Copyright uuid-rs contributors
-chrono,crate,MIT OR Apache-2.0,Copyright Kang Seonghoon and chrono contributors
-regex,crate,MIT OR Apache-2.0,Copyright Andrew Gallant
-comfy-table,crate,MIT,Copyright Arne Beer
-sha2,crate,MIT OR Apache-2.0,Copyright RustCrypto contributors
-base64,crate,MIT OR Apache-2.0,Copyright Alice Maz and Marshall Pierce
-rand,crate,MIT OR Apache-2.0,Copyright Rust project developers
-keyring,crate,MIT OR Apache-2.0,Copyright hwchen
-dirs,crate,MIT OR Apache-2.0,Copyright Simon Ochsenreither
-url,crate,MIT OR Apache-2.0,Copyright The rust-url developers
-aes-gcm,crate,MIT OR Apache-2.0,Copyright RustCrypto contributors
-open,crate,MIT,Copyright Byron
-clap_complete,crate,MIT OR Apache-2.0,Copyright clap contributors
-async-trait,crate,MIT OR Apache-2.0,Copyright David Tolnay
+serde,crate,MIT OR Apache-2.0,Copyright Erick Tryzelaar and David Tolnay
+serde-wasm-bindgen,crate,MIT,Copyright Ingvar Stepanyan
+serde_json,crate,MIT OR Apache-2.0,Copyright Erick Tryzelaar and David Tolnay
+serde_yaml,crate,MIT OR Apache-2.0,Copyright David Tolnay
+sha2,crate,MIT OR Apache-2.0,Copyright RustCrypto Developers
 task-local-extensions,crate,MIT OR Apache-2.0,Copyright TrueLayer
+tokio,crate,MIT,Copyright Tokio Contributors
+url,crate,MIT OR Apache-2.0,Copyright The rust-url developers
+uuid,crate,Apache-2.0 OR MIT,Copyright uuid-rs contributors
+wasm-bindgen,crate,MIT OR Apache-2.0,Copyright The wasm-bindgen Developers
+wasm-bindgen-futures,crate,MIT OR Apache-2.0,Copyright The wasm-bindgen Developers
+web-sys,crate,MIT OR Apache-2.0,Copyright The wasm-bindgen Developers

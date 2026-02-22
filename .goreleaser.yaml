@@ -4,12 +4,15 @@
 version: 2
 
 project_name: pup
+report_sizes: true
 
 before:
   hooks:
     - rustup default stable
     - cargo install --locked cargo-zigbuild
     - cargo fetch --locked
+    # Verify Cargo.toml version matches git tag
+    - sh -c 'CARGO_VER=$(grep "^version" Cargo.toml | head -1 | sed "s/.*\"\(.*\)\"/\1/"); TAG_VER="${GORELEASER_CURRENT_TAG#v}"; if [ "$CARGO_VER" != "$TAG_VER" ]; then echo "ERROR: Cargo.toml version ($CARGO_VER) does not match git tag ($TAG_VER)"; exit 1; fi'
     # Build WASM targets (not supported by cargo-zigbuild)
     - rustup target add wasm32-wasip2 wasm32-unknown-unknown
     - cargo build --release --target wasm32-wasip2 --no-default-features --features wasi
@@ -41,6 +44,7 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
     files:
       - LICENSE
+      - LICENSE-3rdparty.csv
       - README.md
 
 extra_files:
@@ -58,6 +62,26 @@ source:
   enabled: true
   name_template: "{{ .ProjectName }}_{{ .Version }}_source"
   format: tar.gz
+
+sboms:
+  - artifacts: archive
+    cmd: syft
+    args:
+      - "${artifact}"
+      - "--output"
+      - "spdx-json=${document}"
+    documents:
+      - "{{ .ArtifactName }}.sbom.json"
+
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args:
+      - "sign-blob"
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
 
 changelog:
   use: github
@@ -113,10 +137,16 @@ release:
     - **WASI** (`pup_wasi.wasm`): Run in Wasmtime or any WASI Preview 2 runtime
     - **Browser WASM** (`pup_browser_wasm.tar.gz`): npm-ready package with `PupClient` JS class and TypeScript definitions
 
-    ### Verifying Checksums
+    ### Verifying
 
     ```bash
+    # Verify checksums
     sha256sum -c pup_{{ .Version }}_checksums.txt
+
+    # Verify signature (requires cosign)
+    cosign verify-blob \
+      --bundle pup_{{ .Version }}_checksums.txt.sigstore.json \
+      pup_{{ .Version }}_checksums.txt
     ```
 
   footer: |
