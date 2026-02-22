@@ -2414,6 +2414,98 @@ fn build_agent_schema(cmd: &clap::Command) -> serde_json::Value {
         ]),
     );
 
+    // Operational knowledge sections — critical for AI agent effectiveness
+    root.insert("anti_patterns".into(), serde_json::json!([
+        "Don't omit --from on time-series queries; you'll get unexpected time ranges or errors",
+        "Don't use --limit=1000 as a first step; start with small limits and refine queries",
+        "Don't list all monitors/logs without filters in large organizations (>10k monitors)",
+        "Don't assume APM durations are in seconds or milliseconds; they are in NANOSECONDS",
+        "Don't fetch raw logs to count them; use 'pup logs aggregate --compute=count' instead",
+        "Don't use --from=30d unless you specifically need a month of data; it's slow",
+        "Don't retry failed requests without checking the error; 401 means re-authenticate, 403 means missing permissions",
+        "Don't use 'pup metrics query' without specifying an aggregation (avg, sum, max, min, count)",
+        "Don't pipe large JSON responses through multiple jq transforms; use query filters at the API level"
+    ]));
+
+    root.insert("best_practices".into(), serde_json::json!([
+        "Always specify --from to set a time range; most commands default to 1h but be explicit",
+        "Start with narrow time ranges (1h) then widen if needed; large ranges are slow and expensive",
+        "Filter by service first when investigating issues: --query='service:<name>'",
+        "Use --limit to control result size; default varies by command (50-200)",
+        "For monitors, use --tags to filter rather than listing all and parsing locally",
+        "APM durations are in NANOSECONDS: 1 second = 1000000000, 5ms = 5000000",
+        "Use 'pup logs aggregate' for counts and distributions instead of fetching all logs and counting locally",
+        "Prefer JSON output (default) for structured parsing; use --output=table only for human display",
+        "Chain narrow queries: first aggregate to find patterns, then search for specific examples",
+        "Use 'pup monitors search' for full-text search, 'pup monitors list' for tag/name filtering"
+    ]));
+
+    root.insert("query_syntax".into(), serde_json::json!({
+        "apm": "service:<name> resource_name:<path> @duration:>5000000000 (nanoseconds!) status:error operation_name:<op>. Duration is always in nanoseconds",
+        "events": "sources:nagios,pagerduty status:error priority:normal tags:env:prod",
+        "logs": "status:error, service:web-app, @attr:val, host:i-*, \"exact phrase\", AND/OR/NOT operators, -status:info (negation), wildcards with *",
+        "metrics": "<aggregation>:<metric_name>{<filter>} by {<group>}. Example: avg:system.cpu.user{env:prod} by {host}. Aggregations: avg, sum, min, max, count",
+        "monitors": "Use --name for substring search, --tags for tag filtering (comma-separated). Search via --query for full-text search",
+        "rum": "@type:error @session.type:user @view.url_path:/checkout @action.type:click service:<app-name>",
+        "security": "@workflow.rule.type:log_detection source:cloudtrail @network.client.ip:10.0.0.0/8 status:critical",
+        "traces": "service:<name> resource_name:<path> @duration:>5s (shorthand) env:production"
+    }));
+
+    root.insert("time_formats".into(), serde_json::json!({
+        "relative": ["5s", "30m", "1h", "4h", "1d", "7d", "1w", "30d", "5min", "2hours", "3days"],
+        "absolute": ["Unix timestamp in milliseconds", "RFC3339 (2024-01-01T00:00:00Z)"],
+        "examples": [
+            "--from=1h (1 hour ago)",
+            "--from=30m --to=now",
+            "--from=7d --to=1d (7 days ago to 1 day ago)",
+            "--from=2024-01-01T00:00:00Z --to=2024-01-02T00:00:00Z",
+            "--from=\"5 minutes\""
+        ]
+    }));
+
+    root.insert("workflows".into(), serde_json::json!([
+        {
+            "name": "Investigate errors",
+            "steps": [
+                "pup logs search --query=\"status:error\" --from=1h --limit=20",
+                "pup logs aggregate --query=\"status:error\" --from=1h --compute=\"count\" --group-by=\"service\"",
+                "pup monitors list --tags=\"env:production\" --limit=50"
+            ]
+        },
+        {
+            "name": "Performance investigation",
+            "steps": [
+                "pup metrics query --query=\"avg:trace.servlet.request.duration{env:prod} by {service}\" --from=1h",
+                "pup logs search --query=\"@duration:>5000000000\" --from=1h --limit=20",
+                "pup apm services list"
+            ]
+        },
+        {
+            "name": "Monitor status check",
+            "steps": [
+                "pup monitors list --tags=\"env:production\" --limit=500",
+                "pup monitors search --query=\"status:Alert\"",
+                "pup monitors get <monitor_id>"
+            ]
+        },
+        {
+            "name": "Security audit",
+            "steps": [
+                "pup audit-logs search --query=\"*\" --from=1d --limit=100",
+                "pup security rules list",
+                "pup security signals list --query=\"status:critical\" --from=1d"
+            ]
+        },
+        {
+            "name": "Service health overview",
+            "steps": [
+                "pup slos list",
+                "pup monitors list --tags=\"team:<team_name>\"",
+                "pup incidents list --query=\"status:active\""
+            ]
+        }
+    ]));
+
     // Commands — sorted alphabetically to match Go
     let mut commands: Vec<serde_json::Value> = cmd
         .get_subcommands()
