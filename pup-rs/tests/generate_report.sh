@@ -383,7 +383,7 @@ tr.rust-fail-row { background: #b6232410; }
 .env-table .env-key { color: #d2a8ff; white-space: nowrap; }
 .env-table .env-val { color: #79c0ff; }
 .env-table .env-eq { color: #484f58; padding: 0 2px; }
-.diff-id { display: inline-block; background: #da3633; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; margin-right: 6px; min-width: 32px; text-align: center; }
+.diff-id { display: inline-block; background: #30363d; color: #8b949e; font-size: 10px; font-family: 'SF Mono', 'Fira Code', monospace; padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
 .diff-view { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 0; margin: 8px 0; max-height: 400px; overflow: auto; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; }
 .diff-line { padding: 1px 12px; white-space: pre-wrap; word-break: break-all; }
 .diff-line.add { background: #1a3a2a; color: #3fb950; }
@@ -439,18 +439,16 @@ for r in "${RESULTS[@]}"; do
     fi
 done
 
-diff_id=0
 if [ "$has_issues" = true ]; then
-    # Differences — with numbered IDs
+    # Differences — with deterministic IDs based on command+mode
     if [ "$diff_count" -gt 0 ]; then
         echo '<div class="alert">' >> "$REPORT"
         echo '<h3>Output Differences</h3><table style="width:100%;border-collapse:collapse">' >> "$REPORT"
-        echo '<tr><th style="width:40px;text-align:center">ID</th><th>Command</th><th style="width:80px">Mode</th></tr>' >> "$REPORT"
+        echo '<tr><th>ID</th><th>Command</th><th style="width:80px">Mode</th></tr>' >> "$REPORT"
         for r in "${RESULTS[@]}"; do
             IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full env_display <<< "$r"
             if [ "$status" = "diff" ]; then
-                diff_id=$((diff_id + 1))
-                echo "<tr><td style=\"text-align:center\"><a href=\"#diff-${diff_id}\" style=\"color:#f85149;font-weight:700\">#${diff_id}</a></td><td>${label}</td><td>${mode}</td></tr>" >> "$REPORT"
+                echo "<tr><td><a href=\"#${safe}\" style=\"color:#f85149;font-weight:700;font-family:monospace;font-size:12px\">${safe}</a></td><td>${label}</td><td>${mode}</td></tr>" >> "$REPORT"
             fi
         done
         echo '</table></div>' >> "$REPORT"
@@ -463,9 +461,8 @@ if [ "$has_issues" = true ]; then
         for r in "${RESULTS[@]}"; do
             IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full env_display <<< "$r"
             if [ "$status" = "go_fail" ]; then
-                diff_id=$((diff_id + 1))
                 go_err=$(head -1 "$OUTDIR/go_${safe}.txt" 2>/dev/null)
-                echo "<li><a href=\"#diff-${diff_id}\" style=\"color:#d29922;font-weight:700\">#${diff_id}</a> <strong>${label}</strong> (${mode}) — <code>${go_err}</code></li>" >> "$REPORT"
+                echo "<li><a href=\"#${safe}\" style=\"color:#d29922;font-weight:700;font-family:monospace;font-size:12px\">${safe}</a> — <code>${go_err}</code></li>" >> "$REPORT"
             fi
         done
         echo '</ul></div>' >> "$REPORT"
@@ -478,9 +475,8 @@ if [ "$has_issues" = true ]; then
         for r in "${RESULTS[@]}"; do
             IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full env_display <<< "$r"
             if [ "$status" = "rust_fail" ]; then
-                diff_id=$((diff_id + 1))
                 rs_err=$(head -1 "$OUTDIR/rs_${safe}.txt" 2>/dev/null)
-                echo "<li><a href=\"#diff-${diff_id}\" style=\"color:#f97583;font-weight:700\">#${diff_id}</a> <strong>${label}</strong> (${mode}) — <code>${rs_err}</code></li>" >> "$REPORT"
+                echo "<li><a href=\"#${safe}\" style=\"color:#f97583;font-weight:700;font-family:monospace;font-size:12px\">${safe}</a> — <code>${rs_err}</code></li>" >> "$REPORT"
             fi
         done
         echo '</ul></div>' >> "$REPORT"
@@ -493,8 +489,7 @@ if [ "$has_issues" = true ]; then
         for r in "${RESULTS[@]}"; do
             IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full env_display <<< "$r"
             if [ "$status" = "both_fail" ]; then
-                diff_id=$((diff_id + 1))
-                echo "<li><a href=\"#diff-${diff_id}\" style=\"color:#8b949e;font-weight:700\">#${diff_id}</a> <strong>${label}</strong> (${mode})</li>" >> "$REPORT"
+                echo "<li><a href=\"#${safe}\" style=\"color:#8b949e;font-weight:700;font-family:monospace;font-size:12px\">${safe}</a> — <strong>${label}</strong> (${mode})</li>" >> "$REPORT"
             fi
         done
         echo '</ul></div>' >> "$REPORT"
@@ -516,7 +511,6 @@ FILTERBAR
 # Detail rows
 echo '<h2>Detailed Results</h2>' >> "$REPORT"
 
-detail_diff_id=0
 for r in "${RESULTS[@]}"; do
     IFS='|' read -r label mode go_rc rust_rc status safe go_full rust_full env_display <<< "$r"
 
@@ -535,13 +529,12 @@ for r in "${RESULTS[@]}"; do
     [ "$status" = "rust_fail" ] && badge_text="Rust Fail"
     [ "$status" = "both_fail" ] && badge_text="Both Fail"
 
-    # Assign diff ID for non-match entries
+    # Assign deterministic ID based on command+mode for non-match entries
     id_html=""
     anchor=""
     if [ "$status" != "match" ]; then
-        detail_diff_id=$((detail_diff_id + 1))
-        id_html="<span class=\"diff-id\">#${detail_diff_id}</span>"
-        anchor=" id=\"diff-${detail_diff_id}\""
+        id_html="<span class=\"diff-id\">${safe}</span>"
+        anchor=" id=\"${safe}\""
     fi
 
     mode_badge="human"
