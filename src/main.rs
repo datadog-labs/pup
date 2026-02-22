@@ -184,10 +184,10 @@ enum Commands {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
-    /// Manage app key registrations
+    /// Manage application keys
     #[command(
         name = "app-keys",
-        after_help = "EXAMPLES:\n  # List all registered app keys\n  pup app-keys list\n\n  # Get app key registration details\n  pup app-keys get <app-key-id>\n\n  # Register an application key\n  pup app-keys register <app-key-id>\n\n  # Unregister an application key\n  pup app-keys unregister <app-key-id>"
+        after_help = "EXAMPLES:\n  # List your application keys\n  pup app-keys list\n\n  # List all application keys in the org (requires API keys)\n  pup app-keys list --all\n\n  # Get application key details\n  pup app-keys get <app-key-id>\n\n  # Create a new application key\n  pup app-keys create --name=\"My Key\"\n\n  # Create a scoped application key\n  pup app-keys create --name=\"Read Only\" --scopes=\"dashboards_read,metrics_read\"\n\n  # Update an application key name\n  pup app-keys update <app-key-id> --name=\"New Name\"\n\n  # Delete an application key\n  pup app-keys delete <app-key-id>"
     )]
     AppKeys {
         #[command(subcommand)]
@@ -1328,14 +1328,47 @@ enum ApiKeyActions {
 // ---- App Keys ----
 #[derive(Subcommand)]
 enum AppKeyActions {
-    /// List registered app keys
-    List,
-    /// Get app key registration details
+    /// List application keys
+    List {
+        /// List all org keys (requires API keys, not OAuth)
+        #[arg(long)]
+        all: bool,
+        /// Filter by key name
+        #[arg(long)]
+        filter: Option<String>,
+        /// Sort field (name, -name, created_at, -created_at)
+        #[arg(long)]
+        sort: Option<String>,
+        /// Number of results per page
+        #[arg(long, default_value = "10")]
+        page_size: i64,
+        /// Page number (0-indexed)
+        #[arg(long, default_value = "0")]
+        page_number: i64,
+    },
+    /// Get application key details
     Get { key_id: String },
-    /// Register an application key
-    Register { key_id: String },
-    /// Unregister an application key
-    Unregister { key_id: String },
+    /// Create a new application key
+    Create {
+        /// Application key name
+        #[arg(long)]
+        name: String,
+        /// Comma-separated authorization scopes
+        #[arg(long)]
+        scopes: Option<String>,
+    },
+    /// Update an application key
+    Update {
+        key_id: String,
+        /// New name for the application key
+        #[arg(long)]
+        name: Option<String>,
+        /// Comma-separated authorization scopes
+        #[arg(long)]
+        scopes: Option<String>,
+    },
+    /// Delete an application key (DESTRUCTIVE)
+    Delete { key_id: String },
 }
 
 // ---- Usage ----
@@ -3369,13 +3402,38 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::AppKeys { action } => {
             cfg.validate_auth()?;
             match action {
-                AppKeyActions::List => commands::app_keys::list(&cfg).await?,
-                AppKeyActions::Get { key_id } => commands::app_keys::get(&cfg, &key_id).await?,
-                AppKeyActions::Register { key_id } => {
-                    commands::app_keys::register(&cfg, &key_id).await?;
+                AppKeyActions::List {
+                    all,
+                    filter,
+                    sort,
+                    page_size,
+                    page_number,
+                } => {
+                    commands::app_keys::list(&cfg, all, &filter, &sort, page_size, page_number)
+                        .await?
                 }
-                AppKeyActions::Unregister { key_id } => {
-                    commands::app_keys::unregister(&cfg, &key_id).await?;
+                AppKeyActions::Get { key_id } => {
+                    commands::app_keys::get(&cfg, &key_id).await?
+                }
+                AppKeyActions::Create { name, scopes } => {
+                    commands::app_keys::create(&cfg, &name, &scopes).await?
+                }
+                AppKeyActions::Update {
+                    key_id,
+                    name,
+                    scopes,
+                } => commands::app_keys::update(&cfg, &key_id, &name, &scopes).await?,
+                AppKeyActions::Delete { key_id } => {
+                    if !cfg.auto_approve {
+                        eprint!("Delete application key {key_id}? Type 'yes' to confirm: ");
+                        let mut input = String::new();
+                        std::io::stdin().read_line(&mut input)?;
+                        if input.trim() != "yes" {
+                            println!("Operation cancelled.");
+                            return Ok(());
+                        }
+                    }
+                    commands::app_keys::delete(&cfg, &key_id).await?
                 }
             }
         }

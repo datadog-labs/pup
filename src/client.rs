@@ -350,19 +350,23 @@ static OAUTH_EXCLUDED_ENDPOINTS: &[EndpointRequirement] = &[
         method: "DELETE",
     },
     EndpointRequirement {
-        path: "/api/v2/app_keys",
+        path: "/api/v2/application_keys",
         method: "GET",
     },
     EndpointRequirement {
-        path: "/api/v2/app_keys/",
+        path: "/api/v2/application_keys/",
         method: "GET",
     },
     EndpointRequirement {
-        path: "/api/v2/app_keys/",
+        path: "/api/v2/application_keys/",
         method: "POST",
     },
     EndpointRequirement {
-        path: "/api/v2/app_keys/",
+        path: "/api/v2/application_keys/",
+        method: "PATCH",
+    },
+    EndpointRequirement {
+        path: "/api/v2/application_keys/",
         method: "DELETE",
     },
     // Events (1)
@@ -567,6 +571,6 @@ mod tests {
 
     #[test]
     fn test_oauth_excluded_count() {
-        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 52);
+        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 53);
     }
 }
