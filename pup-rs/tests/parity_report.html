@@ -69,7 +69,7 @@ details[open] summary { border-radius: 6px 6px 0 0; }
 <body>
 <h1>Pup CLI Parity Report</h1>
 <p class="subtitle">Go <code>pup</code> vs Rust <code>pup-rs</code> — End-to-end output comparison against mock Datadog API</p>
-<p class="timestamp">Generated: 2026-02-21 23:20:46 UTC</p>
+<p class="timestamp">Generated: 2026-02-22 00:14:51 UTC</p>
 <h2>Summary</h2>
 <div class="summary">
   <div class="stat"><div class="num">254</div><div class="label">Total Tests</div></div>
@@ -3959,15 +3959,15 @@ details[open] summary { border-radius: 6px 6px 0 0; }
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x10b676a50000?, {0x10b6768a1400, 0x0, 0x103298650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x1c5ba3222000?, {0x1c5ba3073400, 0x0, 0x10573c650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x1041b3320, {0x10b6768a1380, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x106657320, {0x1c5ba3073380, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x1041b1c20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x106655c20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x10b676822110, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x1c5ba2ff4110, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -4005,15 +4005,15 @@ main.main()
         <div class="output-box error">panic: runtime error: index out of range [0] with length 0
 
 goroutine 1 [running]:
-github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x6f6169622000?, {0x6f6169473400, 0x0, 0x1012b4650?})
+github.com/datadog-labs/pup/cmd.runRumMetricsGet(0x38c20080a000?, {0x38c20065b400, 0x0, 0x104c10650?})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/rum.go:555 +0xec
-github.com/spf13/cobra.(*Command).execute(0x1021cf320, {0x6f6169473380, 0x4, 0x4})
+github.com/spf13/cobra.(*Command).execute(0x105b2b320, {0x38c20065b380, 0x4, 0x4})
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0x814
-github.com/spf13/cobra.(*Command).ExecuteC(0x1021cdc20)
+github.com/spf13/cobra.(*Command).ExecuteC(0x105b29c20)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x350
 github.com/spf13/cobra.(*Command).Execute(...)
 	/Users/cody.lee/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071
-github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x6f61693f4110, 0x7, 0x7})
+github.com/datadog-labs/pup/cmd.ExecuteWithArgs({0x38c2005dc110, 0x7, 0x7})
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:146 +0x204
 github.com/datadog-labs/pup/cmd.Execute(...)
 	/Users/cody.lee/go/src/github.com/DataDog/pup/cmd/root.go:70
@@ -6193,49 +6193,49 @@ Commands:
   incidents          Manage incidents
   dashboards         Manage dashboards
   metrics            Query and manage metrics
-  slos               Manage SLOs
-  synthetics         Manage synthetics tests
+  slos               Manage Service Level Objectives
+  synthetics         Manage Synthetics tests and monitors
   events             Manage events
   downtime           Manage downtimes
   tags               Manage host tags
-  users              Manage users and roles
-  infrastructure     Manage infrastructure hosts
-  audit-logs         Search audit logs
-  security           Manage security monitoring
+  users              Manage users and access
+  infrastructure     Query infrastructure hosts and containers
+  audit-logs         Query audit logs
+  security           Manage security rules, signals, and findings
   organizations      Manage organizations
   cloud              Manage cloud integrations
-  cases              Manage cases
-  service-catalog    Manage service catalog
+  cases              Manage case management cases and projects
+  service-catalog    Query the Service Catalog
   api-keys           Manage API keys
-  app-keys           Manage application keys
-  usage              Query usage data
+  app-keys           Manage app key registrations
+  usage              Query usage and billing data
   notebooks          Manage notebooks
-  rum                RUM (Real User Monitoring)
-  cicd               CI/CD visibility
-  on-call            Manage on-call teams
-  fleet              Fleet automation
-  data-governance    Data governance
-  error-tracking     Error tracking
-  code-coverage      Code coverage
-  hamr               HAMR (High Availability Multi-Region)
-  status-pages       Status pages
-  integrations       Manage integrations (Jira, ServiceNow)
-  cost               Cloud cost management
-  misc               Miscellaneous (IP ranges)
-  apm                APM (Application Performance Monitoring)
-  investigations     Manage investigations
-  network            Network monitoring (placeholder)
-  obs-pipelines      Observability pipelines (placeholder)
-  scorecards         Scorecards (placeholder)
-  traces             Distributed traces (placeholder)
-  agent              Agent management (placeholder)
-  alias              Manage command aliases
-  product-analytics  Product analytics
-  static-analysis    Static analysis
-  auth               Authentication (OAuth2)
+  rum                Manage Real User Monitoring (RUM)
+  cicd               Manage CI/CD visibility
+  on-call            Manage on-call teams and schedules
+  fleet              Manage fleet agents and deployments
+  data-governance    Manage data governance and sensitive data
+  error-tracking     Manage error tracking issues
+  code-coverage      Query code coverage data
+  hamr               Manage HAMR connections
+  status-pages       Manage status pages and incidents
+  integrations       Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
+  cost               Query cloud cost data
+  misc               Utility commands (IP ranges, status)
+  apm                Manage APM services and entities
+  investigations     Manage security investigations
+  network            Manage network monitoring
+  obs-pipelines      Manage observability pipelines
+  scorecards         Manage scorecards
+  traces             Query distributed traces
+  agent              Agent tooling: schema, guide, and diagnostics for AI coding assistants
+  alias              Create shortcuts for pup commands
+  product-analytics  Submit product analytics events
+  static-analysis    Manage static analysis results
+  auth               OAuth2 authentication commands
   completions        Generate shell completions
-  version            Show version information
-  test               Validate configuration
+  version            Print version information
+  test               Test connection and credentials
   help               Print this message or the help of the given subcommand(s)
 
 Options:
@@ -6344,67 +6344,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json --help</div>
-        <div class="output-box rust">Datadog API CLI (Rust)
-
-Usage: pup-rs [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  monitors           Manage monitors
-  logs               Search and analyze logs
-  incidents          Manage incidents
-  dashboards         Manage dashboards
-  metrics            Query and manage metrics
-  slos               Manage SLOs
-  synthetics         Manage synthetics tests
-  events             Manage events
-  downtime           Manage downtimes
-  tags               Manage host tags
-  users              Manage users and roles
-  infrastructure     Manage infrastructure hosts
-  audit-logs         Search audit logs
-  security           Manage security monitoring
-  organizations      Manage organizations
-  cloud              Manage cloud integrations
-  cases              Manage cases
-  service-catalog    Manage service catalog
-  api-keys           Manage API keys
-  app-keys           Manage application keys
-  usage              Query usage data
-  notebooks          Manage notebooks
-  rum                RUM (Real User Monitoring)
-  cicd               CI/CD visibility
-  on-call            Manage on-call teams
-  fleet              Fleet automation
-  data-governance    Data governance
-  error-tracking     Error tracking
-  code-coverage      Code coverage
-  hamr               HAMR (High Availability Multi-Region)
-  status-pages       Status pages
-  integrations       Manage integrations (Jira, ServiceNow)
-  cost               Cloud cost management
-  misc               Miscellaneous (IP ranges)
-  apm                APM (Application Performance Monitoring)
-  investigations     Manage investigations
-  network            Network monitoring (placeholder)
-  obs-pipelines      Observability pipelines (placeholder)
-  scorecards         Scorecards (placeholder)
-  traces             Distributed traces (placeholder)
-  agent              Agent management (placeholder)
-  alias              Manage command aliases
-  product-analytics  Product analytics
-  static-analysis    Static analysis
-  auth               Authentication (OAuth2)
-  completions        Generate shell completions
-  version            Show version information
-  test               Validate configuration
-  help               Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help
-  -V, --version          Print version</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -6495,7 +6514,7 @@ Use "pup monitors [command] --help" for more information about a command.</div>
 Usage: pup-rs monitors [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list    List monitors
+  list    List monitors (limited results)
   get     Get monitor details
   create  Create a monitor from JSON file
   update  Update a monitor from JSON file
@@ -6608,24 +6627,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json monitors --help</div>
-        <div class="output-box rust">Manage monitors
-
-Usage: pup-rs monitors [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List monitors
-  get     Get monitor details
-  create  Create a monitor from JSON file
-  update  Update a monitor from JSON file
-  search  Search monitors
-  delete  Delete a monitor
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -6712,7 +6793,7 @@ Global Flags:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json monitors list --help</div>
-        <div class="output-box rust">List monitors
+        <div class="output-box rust">List monitors (limited results)
 
 Usage: pup-rs monitors list [OPTIONS]
 
@@ -6824,18 +6905,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json monitors list --help</div>
-        <div class="output-box rust">List monitors
-
-Usage: pup-rs monitors list [OPTIONS]
-
-Options:
-      --name &lt;NAME&gt;      
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-      --tags &lt;TAGS&gt;      
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-      --limit &lt;LIMIT&gt;    [default: 200]
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -7047,23 +7196,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json dashboards --help</div>
-        <div class="output-box rust">Manage dashboards
-
-Usage: pup-rs dashboards [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List all dashboards
-  get     Get dashboard details
-  create  Create a dashboard from JSON file
-  update  Update a dashboard from JSON file
-  delete  Delete a dashboard
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -7169,12 +7381,12 @@ Usage:</div>
 Usage: pup-rs logs [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  search               Search logs (forces API key auth)
-  list                 List logs (alias for search)
-  query                Query logs (alias for search)
-  aggregate            Aggregate logs
+  search               Search logs (v1 API)
+  list                 List logs (v2 API)
+  query                Query logs (v2 API)
+  aggregate            Aggregate logs (v2 API)
   archives             Manage log archives
-  custom-destinations  Manage custom destinations
+  custom-destinations  Manage custom log destinations
   metrics              Manage log-based metrics
   restriction-queries  Manage log restriction queries
   help                 Print this message or the help of the given subcommand(s)
@@ -7284,26 +7496,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json logs --help</div>
-        <div class="output-box rust">Search and analyze logs
-
-Usage: pup-rs logs [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  search               Search logs (forces API key auth)
-  list                 List logs (alias for search)
-  query                Query logs (alias for search)
-  aggregate            Aggregate logs
-  archives             Manage log archives
-  custom-destinations  Manage custom destinations
-  metrics              Manage log-based metrics
-  restriction-queries  Manage log restriction queries
-  help                 Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -7400,7 +7672,7 @@ Global Flags:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json logs search --help</div>
-        <div class="output-box rust">Search logs (forces API key auth)
+        <div class="output-box rust">Search logs (v1 API)
 
 Usage: pup-rs logs search [OPTIONS] --query &lt;QUERY&gt;
 
@@ -7513,19 +7785,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json logs search --help</div>
-        <div class="output-box rust">Search logs (forces API key auth)
-
-Usage: pup-rs logs search [OPTIONS] --query &lt;QUERY&gt;
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-      --query &lt;QUERY&gt;    
-      --from &lt;FROM&gt;      [default: 1h]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-      --to &lt;TO&gt;          [default: now]
-      --limit &lt;LIMIT&gt;    [default: 50]
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -7627,10 +7966,10 @@ Use "pup metrics [command] --help" for more information about a command.</div>
 Usage: pup-rs metrics [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list      List active metrics
-  search    Query metrics (v1 API)
-  query     Query metrics (v2 timeseries, alias)
-  submit    Submit custom metrics from JSON file
+  list      List all available metrics
+  search    Search metrics (v1 API)
+  query     Query time-series metrics data (v2 API)
+  submit    Submit custom metrics to Datadog
   metadata  Manage metric metadata
   tags      Manage metric tags
   help      Print this message or the help of the given subcommand(s)
@@ -7740,24 +8079,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json metrics --help</div>
-        <div class="output-box rust">Query and manage metrics
-
-Usage: pup-rs metrics [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list      List active metrics
-  search    Query metrics (v1 API)
-  query     Query metrics (v2 timeseries, alias)
-  submit    Submit custom metrics from JSON file
-  metadata  Manage metric metadata
-  tags      Manage metric tags
-  help      Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -7848,7 +8249,7 @@ Use "pup slos [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json slos --help</div>
-        <div class="output-box rust">Manage SLOs
+        <div class="output-box rust">Manage Service Level Objectives
 
 Usage: pup-rs slos [OPTIONS] &lt;COMMAND&gt;
 
@@ -7966,24 +8367,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json slos --help</div>
-        <div class="output-box rust">Manage SLOs
-
-Usage: pup-rs slos [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List all SLOs
-  get     Get SLO details
-  create  Create an SLO from JSON file
-  update  Update an SLO from JSON file
-  delete  Delete an SLO
-  status  Get SLO status
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -8051,14 +8514,14 @@ Use "pup synthetics [command] --help" for more information about a command.</div
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json synthetics --help</div>
-        <div class="output-box rust">Manage synthetics tests
+        <div class="output-box rust">Manage Synthetics tests and monitors
 
 Usage: pup-rs synthetics [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   tests      Manage synthetic tests
-  locations  Manage synthetic locations
-  suites     Manage synthetic suites
+  locations  Manage test locations
+  suites     Manage synthetic test suites
   help       Print this message or the help of the given subcommand(s)
 
 Options:
@@ -8166,21 +8629,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json synthetics --help</div>
-        <div class="output-box rust">Manage synthetics tests
-
-Usage: pup-rs synthetics [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  tests      Manage synthetic tests
-  locations  Manage synthetic locations
-  suites     Manage synthetic suites
-  help       Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -8246,8 +8774,8 @@ Use "pup events [command] --help" for more information about a command.</div>
 Usage: pup-rs events [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list    List events (v1 API)
-  search  Search events (v2 API, requires API keys)
+  list    List recent events
+  search  Search events
   get     Get event details
   help    Print this message or the help of the given subcommand(s)
 
@@ -8356,21 +8884,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json events --help</div>
-        <div class="output-box rust">Manage events
-
-Usage: pup-rs events [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List events (v1 API)
-  search  Search events (v2 API, requires API keys)
-  get     Get event details
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -8438,7 +9031,7 @@ Use "pup downtime [command] --help" for more information about a command.</div>
 Usage: pup-rs downtime [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list    List downtimes
+  list    List all downtimes
   get     Get downtime details
   create  Create a downtime from JSON file
   cancel  Cancel a downtime
@@ -8549,22 +9142,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json downtime --help</div>
-        <div class="output-box rust">Manage downtimes
-
-Usage: pup-rs downtime [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List downtimes
-  get     Get downtime details
-  create  Create a downtime from JSON file
-  cancel  Cancel a downtime
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -8637,8 +9294,8 @@ Commands:
   list    List all host tags
   get     Get tags for a host
   add     Add tags to a host
-  update  Update tags for a host
-  delete  Delete all tags for a host
+  update  Update host tags
+  delete  Delete all tags from a host
   help    Print this message or the help of the given subcommand(s)
 
 Options:
@@ -8746,23 +9403,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json tags --help</div>
-        <div class="output-box rust">Manage host tags
-
-Usage: pup-rs tags [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List all host tags
-  get     Get tags for a host
-  add     Add tags to a host
-  update  Update tags for a host
-  delete  Delete all tags for a host
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -8822,7 +9542,7 @@ Use "pup users [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json users --help</div>
-        <div class="output-box rust">Manage users and roles
+        <div class="output-box rust">Manage users and access
 
 Usage: pup-rs users [OPTIONS] &lt;COMMAND&gt;
 
@@ -8937,21 +9657,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json users --help</div>
-        <div class="output-box rust">Manage users and roles
-
-Usage: pup-rs users [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list   List users
-  get    Get user details
-  roles  Manage roles
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9008,7 +9793,7 @@ Use "pup infrastructure [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json infrastructure --help</div>
-        <div class="output-box rust">Manage infrastructure hosts
+        <div class="output-box rust">Query infrastructure hosts and containers
 
 Usage: pup-rs infrastructure [OPTIONS] &lt;COMMAND&gt;
 
@@ -9121,19 +9906,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json infrastructure --help</div>
-        <div class="output-box rust">Manage infrastructure hosts
-
-Usage: pup-rs infrastructure [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  hosts  Manage hosts
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9193,12 +10045,12 @@ Use "pup audit-logs [command] --help" for more information about a command.</div
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json audit-logs --help</div>
-        <div class="output-box rust">Search audit logs
+        <div class="output-box rust">Query audit logs
 
 Usage: pup-rs audit-logs [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list    List audit logs
+  list    List recent audit logs
   search  Search audit logs
   help    Print this message or the help of the given subcommand(s)
 
@@ -9307,20 +10159,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json audit-logs --help</div>
-        <div class="output-box rust">Search audit logs
-
-Usage: pup-rs audit-logs [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List audit logs
-  search  Search audit logs
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9381,15 +10299,15 @@ Use "pup security [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json security --help</div>
-        <div class="output-box rust">Manage security monitoring
+        <div class="output-box rust">Manage security rules, signals, and findings
 
 Usage: pup-rs security [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   rules          Manage security rules
-  signals        Search security signals
-  findings       Search security findings
-  content-packs  Manage content packs
+  signals        Manage security signals
+  findings       Manage security findings
+  content-packs  Manage security content packs
   risk-scores    Manage entity risk scores
   help           Print this message or the help of the given subcommand(s)
 
@@ -9498,23 +10416,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json security --help</div>
-        <div class="output-box rust">Manage security monitoring
-
-Usage: pup-rs security [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  rules          Manage security rules
-  signals        Search security signals
-  findings       Search security findings
-  content-packs  Manage content packs
-  risk-scores    Manage entity risk scores
-  help           Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9575,7 +10556,7 @@ Usage: pup-rs organizations [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   list  List organizations
-  get   Get current organization
+  get   Get organization details
   help  Print this message or the help of the given subcommand(s)
 
 Options:
@@ -9683,20 +10664,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json organizations --help</div>
-        <div class="output-box rust">Manage organizations
-
-Usage: pup-rs organizations [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list  List organizations
-  get   Get current organization
-  help  Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9764,10 +10811,10 @@ Use "pup cloud [command] --help" for more information about a command.</div>
 Usage: pup-rs cloud [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  aws    List AWS integrations
-  gcp    List GCP integrations
-  azure  List Azure integrations
-  oci    OCI integration
+  aws    Manage AWS integrations
+  gcp    Manage GCP integrations
+  azure  Manage Azure integrations
+  oci    Manage OCI integrations
   help   Print this message or the help of the given subcommand(s)
 
 Options:
@@ -9875,22 +10922,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cloud --help</div>
-        <div class="output-box rust">Manage cloud integrations
-
-Usage: pup-rs cloud [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  aws    List AWS integrations
-  gcp    List GCP integrations
-  azure  List Azure integrations
-  oci    OCI integration
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -9975,22 +11086,22 @@ Use "pup cases [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cases --help</div>
-        <div class="output-box rust">Manage cases
+        <div class="output-box rust">Manage case management cases and projects
 
 Usage: pup-rs cases [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   search           Search cases
   get              Get case details
-  create           Create a case from JSON file
+  create           Create a new case
   archive          Archive a case
   unarchive        Unarchive a case
   assign           Assign a case to a user
   update-priority  Update case priority
   update-status    Update case status
-  projects         Manage projects
-  jira             Jira integration for cases
-  servicenow       ServiceNow integration for cases
+  projects         Manage case projects
+  jira             Manage Jira integrations for cases
+  servicenow       Manage ServiceNow integrations for cases
   help             Print this message or the help of the given subcommand(s)
 
 Options:
@@ -10098,29 +11209,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cases --help</div>
-        <div class="output-box rust">Manage cases
-
-Usage: pup-rs cases [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  search           Search cases
-  get              Get case details
-  create           Create a case from JSON file
-  archive          Archive a case
-  unarchive        Unarchive a case
-  assign           Assign a case to a user
-  update-priority  Update case priority
-  update-status    Update case status
-  projects         Manage projects
-  jira             Jira integration for cases
-  servicenow       ServiceNow integration for cases
-  help             Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -10178,7 +11346,7 @@ Use "pup service-catalog [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json service-catalog --help</div>
-        <div class="output-box rust">Manage service catalog
+        <div class="output-box rust">Query the Service Catalog
 
 Usage: pup-rs service-catalog [OPTIONS] &lt;COMMAND&gt;
 
@@ -10292,20 +11460,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json service-catalog --help</div>
-        <div class="output-box rust">Manage service catalog
-
-Usage: pup-rs service-catalog [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list  List services
-  get   Get service details
-  help  Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -10380,8 +11614,8 @@ Usage: pup-rs api-keys [OPTIONS] &lt;COMMAND&gt;
 Commands:
   list    List API keys
   get     Get API key details
-  create  Create an API key
-  delete  Delete an API key
+  create  Create new API key
+  delete  Delete an API key (DESTRUCTIVE)
   help    Print this message or the help of the given subcommand(s)
 
 Options:
@@ -10489,22 +11723,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json api-keys --help</div>
-        <div class="output-box rust">Manage API keys
-
-Usage: pup-rs api-keys [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List API keys
-  get     Get API key details
-  create  Create an API key
-  delete  Delete an API key
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -10571,13 +11869,13 @@ Use "pup app-keys [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json app-keys --help</div>
-        <div class="output-box rust">Manage application keys
+        <div class="output-box rust">Manage app key registrations
 
 Usage: pup-rs app-keys [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  list        List application keys
-  get         Get application key details
+  list        List registered app keys
+  get         Get app key registration details
   register    Register an application key
   unregister  Unregister an application key
   help        Print this message or the help of the given subcommand(s)
@@ -10687,22 +11985,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json app-keys --help</div>
-        <div class="output-box rust">Manage application keys
-
-Usage: pup-rs app-keys [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list        List application keys
-  get         Get application key details
-  register    Register an application key
-  unregister  Unregister an application key
-  help        Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -10784,8 +12146,8 @@ Usage: pup-rs notebooks [OPTIONS] &lt;COMMAND&gt;
 Commands:
   list    List notebooks
   get     Get notebook details
-  create  Create a notebook from JSON file
-  update  Update a notebook from JSON file
+  create  Create a new notebook
+  update  Update a notebook
   delete  Delete a notebook
   help    Print this message or the help of the given subcommand(s)
 
@@ -10894,23 +12256,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json notebooks --help</div>
-        <div class="output-box rust">Manage notebooks
-
-Usage: pup-rs notebooks [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list    List notebooks
-  get     Get notebook details
-  create  Create a notebook from JSON file
-  update  Update a notebook from JSON file
-  delete  Delete a notebook
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11000,18 +12425,18 @@ Use "pup rum [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json rum --help</div>
-        <div class="output-box rust">RUM (Real User Monitoring)
+        <div class="output-box rust">Manage Real User Monitoring (RUM)
 
 Usage: pup-rs rum [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   apps               Manage RUM applications
   events             List RUM events
-  sessions           Search RUM sessions
-  metrics            Manage RUM metrics
+  sessions           Query RUM session replay data
+  metrics            Manage RUM custom metrics
   retention-filters  Manage RUM retention filters
-  playlists          Manage RUM replay playlists
-  heatmaps           Query RUM heatmaps
+  playlists          Manage session replay playlists
+  heatmaps           Query RUM interaction heatmaps
   help               Print this message or the help of the given subcommand(s)
 
 Options:
@@ -11119,25 +12544,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json rum --help</div>
-        <div class="output-box rust">RUM (Real User Monitoring)
-
-Usage: pup-rs rum [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  apps               Manage RUM applications
-  events             List RUM events
-  sessions           Search RUM sessions
-  metrics            Manage RUM metrics
-  retention-filters  Manage RUM retention filters
-  playlists          Manage RUM replay playlists
-  heatmaps           Query RUM heatmaps
-  help               Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11211,16 +12697,16 @@ Use "pup cicd [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cicd --help</div>
-        <div class="output-box rust">CI/CD visibility
+        <div class="output-box rust">Manage CI/CD visibility
 
 Usage: pup-rs cicd [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  pipelines    CI pipelines
-  tests        List CI tests
-  events       CI pipeline events
-  dora         DORA metrics
-  flaky-tests  Flaky tests
+  pipelines    Manage CI pipelines
+  tests        Query CI test events
+  events       Query CI/CD events
+  dora         Manage DORA metrics
+  flaky-tests  Manage flaky tests
   help         Print this message or the help of the given subcommand(s)
 
 Options:
@@ -11328,23 +12814,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cicd --help</div>
-        <div class="output-box rust">CI/CD visibility
-
-Usage: pup-rs cicd [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  pipelines    CI pipelines
-  tests        List CI tests
-  events       CI pipeline events
-  dora         DORA metrics
-  flaky-tests  Flaky tests
-  help         Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11408,12 +12957,12 @@ Use "pup on-call [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json on-call --help</div>
-        <div class="output-box rust">Manage on-call teams
+        <div class="output-box rust">Manage on-call teams and schedules
 
 Usage: pup-rs on-call [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  teams  Manage on-call teams
+  teams  Manage teams
   help   Print this message or the help of the given subcommand(s)
 
 Options:
@@ -11521,19 +13070,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json on-call --help</div>
-        <div class="output-box rust">Manage on-call teams
-
-Usage: pup-rs on-call [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  teams  Manage on-call teams
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11602,7 +13218,7 @@ Use "pup fleet [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json fleet --help</div>
-        <div class="output-box rust">Fleet automation
+        <div class="output-box rust">Manage fleet agents and deployments
 
 Usage: pup-rs fleet [OPTIONS] &lt;COMMAND&gt;
 
@@ -11717,21 +13333,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json fleet --help</div>
-        <div class="output-box rust">Fleet automation
-
-Usage: pup-rs fleet [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  agents       Manage fleet agents
-  deployments  Manage fleet deployments
-  schedules    Manage fleet schedules
-  help         Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11785,7 +13466,7 @@ Use "pup data-governance [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json data-governance --help</div>
-        <div class="output-box rust">Data governance
+        <div class="output-box rust">Manage data governance and sensitive data
 
 Usage: pup-rs data-governance [OPTIONS] &lt;COMMAND&gt;
 
@@ -11898,19 +13579,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json data-governance --help</div>
-        <div class="output-box rust">Data governance
-
-Usage: pup-rs data-governance [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  scanner-rules  List scanner rules
-  help           Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -11965,12 +13713,12 @@ Use "pup error-tracking [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json error-tracking --help</div>
-        <div class="output-box rust">Error tracking
+        <div class="output-box rust">Manage error tracking issues
 
 Usage: pup-rs error-tracking [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  issues  Manage error tracking issues
+  issues  Manage error issues
   help    Print this message or the help of the given subcommand(s)
 
 Options:
@@ -12078,19 +13826,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json error-tracking --help</div>
-        <div class="output-box rust">Error tracking
-
-Usage: pup-rs error-tracking [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  issues  Manage error tracking issues
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -12141,12 +13956,12 @@ Use "pup hamr [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json hamr --help</div>
-        <div class="output-box rust">HAMR (High Availability Multi-Region)
+        <div class="output-box rust">Manage HAMR connections
 
 Usage: pup-rs hamr [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  connections  Manage HAMR connections
+  connections  Manage HAMR organization connections
   help         Print this message or the help of the given subcommand(s)
 
 Options:
@@ -12254,19 +14069,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json hamr --help</div>
-        <div class="output-box rust">HAMR (High Availability Multi-Region)
-
-Usage: pup-rs hamr [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  connections  Manage HAMR connections
-  help         Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -12330,16 +14212,16 @@ Use "pup integrations [command] --help" for more information about a command.</d
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json integrations --help</div>
-        <div class="output-box rust">Manage integrations (Jira, ServiceNow)
+        <div class="output-box rust">Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
 
 Usage: pup-rs integrations [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  jira        Jira integration
-  servicenow  ServiceNow integration
-  slack       Slack integration
-  pagerduty   PagerDuty integration
-  webhooks    Webhooks integration
+  jira        Manage Jira integration
+  servicenow  Manage ServiceNow integration
+  slack       Manage Slack integration
+  pagerduty   Manage PagerDuty integration
+  webhooks    Manage webhooks
   help        Print this message or the help of the given subcommand(s)
 
 Options:
@@ -12447,23 +14329,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json integrations --help</div>
-        <div class="output-box rust">Manage integrations (Jira, ServiceNow)
-
-Usage: pup-rs integrations [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  jira        Jira integration
-  servicenow  ServiceNow integration
-  slack       Slack integration
-  pagerduty   PagerDuty integration
-  webhooks    Webhooks integration
-  help        Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -12525,14 +14470,14 @@ Use "pup cost [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cost --help</div>
-        <div class="output-box rust">Cloud cost management
+        <div class="output-box rust">Query cloud cost data
 
 Usage: pup-rs cost [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  projected    Get projected cost
-  by-org       Get cost by org
-  attribution  Get monthly cost attribution
+  projected    Get projected end-of-month costs
+  by-org       Get costs by organization
+  attribution  Get cost attribution by tags
   help         Print this message or the help of the given subcommand(s)
 
 Options:
@@ -12640,21 +14585,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json cost --help</div>
-        <div class="output-box rust">Cloud cost management
-
-Usage: pup-rs cost [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  projected    Get projected cost
-  by-org       Get cost by org
-  attribution  Get monthly cost attribution
-  help         Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -12709,13 +14719,13 @@ Use "pup misc [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json misc --help</div>
-        <div class="output-box rust">Miscellaneous (IP ranges)
+        <div class="output-box rust">Utility commands (IP ranges, status)
 
 Usage: pup-rs misc [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  ip-ranges  Get IP ranges
-  status     Validate API key / check status
+  ip-ranges  Get Datadog IP ranges
+  status     Check API status
   help       Print this message or the help of the given subcommand(s)
 
 Options:
@@ -12823,20 +14833,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json misc --help</div>
-        <div class="output-box rust">Miscellaneous (IP ranges)
-
-Usage: pup-rs misc [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  ip-ranges  Get IP ranges
-  status     Validate API key / check status
-  help       Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -12897,7 +14973,7 @@ Use "pup investigations [command] --help" for more information about a command.<
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json investigations --help</div>
-        <div class="output-box rust">Manage investigations
+        <div class="output-box rust">Manage security investigations
 
 Usage: pup-rs investigations [OPTIONS] &lt;COMMAND&gt;
 
@@ -13012,21 +15088,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json investigations --help</div>
-        <div class="output-box rust">Manage investigations
-
-Usage: pup-rs investigations [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  list     List investigations
-  get      Get investigation details
-  trigger  Trigger an investigation from JSON file
-  help     Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -13104,15 +15245,15 @@ Use "pup apm [command] --help" for more information about a command.</div>
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json apm --help</div>
-        <div class="output-box rust">APM (Application Performance Monitoring)
+        <div class="output-box rust">Manage APM services and entities
 
 Usage: pup-rs apm [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   services      Manage APM services
-  entities      List APM entities
-  dependencies  List APM dependencies
-  flow-map      APM flow map
+  entities      Manage APM entities
+  dependencies  Manage service dependencies
+  flow-map      View service flow map
   help          Print this message or the help of the given subcommand(s)
 
 Options:
@@ -13220,22 +15361,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json apm --help</div>
-        <div class="output-box rust">APM (Application Performance Monitoring)
-
-Usage: pup-rs apm [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  services      Manage APM services
-  entities      List APM entities
-  dependencies  List APM dependencies
-  flow-map      APM flow map
-  help          Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -13295,12 +15500,12 @@ Use "pup product-analytics [command] --help" for more information about a comman
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json product-analytics --help</div>
-        <div class="output-box rust">Product analytics
+        <div class="output-box rust">Submit product analytics events
 
 Usage: pup-rs product-analytics [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  events  Product analytics events
+  events  Send product analytics events
   help    Print this message or the help of the given subcommand(s)
 
 Options:
@@ -13408,19 +15613,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json product-analytics --help</div>
-        <div class="output-box rust">Product analytics
-
-Usage: pup-rs product-analytics [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  events  Product analytics events
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -13474,15 +15746,15 @@ Use "pup static-analysis [command] --help" for more information about a command.
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json static-analysis --help</div>
-        <div class="output-box rust">Static analysis
+        <div class="output-box rust">Manage static analysis results
 
 Usage: pup-rs static-analysis [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
-  ast              Manage AST results
-  custom-rulesets  Manage custom rulesets
-  sca              Manage SCA results
-  coverage         Manage coverage
+  ast              AST analysis
+  custom-rulesets  Custom security rulesets
+  sca              Software Composition Analysis
+  coverage         Code coverage analysis
   help             Print this message or the help of the given subcommand(s)
 
 Options:
@@ -13590,22 +15862,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json static-analysis --help</div>
-        <div class="output-box rust">Static analysis
-
-Usage: pup-rs static-analysis [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  ast              Manage AST results
-  custom-rulesets  Manage custom rulesets
-  sca              Manage SCA results
-  coverage         Manage coverage
-  help             Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>
@@ -13705,14 +16041,14 @@ MULTI-SITE SUPPORT:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json auth --help</div>
-        <div class="output-box rust">Authentication (OAuth2)
+        <div class="output-box rust">OAuth2 authentication commands
 
 Usage: pup-rs auth [OPTIONS] &lt;COMMAND&gt;
 
 Commands:
   login   Login via OAuth2
-  logout  Logout
-  status  Show auth status
+  logout  Logout and clear tokens
+  status  Check authentication status
   token   Print access token
   help    Print this message or the help of the given subcommand(s)
 
@@ -13821,22 +16157,86 @@ Options:
       <div>
         <div class="col-header">Rust (exit 0)</div>
         <div class="cmd-box">$ pup-rs -o json auth --help</div>
-        <div class="output-box rust">Authentication (OAuth2)
-
-Usage: pup-rs auth [OPTIONS] &lt;COMMAND&gt;
-
-Commands:
-  login   Login via OAuth2
-  logout  Logout
-  status  Show auth status
-  token   Print access token
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -o, --output &lt;OUTPUT&gt;  Output format (json, table, yaml) [default: json]
-  -y, --yes              Auto-approve destructive operations
-      --agent            Enable agent mode
-  -h, --help             Print help</div>
+        <div class="output-box rust">{
+  "version": "dev",
+  "description": "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains.",
+  "auth": {
+    "oauth": "pup auth login",
+    "api_keys": "Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"
+  },
+  "global_flags": [
+    {
+      "name": "--agent",
+      "type": "bool",
+      "default": "false",
+      "description": "Enable agent mode (auto-detected for AI coding assistants)"
+    },
+    {
+      "name": "--output",
+      "type": "string",
+      "default": "json",
+      "description": "Output format (json, table, yaml)"
+    },
+    {
+      "name": "--yes",
+      "type": "bool",
+      "default": "false",
+      "description": "Skip confirmation prompts (auto-approve all operations)"
+    }
+  ],
+  "commands": [
+    {
+      "name": "agent",
+      "full_path": "agent",
+      "description": "Agent tooling: schema, guide, and diagnostics for AI coding assistants",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "guide",
+          "full_path": "agent guide",
+          "description": "Output the comprehensive steering guide",
+          "read_only": true
+        },
+        {
+          "name": "schema",
+          "full_path": "agent schema",
+          "description": "Output command schema as JSON",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "name": "alias",
+      "full_path": "alias",
+      "description": "Create shortcuts for pup commands",
+      "read_only": true,
+      "subcommands": [
+        {
+          "name": "delete",
+          "full_path": "alias delete",
+          "description": "Delete set aliases",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "names",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "import",
+          "full_path": "alias import",
+          "description": "Import aliases from a YAML file",
+          "read_only": false,
+          "flags": [
+            {
+              "name": "--file",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "list",</div>
       </div>
     </div>
   </div>

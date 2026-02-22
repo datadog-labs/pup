@@ -52,12 +52,12 @@ enum Commands {
         #[command(subcommand)]
         action: MetricActions,
     },
-    /// Manage SLOs
+    /// Manage Service Level Objectives
     Slos {
         #[command(subcommand)]
         action: SloActions,
     },
-    /// Manage synthetics tests
+    /// Manage Synthetics tests and monitors
     Synthetics {
         #[command(subcommand)]
         action: SyntheticsActions,
@@ -77,23 +77,23 @@ enum Commands {
         #[command(subcommand)]
         action: TagActions,
     },
-    /// Manage users and roles
+    /// Manage users and access
     Users {
         #[command(subcommand)]
         action: UserActions,
     },
-    /// Manage infrastructure hosts
+    /// Query infrastructure hosts and containers
     Infrastructure {
         #[command(subcommand)]
         action: InfraActions,
     },
-    /// Search audit logs
+    /// Query audit logs
     #[command(name = "audit-logs")]
     AuditLogs {
         #[command(subcommand)]
         action: AuditLogActions,
     },
-    /// Manage security monitoring
+    /// Manage security rules, signals, and findings
     Security {
         #[command(subcommand)]
         action: SecurityActions,
@@ -108,12 +108,12 @@ enum Commands {
         #[command(subcommand)]
         action: CloudActions,
     },
-    /// Manage cases
+    /// Manage case management cases and projects
     Cases {
         #[command(subcommand)]
         action: CaseActions,
     },
-    /// Manage service catalog
+    /// Query the Service Catalog
     #[command(name = "service-catalog")]
     ServiceCatalog {
         #[command(subcommand)]
@@ -125,13 +125,13 @@ enum Commands {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
-    /// Manage application keys
+    /// Manage app key registrations
     #[command(name = "app-keys")]
     AppKeys {
         #[command(subcommand)]
         action: AppKeyActions,
     },
-    /// Query usage data
+    /// Query usage and billing data
     Usage {
         #[command(subcommand)]
         action: UsageActions,
@@ -141,126 +141,126 @@ enum Commands {
         #[command(subcommand)]
         action: NotebookActions,
     },
-    /// RUM (Real User Monitoring)
+    /// Manage Real User Monitoring (RUM)
     Rum {
         #[command(subcommand)]
         action: RumActions,
     },
-    /// CI/CD visibility
+    /// Manage CI/CD visibility
     Cicd {
         #[command(subcommand)]
         action: CicdActions,
     },
-    /// Manage on-call teams
+    /// Manage on-call teams and schedules
     #[command(name = "on-call")]
     OnCall {
         #[command(subcommand)]
         action: OnCallActions,
     },
-    /// Fleet automation
+    /// Manage fleet agents and deployments
     Fleet {
         #[command(subcommand)]
         action: FleetActions,
     },
-    /// Data governance
+    /// Manage data governance and sensitive data
     #[command(name = "data-governance")]
     DataGovernance {
         #[command(subcommand)]
         action: DataGovActions,
     },
-    /// Error tracking
+    /// Manage error tracking issues
     #[command(name = "error-tracking")]
     ErrorTracking {
         #[command(subcommand)]
         action: ErrorTrackingActions,
     },
-    /// Code coverage
+    /// Query code coverage data
     #[command(name = "code-coverage")]
     CodeCoverage {
         #[command(subcommand)]
         action: CodeCoverageActions,
     },
-    /// HAMR (High Availability Multi-Region)
+    /// Manage HAMR connections
     Hamr {
         #[command(subcommand)]
         action: HamrActions,
     },
-    /// Status pages
+    /// Manage status pages and incidents
     #[command(name = "status-pages")]
     StatusPages {
         #[command(subcommand)]
         action: StatusPageActions,
     },
-    /// Manage integrations (Jira, ServiceNow)
+    /// Manage integrations (Jira, ServiceNow, Slack, PagerDuty, Webhooks)
     Integrations {
         #[command(subcommand)]
         action: IntegrationActions,
     },
-    /// Cloud cost management
+    /// Query cloud cost data
     Cost {
         #[command(subcommand)]
         action: CostActions,
     },
-    /// Miscellaneous (IP ranges)
+    /// Utility commands (IP ranges, status)
     Misc {
         #[command(subcommand)]
         action: MiscActions,
     },
-    /// APM (Application Performance Monitoring)
+    /// Manage APM services and entities
     Apm {
         #[command(subcommand)]
         action: ApmActions,
     },
-    /// Manage investigations
+    /// Manage security investigations
     Investigations {
         #[command(subcommand)]
         action: InvestigationActions,
     },
-    /// Network monitoring (placeholder)
+    /// Manage network monitoring
     Network {
         #[command(subcommand)]
         action: NetworkActions,
     },
-    /// Observability pipelines (placeholder)
+    /// Manage observability pipelines
     #[command(name = "obs-pipelines")]
     ObsPipelines {
         #[command(subcommand)]
         action: ObsPipelinesActions,
     },
-    /// Scorecards (placeholder)
+    /// Manage scorecards
     Scorecards {
         #[command(subcommand)]
         action: ScorecardsActions,
     },
-    /// Distributed traces (placeholder)
+    /// Query distributed traces
     Traces {
         #[command(subcommand)]
         action: TracesActions,
     },
-    /// Agent management (placeholder)
+    /// Agent tooling: schema, guide, and diagnostics for AI coding assistants
     #[command(name = "agent")]
     Agent {
         #[command(subcommand)]
         action: AgentActions,
     },
-    /// Manage command aliases
+    /// Create shortcuts for pup commands
     Alias {
         #[command(subcommand)]
         action: AliasActions,
     },
-    /// Product analytics
+    /// Submit product analytics events
     #[command(name = "product-analytics")]
     ProductAnalytics {
         #[command(subcommand)]
         action: ProductAnalyticsActions,
     },
-    /// Static analysis
+    /// Manage static analysis results
     #[command(name = "static-analysis")]
     StaticAnalysis {
         #[command(subcommand)]
         action: StaticAnalysisActions,
     },
-    /// Authentication (OAuth2)
+    /// OAuth2 authentication commands
     Auth {
         #[command(subcommand)]
         action: AuthActions,
@@ -270,16 +270,16 @@ enum Commands {
         /// Shell to generate completions for
         shell: clap_complete::Shell,
     },
-    /// Show version information
+    /// Print version information
     Version,
-    /// Validate configuration
+    /// Test connection and credentials
     Test,
 }
 
 // ---- Monitors ----
 #[derive(Subcommand)]
 enum MonitorActions {
-    /// List monitors
+    /// List monitors (limited results)
     List {
         #[arg(long)]
         name: Option<String>,
@@ -303,7 +303,7 @@ enum MonitorActions {
 // ---- Logs ----
 #[derive(Subcommand)]
 enum LogActions {
-    /// Search logs (forces API key auth)
+    /// Search logs (v1 API)
     Search {
         #[arg(long)]
         query: String,
@@ -314,7 +314,7 @@ enum LogActions {
         #[arg(long, default_value_t = 50)]
         limit: i32,
     },
-    /// List logs (alias for search)
+    /// List logs (v2 API)
     List {
         #[arg(long, default_value = "*")]
         query: String,
@@ -325,7 +325,7 @@ enum LogActions {
         #[arg(long, default_value_t = 50)]
         limit: i32,
     },
-    /// Query logs (alias for search)
+    /// Query logs (v2 API)
     Query {
         #[arg(long)]
         query: String,
@@ -336,7 +336,7 @@ enum LogActions {
         #[arg(long, default_value_t = 50)]
         limit: i32,
     },
-    /// Aggregate logs
+    /// Aggregate logs (v2 API)
     Aggregate {
         #[arg(long, default_value = "*")]
         query: String,
@@ -350,7 +350,7 @@ enum LogActions {
         #[command(subcommand)]
         action: LogArchiveActions,
     },
-    /// Manage custom destinations
+    /// Manage custom log destinations
     #[command(name = "custom-destinations")]
     CustomDestinations {
         #[command(subcommand)]
@@ -379,17 +379,17 @@ enum LogRestrictionQueryActions {
 
 #[derive(Subcommand)]
 enum LogArchiveActions {
-    /// List log archives
+    /// List all log archives
     List,
-    /// Get archive details
+    /// Get log archive details
     Get { archive_id: String },
-    /// Delete an archive
+    /// Delete a log archive
     Delete { archive_id: String },
 }
 
 #[derive(Subcommand)]
 enum LogCustomDestinationActions {
-    /// List custom destinations
+    /// List custom log destinations
     List,
     /// Get custom destination details
     Get { destination_id: String },
@@ -408,7 +408,7 @@ enum LogMetricActions {
 // ---- Incidents ----
 #[derive(Subcommand)]
 enum IncidentActions {
-    /// List incidents (unstable)
+    /// List all incidents
     List {
         #[arg(long, default_value_t = 50)]
         limit: i64,
@@ -430,7 +430,7 @@ enum IncidentActions {
         #[command(subcommand)]
         action: IncidentHandleActions,
     },
-    /// Manage postmortem templates
+    /// Manage incident postmortem templates
     #[command(name = "postmortem-templates")]
     PostmortemTemplates {
         #[command(subcommand)]
@@ -453,7 +453,7 @@ enum IncidentAttachmentActions {
 enum IncidentSettingsActions {
     /// Get global incident settings
     Get,
-    /// Update global incident settings from JSON file
+    /// Update global incident settings
     Update {
         #[arg(long)]
         file: String,
@@ -464,17 +464,17 @@ enum IncidentSettingsActions {
 enum IncidentHandleActions {
     /// List global incident handles
     List,
-    /// Create a global incident handle from JSON file
+    /// Create global incident handle
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a global incident handle from JSON file
+    /// Update global incident handle
     Update {
         #[arg(long)]
         file: String,
     },
-    /// Delete a global incident handle
+    /// Delete global incident handle
     Delete { handle_id: String },
 }
 
@@ -482,20 +482,20 @@ enum IncidentHandleActions {
 enum IncidentPostmortemActions {
     /// List postmortem templates
     List,
-    /// Get postmortem template details
+    /// Get postmortem template
     Get { template_id: String },
-    /// Create a postmortem template from JSON file
+    /// Create postmortem template
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a postmortem template from JSON file
+    /// Update postmortem template
     Update {
         template_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a postmortem template
+    /// Delete postmortem template
     Delete { template_id: String },
 }
 
@@ -517,14 +517,14 @@ enum DashboardActions {
 // ---- Metrics ----
 #[derive(Subcommand)]
 enum MetricActions {
-    /// List active metrics
+    /// List all available metrics
     List {
         #[arg(long)]
         filter: Option<String>,
         #[arg(long, default_value = "1h")]
         from: String,
     },
-    /// Query metrics (v1 API)
+    /// Search metrics (v1 API)
     Search {
         #[arg(long)]
         query: String,
@@ -533,7 +533,7 @@ enum MetricActions {
         #[arg(long, default_value = "now")]
         to: String,
     },
-    /// Query metrics (v2 timeseries, alias)
+    /// Query time-series metrics data (v2 API)
     Query {
         #[arg(long)]
         query: String,
@@ -542,7 +542,7 @@ enum MetricActions {
         #[arg(long, default_value = "now")]
         to: String,
     },
-    /// Submit custom metrics from JSON file
+    /// Submit custom metrics to Datadog
     Submit {
         #[arg(long)]
         file: String,
@@ -569,7 +569,7 @@ enum MetricTagActions {
 enum MetricMetadataActions {
     /// Get metric metadata
     Get { metric_name: String },
-    /// Update metric metadata from JSON file
+    /// Update metric metadata
     Update {
         metric_name: String,
         #[arg(long)]
@@ -608,12 +608,12 @@ enum SyntheticsActions {
         #[command(subcommand)]
         action: SyntheticsTestActions,
     },
-    /// Manage synthetic locations
+    /// Manage test locations
     Locations {
         #[command(subcommand)]
         action: SyntheticsLocationActions,
     },
-    /// Manage synthetic suites
+    /// Manage synthetic test suites
     Suites {
         #[command(subcommand)]
         action: SyntheticsSuiteActions,
@@ -622,11 +622,11 @@ enum SyntheticsActions {
 
 #[derive(Subcommand)]
 enum SyntheticsTestActions {
-    /// List all tests
+    /// List synthetic tests
     List,
     /// Get test details
     Get { public_id: String },
-    /// Search tests
+    /// Search synthetic tests
     Search {
         #[arg(long)]
         text: Option<String>,
@@ -639,31 +639,31 @@ enum SyntheticsTestActions {
 
 #[derive(Subcommand)]
 enum SyntheticsLocationActions {
-    /// List test locations
+    /// List available locations
     List,
 }
 
 #[derive(Subcommand)]
 enum SyntheticsSuiteActions {
-    /// List synthetic suites
+    /// Search synthetic suites
     List {
         #[arg(long)]
         query: Option<String>,
     },
     /// Get suite details
     Get { suite_id: String },
-    /// Create a suite from JSON file
+    /// Create a synthetic suite
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a suite from JSON file
+    /// Update a synthetic suite
     Update {
         suite_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete suites
+    /// Delete synthetic suites
     Delete {
         /// Suite IDs to delete
         suite_ids: Vec<String>,
@@ -673,7 +673,7 @@ enum SyntheticsSuiteActions {
 // ---- Events ----
 #[derive(Subcommand)]
 enum EventActions {
-    /// List events (v1 API)
+    /// List recent events
     List {
         #[arg(long, default_value_t = 0)]
         start: i64,
@@ -682,7 +682,7 @@ enum EventActions {
         #[arg(long)]
         tags: Option<String>,
     },
-    /// Search events (v2 API, requires API keys)
+    /// Search events
     Search {
         #[arg(long)]
         query: String,
@@ -700,7 +700,7 @@ enum EventActions {
 // ---- Downtime ----
 #[derive(Subcommand)]
 enum DowntimeActions {
-    /// List downtimes
+    /// List all downtimes
     List,
     /// Get downtime details
     Get { id: String },
@@ -719,9 +719,9 @@ enum TagActions {
     Get { hostname: String },
     /// Add tags to a host
     Add { hostname: String, tags: Vec<String> },
-    /// Update tags for a host
+    /// Update host tags
     Update { hostname: String, tags: Vec<String> },
-    /// Delete all tags for a host
+    /// Delete all tags from a host
     Delete { hostname: String },
 }
 
@@ -773,7 +773,7 @@ enum InfraHostActions {
 // ---- Audit Logs ----
 #[derive(Subcommand)]
 enum AuditLogActions {
-    /// List audit logs
+    /// List recent audit logs
     List {
         #[arg(long, default_value = "1h")]
         from: String,
@@ -803,17 +803,17 @@ enum SecurityActions {
         #[command(subcommand)]
         action: SecurityRuleActions,
     },
-    /// Search security signals
+    /// Manage security signals
     Signals {
         #[command(subcommand)]
         action: SecuritySignalActions,
     },
-    /// Search security findings
+    /// Manage security findings
     Findings {
         #[command(subcommand)]
         action: SecurityFindingActions,
     },
-    /// Manage content packs
+    /// Manage security content packs
     #[command(name = "content-packs")]
     ContentPacks {
         #[command(subcommand)]
@@ -829,11 +829,11 @@ enum SecurityActions {
 
 #[derive(Subcommand)]
 enum SecurityRuleActions {
-    /// List rules
+    /// List security rules
     List,
     /// Get rule details
     Get { rule_id: String },
-    /// Bulk export rules
+    /// Bulk export security monitoring rules
     #[command(name = "bulk-export")]
     BulkExport {
         /// Rule IDs to export
@@ -843,7 +843,7 @@ enum SecurityRuleActions {
 
 #[derive(Subcommand)]
 enum SecuritySignalActions {
-    /// Search signals
+    /// Search security signals
     Search {
         #[arg(long)]
         query: String,
@@ -858,7 +858,7 @@ enum SecuritySignalActions {
 
 #[derive(Subcommand)]
 enum SecurityFindingActions {
-    /// Search findings
+    /// Search security findings
     Search {
         #[arg(long)]
         query: Option<String>,
@@ -869,7 +869,7 @@ enum SecurityFindingActions {
 
 #[derive(Subcommand)]
 enum SecurityContentPackActions {
-    /// List content packs
+    /// List content pack states
     List,
     /// Activate a content pack
     Activate { pack_id: String },
@@ -891,29 +891,29 @@ enum SecurityRiskScoreActions {
 enum OrgActions {
     /// List organizations
     List,
-    /// Get current organization
+    /// Get organization details
     Get,
 }
 
 // ---- Cloud ----
 #[derive(Subcommand)]
 enum CloudActions {
-    /// List AWS integrations
+    /// Manage AWS integrations
     Aws {
         #[command(subcommand)]
         action: CloudSubActions,
     },
-    /// List GCP integrations
+    /// Manage GCP integrations
     Gcp {
         #[command(subcommand)]
         action: CloudSubActions,
     },
-    /// List Azure integrations
+    /// Manage Azure integrations
     Azure {
         #[command(subcommand)]
         action: CloudSubActions,
     },
-    /// OCI integration
+    /// Manage OCI integrations
     Oci {
         #[command(subcommand)]
         action: CloudOciActions,
@@ -928,12 +928,12 @@ enum CloudSubActions {
 
 #[derive(Subcommand)]
 enum CloudOciActions {
-    /// Manage OCI tenancies
+    /// Manage OCI tenancy configurations
     Tenancies {
         #[command(subcommand)]
         action: CloudOciTenancyActions,
     },
-    /// List OCI products
+    /// Manage OCI products
     Products {
         /// Product keys to query
         product_keys: String,
@@ -942,22 +942,22 @@ enum CloudOciActions {
 
 #[derive(Subcommand)]
 enum CloudOciTenancyActions {
-    /// List OCI tenancies
+    /// List OCI tenancy configurations
     List,
-    /// Get OCI tenancy details
+    /// Get OCI tenancy configuration
     Get { tenancy_id: String },
-    /// Create an OCI tenancy from JSON file
+    /// Create OCI tenancy configuration
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update an OCI tenancy from JSON file
+    /// Update OCI tenancy configuration
     Update {
         tenancy_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete an OCI tenancy
+    /// Delete OCI tenancy configuration
     Delete { tenancy_id: String },
 }
 
@@ -973,7 +973,7 @@ enum CaseActions {
     },
     /// Get case details
     Get { case_id: String },
-    /// Create a case from JSON file
+    /// Create a new case
     Create {
         #[arg(long)]
         file: String,
@@ -1002,17 +1002,17 @@ enum CaseActions {
         #[arg(long)]
         status: String,
     },
-    /// Manage projects
+    /// Manage case projects
     Projects {
         #[command(subcommand)]
         action: CaseProjectActions,
     },
-    /// Jira integration for cases
+    /// Manage Jira integrations for cases
     Jira {
         #[command(subcommand)]
         action: CaseJiraActions,
     },
-    /// ServiceNow integration for cases
+    /// Manage ServiceNow integrations for cases
     Servicenow {
         #[command(subcommand)]
         action: CaseServicenowActions,
@@ -1021,11 +1021,11 @@ enum CaseActions {
 
 #[derive(Subcommand)]
 enum CaseProjectActions {
-    /// List projects
+    /// List all projects
     List,
     /// Get project details
     Get { project_id: String },
-    /// Create a project
+    /// Create a new project
     Create {
         #[arg(long)]
         name: String,
@@ -1034,7 +1034,7 @@ enum CaseProjectActions {
     },
     /// Delete a project
     Delete { project_id: String },
-    /// Manage notification rules
+    /// Manage project notification rules
     #[command(name = "notification-rules")]
     NotificationRules {
         #[command(subcommand)]
@@ -1076,13 +1076,13 @@ enum CaseServicenowActions {
 enum CaseNotificationRuleActions {
     /// List notification rules for a project
     List { project_id: String },
-    /// Create a notification rule from JSON file
+    /// Create a notification rule
     Create {
         project_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Update a notification rule from JSON file
+    /// Update a notification rule
     Update {
         project_id: String,
         rule_id: String,
@@ -1112,18 +1112,18 @@ enum ApiKeyActions {
     List,
     /// Get API key details
     Get { key_id: String },
-    /// Create an API key
+    /// Create new API key
     Create { #[arg(long)] name: String },
-    /// Delete an API key
+    /// Delete an API key (DESTRUCTIVE)
     Delete { key_id: String },
 }
 
 // ---- App Keys ----
 #[derive(Subcommand)]
 enum AppKeyActions {
-    /// List application keys
+    /// List registered app keys
     List,
-    /// Get application key details
+    /// Get app key registration details
     Get { key_id: String },
     /// Register an application key
     Register { key_id: String },
@@ -1157,12 +1157,12 @@ enum NotebookActions {
     List,
     /// Get notebook details
     Get { notebook_id: i64 },
-    /// Create a notebook from JSON file
+    /// Create a new notebook
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a notebook from JSON file
+    /// Update a notebook
     Update {
         notebook_id: i64,
         #[arg(long)]
@@ -1189,12 +1189,12 @@ enum RumActions {
         #[arg(long, default_value_t = 100)]
         limit: i32,
     },
-    /// Search RUM sessions
+    /// Query RUM session replay data
     Sessions {
         #[command(subcommand)]
         action: RumSessionActions,
     },
-    /// Manage RUM metrics
+    /// Manage RUM custom metrics
     Metrics {
         #[command(subcommand)]
         action: RumMetricActions,
@@ -1205,12 +1205,12 @@ enum RumActions {
         #[command(subcommand)]
         action: RumRetentionFilterActions,
     },
-    /// Manage RUM replay playlists
+    /// Manage session replay playlists
     Playlists {
         #[command(subcommand)]
         action: RumPlaylistActions,
     },
-    /// Query RUM heatmaps
+    /// Query RUM interaction heatmaps
     Heatmaps {
         #[command(subcommand)]
         action: RumHeatmapActions,
@@ -1219,24 +1219,24 @@ enum RumActions {
 
 #[derive(Subcommand)]
 enum RumAppActions {
-    /// List RUM apps (requires API keys)
+    /// List all RUM applications
     List,
-    /// Get RUM app details (requires API keys)
+    /// Get RUM application details
     Get { app_id: String },
-    /// Create a RUM app (requires API keys)
+    /// Create a new RUM application
     Create {
         #[arg(long)]
         name: String,
         #[arg(long, name = "type")]
         app_type: Option<String>,
     },
-    /// Update a RUM app (requires API keys)
+    /// Update a RUM application
     Update {
         app_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a RUM app (requires API keys)
+    /// Delete a RUM application
     Delete { app_id: String },
 }
 
@@ -1266,38 +1266,38 @@ enum RumSessionActions {
 
 #[derive(Subcommand)]
 enum RumMetricActions {
-    /// List RUM metrics
+    /// List all RUM custom metrics
     List,
-    /// Get RUM metric details
+    /// Get RUM custom metric details
     Get { metric_id: String },
-    /// Create a RUM metric from JSON file
+    /// Create a RUM custom metric
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a RUM metric from JSON file
+    /// Update a RUM custom metric
     Update {
         metric_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a RUM metric
+    /// Delete a RUM custom metric
     Delete { metric_id: String },
 }
 
 #[derive(Subcommand)]
 enum RumRetentionFilterActions {
-    /// List retention filters for an app
+    /// List all retention filters
     List { app_id: String },
     /// Get retention filter details
     Get { app_id: String, filter_id: String },
-    /// Create a retention filter from JSON file
+    /// Create a retention filter
     Create {
         app_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Update a retention filter from JSON file
+    /// Update a retention filter
     Update {
         app_id: String,
         filter_id: String,
@@ -1310,15 +1310,15 @@ enum RumRetentionFilterActions {
 
 #[derive(Subcommand)]
 enum RumPlaylistActions {
-    /// List RUM replay playlists
+    /// List session replay playlists
     List,
-    /// Get RUM replay playlist details
+    /// Get playlist details
     Get { playlist_id: i32 },
 }
 
 #[derive(Subcommand)]
 enum RumHeatmapActions {
-    /// Query heatmap snapshots for a view
+    /// Query heatmap data
     Query {
         #[arg(long)]
         view_name: String,
@@ -1328,27 +1328,27 @@ enum RumHeatmapActions {
 // ---- CI/CD ----
 #[derive(Subcommand)]
 enum CicdActions {
-    /// CI pipelines
+    /// Manage CI pipelines
     Pipelines {
         #[command(subcommand)]
         action: CicdPipelineActions,
     },
-    /// List CI tests
+    /// Query CI test events
     Tests {
         #[command(subcommand)]
         action: CicdTestActions,
     },
-    /// CI pipeline events
+    /// Query CI/CD events
     Events {
         #[command(subcommand)]
         action: CicdEventActions,
     },
-    /// DORA metrics
+    /// Manage DORA metrics
     Dora {
         #[command(subcommand)]
         action: CicdDoraActions,
     },
-    /// Flaky tests
+    /// Manage flaky tests
     #[command(name = "flaky-tests")]
     FlakyTests {
         #[command(subcommand)]
@@ -1369,7 +1369,7 @@ enum CicdPipelineActions {
         #[arg(long, default_value_t = 50)]
         limit: i32,
     },
-    /// Get CI pipeline details
+    /// Get pipeline details
     Get { pipeline_id: String },
 }
 
@@ -1410,7 +1410,7 @@ enum CicdTestActions {
 
 #[derive(Subcommand)]
 enum CicdEventActions {
-    /// Search CI pipeline events
+    /// Search CI/CD events
     Search {
         #[arg(long)]
         query: String,
@@ -1421,7 +1421,7 @@ enum CicdEventActions {
         #[arg(long, default_value_t = 50)]
         limit: i32,
     },
-    /// Aggregate CI pipeline events
+    /// Aggregate CI/CD events
     Aggregate {
         #[arg(long)]
         query: String,
@@ -1450,7 +1450,7 @@ enum CicdFlakyTestActions {
         #[arg(long)]
         query: Option<String>,
     },
-    /// Update flaky tests from JSON file
+    /// Update flaky tests
     Update {
         #[arg(long)]
         file: String,
@@ -1460,7 +1460,7 @@ enum CicdFlakyTestActions {
 // ---- On-Call ----
 #[derive(Subcommand)]
 enum OnCallActions {
-    /// Manage on-call teams
+    /// Manage teams
     Teams {
         #[command(subcommand)]
         action: OnCallTeamActions,
@@ -1469,18 +1469,18 @@ enum OnCallActions {
 
 #[derive(Subcommand)]
 enum OnCallTeamActions {
-    /// List teams
+    /// List all teams
     List,
     /// Get team details
     Get { team_id: String },
-    /// Create a team
+    /// Create a new team
     Create {
         #[arg(long)]
         name: String,
         #[arg(long)]
         handle: String,
     },
-    /// Update a team
+    /// Update team details
     Update {
         team_id: String,
         #[arg(long)]
@@ -1490,7 +1490,7 @@ enum OnCallTeamActions {
     },
     /// Delete a team
     Delete { team_id: String },
-    /// Manage team memberships
+    /// List team members
     Memberships {
         #[command(subcommand)]
         action: OnCallMembershipActions,
@@ -1499,13 +1499,13 @@ enum OnCallTeamActions {
 
 #[derive(Subcommand)]
 enum OnCallMembershipActions {
-    /// List team memberships
+    /// List team members
     List {
         team_id: String,
         #[arg(long, default_value_t = 100)]
         page_size: i64,
     },
-    /// Add a membership
+    /// Add a member to team
     Add {
         team_id: String,
         #[arg(long)]
@@ -1513,14 +1513,14 @@ enum OnCallMembershipActions {
         #[arg(long)]
         role: Option<String>,
     },
-    /// Update a membership
+    /// Update member role
     Update {
         team_id: String,
         user_id: String,
         #[arg(long)]
         role: String,
     },
-    /// Remove a membership
+    /// Remove member from team
     Remove { team_id: String, user_id: String },
 }
 
@@ -1546,34 +1546,34 @@ enum FleetActions {
 
 #[derive(Subcommand)]
 enum FleetAgentActions {
-    /// List agents
+    /// List fleet agents
     List {
         #[arg(long)]
         page_size: Option<i64>,
     },
-    /// Get agent details
+    /// Get fleet agent details
     Get { agent_key: String },
-    /// List agent versions
+    /// List available agent versions
     Versions,
 }
 
 #[derive(Subcommand)]
 enum FleetDeploymentActions {
-    /// List deployments
+    /// List fleet deployments
     List {
         #[arg(long)]
         page_size: Option<i64>,
     },
-    /// Get deployment details
+    /// Get fleet deployment details
     Get { deployment_id: String },
-    /// Cancel a deployment
+    /// Cancel a fleet deployment
     Cancel { deployment_id: String },
-    /// Configure a deployment from JSON file
+    /// Create a configuration deployment
     Configure {
         #[arg(long)]
         file: String,
     },
-    /// Upgrade a deployment from JSON file
+    /// Create an upgrade deployment
     Upgrade {
         #[arg(long)]
         file: String,
@@ -1582,24 +1582,24 @@ enum FleetDeploymentActions {
 
 #[derive(Subcommand)]
 enum FleetScheduleActions {
-    /// List schedules
+    /// List fleet schedules
     List,
-    /// Get schedule details
+    /// Get fleet schedule details
     Get { schedule_id: String },
-    /// Create a schedule from JSON file
+    /// Create a fleet schedule
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a schedule from JSON file
+    /// Update a fleet schedule
     Update {
         schedule_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a schedule
+    /// Delete a fleet schedule
     Delete { schedule_id: String },
-    /// Trigger a schedule
+    /// Trigger a fleet schedule
     Trigger { schedule_id: String },
 }
 
@@ -1623,7 +1623,7 @@ enum DataGovScannerActions {
 // ---- Error Tracking ----
 #[derive(Subcommand)]
 enum ErrorTrackingActions {
-    /// Manage error tracking issues
+    /// Manage error issues
     Issues {
         #[command(subcommand)]
         action: ErrorTrackingIssueActions,
@@ -1632,7 +1632,7 @@ enum ErrorTrackingActions {
 
 #[derive(Subcommand)]
 enum ErrorTrackingIssueActions {
-    /// Search issues
+    /// Search error issues
     Search {
         #[arg(long)]
         query: Option<String>,
@@ -1667,7 +1667,7 @@ enum CodeCoverageActions {
 // ---- HAMR ----
 #[derive(Subcommand)]
 enum HamrActions {
-    /// Manage HAMR connections
+    /// Manage HAMR organization connections
     Connections {
         #[command(subcommand)]
         action: HamrConnectionActions,
@@ -1676,9 +1676,9 @@ enum HamrActions {
 
 #[derive(Subcommand)]
 enum HamrConnectionActions {
-    /// Get HAMR org connection
+    /// Get HAMR organization connection
     Get,
-    /// Create HAMR org connection from JSON file
+    /// Create HAMR organization connection
     Create {
         #[arg(long)]
         file: String,
@@ -1693,17 +1693,17 @@ enum StatusPageActions {
         #[command(subcommand)]
         action: StatusPagePageActions,
     },
-    /// Manage page components
+    /// Manage status page components
     Components {
         #[command(subcommand)]
         action: StatusPageComponentActions,
     },
-    /// Manage degradations
+    /// Manage status page degradations
     Degradations {
         #[command(subcommand)]
         action: StatusPageDegradationActions,
     },
-    /// Third-party status pages
+    /// View third-party service outage signals
     #[command(name = "third-party")]
     ThirdParty {
         #[command(subcommand)]
@@ -1713,16 +1713,16 @@ enum StatusPageActions {
 
 #[derive(Subcommand)]
 enum StatusPagePageActions {
-    /// List status pages
+    /// List all status pages
     List,
     /// Get status page details
     Get { page_id: String },
-    /// Create a status page from JSON file
+    /// Create a status page
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a status page from JSON file
+    /// Update a status page
     Update {
         page_id: String,
         #[arg(long)]
@@ -1734,20 +1734,20 @@ enum StatusPagePageActions {
 
 #[derive(Subcommand)]
 enum StatusPageComponentActions {
-    /// List components
+    /// List components for a page
     List { page_id: String },
     /// Get component details
     Get {
         page_id: String,
         component_id: String,
     },
-    /// Create a component from JSON file
+    /// Create a component
     Create {
         page_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Update a component from JSON file
+    /// Update a component
     Update {
         page_id: String,
         component_id: String,
@@ -1770,13 +1770,13 @@ enum StatusPageDegradationActions {
         page_id: String,
         degradation_id: String,
     },
-    /// Create a degradation from JSON file
+    /// Create a degradation
     Create {
         page_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Update a degradation from JSON file
+    /// Update a degradation
     Update {
         page_id: String,
         degradation_id: String,
@@ -1799,27 +1799,27 @@ enum StatusPageThirdPartyActions {
 // ---- Integrations ----
 #[derive(Subcommand)]
 enum IntegrationActions {
-    /// Jira integration
+    /// Manage Jira integration
     Jira {
         #[command(subcommand)]
         action: JiraActions,
     },
-    /// ServiceNow integration
+    /// Manage ServiceNow integration
     Servicenow {
         #[command(subcommand)]
         action: ServiceNowActions,
     },
-    /// Slack integration
+    /// Manage Slack integration
     Slack {
         #[command(subcommand)]
         action: SlackActions,
     },
-    /// PagerDuty integration
+    /// Manage PagerDuty integration
     Pagerduty {
         #[command(subcommand)]
         action: PagerdutyActions,
     },
-    /// Webhooks integration
+    /// Manage webhooks
     Webhooks {
         #[command(subcommand)]
         action: WebhooksActions,
@@ -1833,7 +1833,7 @@ enum JiraActions {
         #[command(subcommand)]
         action: JiraAccountActions,
     },
-    /// Manage Jira templates
+    /// Manage Jira issue templates
     Templates {
         #[command(subcommand)]
         action: JiraTemplateActions,
@@ -1850,22 +1850,22 @@ enum JiraAccountActions {
 
 #[derive(Subcommand)]
 enum JiraTemplateActions {
-    /// List templates
+    /// List Jira issue templates
     List,
-    /// Get template details
+    /// Get Jira issue template
     Get { template_id: String },
-    /// Create a template from JSON file
+    /// Create Jira issue template
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a template from JSON file
+    /// Update Jira issue template
     Update {
         template_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a template
+    /// Delete Jira issue template
     Delete { template_id: String },
 }
 
@@ -1908,40 +1908,40 @@ enum ServiceNowInstanceActions {
 
 #[derive(Subcommand)]
 enum ServiceNowUserActions {
-    /// List ServiceNow users for an instance
+    /// List ServiceNow users
     List { instance_name: String },
 }
 
 #[derive(Subcommand)]
 enum ServiceNowAssignmentGroupActions {
-    /// List ServiceNow assignment groups for an instance
+    /// List ServiceNow assignment groups
     List { instance_name: String },
 }
 
 #[derive(Subcommand)]
 enum ServiceNowBusinessServiceActions {
-    /// List ServiceNow business services for an instance
+    /// List ServiceNow business services
     List { instance_name: String },
 }
 
 #[derive(Subcommand)]
 enum ServiceNowTemplateActions {
-    /// List templates
+    /// List ServiceNow templates
     List,
-    /// Get template details
+    /// Get ServiceNow template
     Get { template_id: String },
-    /// Create a template from JSON file
+    /// Create ServiceNow template
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Update a template from JSON file
+    /// Update ServiceNow template
     Update {
         template_id: String,
         #[arg(long)]
         file: String,
     },
-    /// Delete a template
+    /// Delete ServiceNow template
     Delete { template_id: String },
 }
 
@@ -1966,9 +1966,9 @@ enum WebhooksActions {
 // ---- Cost ----
 #[derive(Subcommand)]
 enum CostActions {
-    /// Get projected cost
+    /// Get projected end-of-month costs
     Projected,
-    /// Get cost by org
+    /// Get costs by organization
     #[command(name = "by-org")]
     ByOrg {
         #[arg(long)]
@@ -1976,7 +1976,7 @@ enum CostActions {
         #[arg(long)]
         end_month: Option<String>,
     },
-    /// Get monthly cost attribution
+    /// Get cost attribution by tags
     Attribution {
         #[arg(long)]
         start: String,
@@ -1988,10 +1988,10 @@ enum CostActions {
 // ---- Misc ----
 #[derive(Subcommand)]
 enum MiscActions {
-    /// Get IP ranges
+    /// Get Datadog IP ranges
     #[command(name = "ip-ranges")]
     IpRanges,
-    /// Validate API key / check status
+    /// Check API status
     Status,
 }
 
@@ -2003,17 +2003,17 @@ enum ApmActions {
         #[command(subcommand)]
         action: ApmServiceActions,
     },
-    /// List APM entities
+    /// Manage APM entities
     Entities {
         #[command(subcommand)]
         action: ApmEntityActions,
     },
-    /// List APM dependencies
+    /// Manage service dependencies
     Dependencies {
         #[command(subcommand)]
         action: ApmDependencyActions,
     },
-    /// APM flow map
+    /// View service flow map
     #[command(name = "flow-map")]
     FlowMap {
         #[arg(long)]
@@ -2038,7 +2038,7 @@ enum ApmServiceActions {
         #[arg(long, default_value = "now")]
         to: String,
     },
-    /// Get service stats
+    /// List services with performance statistics
     Stats {
         #[arg(long)]
         env: String,
@@ -2058,7 +2058,7 @@ enum ApmServiceActions {
         #[arg(long, default_value = "now")]
         to: String,
     },
-    /// List resources for a service operation
+    /// List resources (endpoints) for a service operation
     Resources {
         #[arg(long)]
         service: String,
@@ -2075,7 +2075,7 @@ enum ApmServiceActions {
 
 #[derive(Subcommand)]
 enum ApmEntityActions {
-    /// List APM entities
+    /// Query APM entities
     List {
         #[arg(long, default_value = "1h")]
         from: String,
@@ -2086,7 +2086,7 @@ enum ApmEntityActions {
 
 #[derive(Subcommand)]
 enum ApmDependencyActions {
-    /// List APM service dependencies
+    /// List service dependencies
     List {
         #[arg(long)]
         env: String,
@@ -2173,22 +2173,22 @@ enum TracesActions {
 // ---- Agent (placeholder) ----
 #[derive(Subcommand)]
 enum AgentActions {
-    /// Generate agent schema
+    /// Output command schema as JSON
     Schema,
-    /// Show agent management guide
+    /// Output the comprehensive steering guide
     Guide,
 }
 
 // ---- Alias ----
 #[derive(Subcommand)]
 enum AliasActions {
-    /// List all aliases
+    /// List your aliases
     List,
-    /// Set an alias
+    /// Create a shortcut for a pup command
     Set { name: String, command: String },
-    /// Delete aliases
+    /// Delete set aliases
     Delete { names: Vec<String> },
-    /// Import aliases from a file
+    /// Import aliases from a YAML file
     Import {
         #[arg(long)]
         file: String,
@@ -2198,7 +2198,7 @@ enum AliasActions {
 // ---- Product Analytics ----
 #[derive(Subcommand)]
 enum ProductAnalyticsActions {
-    /// Product analytics events
+    /// Send product analytics events
     Events {
         #[command(subcommand)]
         action: ProductAnalyticsEventActions,
@@ -2207,7 +2207,7 @@ enum ProductAnalyticsActions {
 
 #[derive(Subcommand)]
 enum ProductAnalyticsEventActions {
-    /// Send a product analytics event from JSON file
+    /// Send a product analytics event
     Send {
         #[arg(long)]
         file: String,
@@ -2217,23 +2217,23 @@ enum ProductAnalyticsEventActions {
 // ---- Static Analysis ----
 #[derive(Subcommand)]
 enum StaticAnalysisActions {
-    /// Manage AST results
+    /// AST analysis
     Ast {
         #[command(subcommand)]
         action: StaticAnalysisAstActions,
     },
-    /// Manage custom rulesets
+    /// Custom security rulesets
     #[command(name = "custom-rulesets")]
     CustomRulesets {
         #[command(subcommand)]
         action: StaticAnalysisCustomRulesetActions,
     },
-    /// Manage SCA results
+    /// Software Composition Analysis
     Sca {
         #[command(subcommand)]
         action: StaticAnalysisScaActions,
     },
-    /// Manage coverage
+    /// Code coverage analysis
     Coverage {
         #[command(subcommand)]
         action: StaticAnalysisCoverageActions,
@@ -2242,9 +2242,9 @@ enum StaticAnalysisActions {
 
 #[derive(Subcommand)]
 enum StaticAnalysisAstActions {
-    /// List AST results
+    /// List AST analyses
     List,
-    /// Get AST result details
+    /// Get AST analysis details
     Get { id: String },
 }
 
@@ -2260,15 +2260,15 @@ enum StaticAnalysisCustomRulesetActions {
 enum StaticAnalysisScaActions {
     /// List SCA results
     List,
-    /// Get SCA result details
+    /// Get SCA scan details
     Get { id: String },
 }
 
 #[derive(Subcommand)]
 enum StaticAnalysisCoverageActions {
-    /// List coverage results
+    /// List coverage analyses
     List,
-    /// Get coverage result details
+    /// Get coverage analysis details
     Get { id: String },
 }
 
@@ -2277,18 +2277,185 @@ enum StaticAnalysisCoverageActions {
 enum AuthActions {
     /// Login via OAuth2
     Login,
-    /// Logout
+    /// Logout and clear tokens
     Logout,
-    /// Show auth status
+    /// Check authentication status
     Status,
     /// Print access token
     Token,
+}
+
+// ---- Agent-mode JSON schema for --help ----
+
+fn build_agent_schema(cmd: &clap::Command) -> serde_json::Value {
+    let mut root = serde_json::Map::new();
+    root.insert("version".into(), serde_json::json!("dev"));
+    root.insert(
+        "description".into(),
+        serde_json::json!(
+            "Pup - Datadog API CLI. Provides OAuth2 + API key authentication for querying metrics, logs, monitors, traces, and 30+ other Datadog API domains."
+        ),
+    );
+    let mut auth = serde_json::Map::new();
+    auth.insert("oauth".into(), serde_json::json!("pup auth login"));
+    auth.insert(
+        "api_keys".into(),
+        serde_json::json!("Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"),
+    );
+    root.insert("auth".into(), serde_json::Value::Object(auth));
+
+    // Global flags — hardcoded to match Go ordering and descriptions exactly
+    root.insert(
+        "global_flags".into(),
+        serde_json::json!([
+            {
+                "name": "--agent",
+                "type": "bool",
+                "default": "false",
+                "description": "Enable agent mode (auto-detected for AI coding assistants)"
+            },
+            {
+                "name": "--output",
+                "type": "string",
+                "default": "json",
+                "description": "Output format (json, table, yaml)"
+            },
+            {
+                "name": "--yes",
+                "type": "bool",
+                "default": "false",
+                "description": "Skip confirmation prompts (auto-approve all operations)"
+            }
+        ]),
+    );
+
+    // Commands — sorted alphabetically to match Go
+    let mut commands: Vec<serde_json::Value> = cmd
+        .get_subcommands()
+        .filter(|s| s.get_name() != "help")
+        .map(|s| build_command_schema(s, ""))
+        .collect();
+    commands.sort_by(|a, b| {
+        let an = a.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let bn = b.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        an.cmp(bn)
+    });
+    root.insert("commands".into(), serde_json::Value::Array(commands));
+
+    serde_json::Value::Object(root)
+}
+
+fn build_command_schema(cmd: &clap::Command, parent_path: &str) -> serde_json::Value {
+    let mut obj = serde_json::Map::new();
+    let name = cmd.get_name().to_string();
+    let full_path = if parent_path.is_empty() {
+        name.clone()
+    } else {
+        format!("{parent_path} {name}")
+    };
+
+    obj.insert("name".into(), serde_json::json!(name));
+    obj.insert("full_path".into(), serde_json::json!(full_path));
+
+    if let Some(about) = cmd.get_about() {
+        obj.insert("description".into(), serde_json::json!(about.to_string()));
+    }
+
+    // Determine read_only based on command name
+    let is_write = name == "delete"
+        || name == "create"
+        || name == "update"
+        || name == "cancel"
+        || name == "trigger"
+        || name == "set"
+        || name == "add"
+        || name == "remove"
+        || name == "assign"
+        || name == "archive"
+        || name == "unarchive"
+        || name == "activate"
+        || name == "deactivate"
+        || name.starts_with("update-")
+        || name.starts_with("create-")
+        || name == "submit"
+        || name == "send"
+        || name == "import"
+        || name == "register"
+        || name == "unregister"
+        || name.contains("delete")
+        || name.contains("patch");
+    obj.insert("read_only".into(), serde_json::json!(!is_write));
+
+    // Flags (non-global arguments specific to this command)
+    let flags: Vec<serde_json::Value> = cmd
+        .get_arguments()
+        .filter(|a| {
+            let id = a.get_id().as_str();
+            id != "help" && id != "version" && !a.is_global_set()
+        })
+        .map(|a| {
+            let mut flag = serde_json::Map::new();
+            let flag_name = if let Some(long) = a.get_long() {
+                format!("--{long}")
+            } else {
+                // Positional arg
+                a.get_id().to_string()
+            };
+            flag.insert("name".into(), serde_json::json!(flag_name));
+            let type_str = if a.get_action().takes_values() {
+                "string"
+            } else {
+                "bool"
+            };
+            flag.insert("type".into(), serde_json::json!(type_str));
+            if let Some(def) = a.get_default_values().first() {
+                flag.insert(
+                    "default".into(),
+                    serde_json::json!(def.to_str().unwrap_or("").to_string()),
+                );
+            }
+            if let Some(help) = a.get_help() {
+                flag.insert("description".into(), serde_json::json!(help.to_string()));
+            }
+            serde_json::Value::Object(flag)
+        })
+        .collect();
+    if !flags.is_empty() {
+        obj.insert("flags".into(), serde_json::Value::Array(flags));
+    }
+
+    // Subcommands — sorted alphabetically to match Go
+    let mut subs: Vec<serde_json::Value> = cmd
+        .get_subcommands()
+        .filter(|s| s.get_name() != "help")
+        .map(|s| build_command_schema(s, &full_path))
+        .collect();
+    subs.sort_by(|a, b| {
+        let an = a.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let bn = b.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        an.cmp(bn)
+    });
+    if !subs.is_empty() {
+        obj.insert("subcommands".into(), serde_json::Value::Array(subs));
+    }
+
+    serde_json::Value::Object(obj)
 }
 
 // ---- Main ----
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // In agent mode, intercept --help to return a JSON schema instead of plain text.
+    let args: Vec<String> = std::env::args().collect();
+    let has_help = args.iter().any(|a| a == "--help" || a == "-h");
+    if has_help && useragent::is_agent_mode() {
+        let cmd = Cli::command();
+        let schema = build_agent_schema(&cmd);
+        println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+        return Ok(());
+    }
+
     let cli = Cli::parse();
     let mut cfg = config::Config::from_env()?;
 
