@@ -1764,3 +1764,218 @@ async fn test_apm_services_list() {
         crate::commands::apm::services_list(&cfg, "prod".into(), "1h".into(), "now".into()).await;
     cleanup_env();
 }
+
+// --- Product Analytics ---
+
+/// Write JSON content to a temp file and return its path string.
+fn tmp_json(content: &str) -> String {
+    let path = std::env::temp_dir().join("pup-test-pa.json");
+    std::fs::write(&path, content).expect("failed to write temp json file");
+    path.to_string_lossy().into_owned()
+}
+
+#[tokio::test]
+async fn test_product_analytics_analytics_scalar() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::analytics_scalar(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_analytics_timeseries() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::analytics_timeseries(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_journey_funnel() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::journey_funnel(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_journey_timeseries() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::journey_timeseries(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_journey_scalar() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::journey_scalar(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_journey_list() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": []}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::journey_list(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_journey_drop_off_analysis() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::journey_drop_off_analysis(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_retention_grid() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::retention_grid(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_retention_timeseries() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::retention_timeseries(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_retention_scalar() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::retention_scalar(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_retention_list() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": []}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::retention_list(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_retention_meta() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::retention_meta(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_sankey() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::sankey(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_list() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": []}"#).await;
+    let _ = crate::commands::product_analytics::segment_list(&cfg).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_create() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::segment_create(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_create_static() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::segment_create_static(&cfg, &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_get() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let _ = crate::commands::product_analytics::segment_get(&cfg, "seg-1").await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_update() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let f = tmp_json(r#"{}"#);
+    let _ = crate::commands::product_analytics::segment_update(&cfg, "seg-1", &f).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_delete() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{}"#).await;
+    let _ = crate::commands::product_analytics::segment_delete(&cfg, "seg-1").await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_templates_list() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": []}"#).await;
+    let _ = crate::commands::product_analytics::segment_templates_list(&cfg).await;
+    cleanup_env();
+}
+#[tokio::test]
+async fn test_product_analytics_segment_templates_get() {
+    let _lock = lock_env();
+    let mut s = mockito::Server::new_async().await;
+    let cfg = test_config(&s.url());
+    mock_all(&mut s, r#"{"data": {}}"#).await;
+    let _ = crate::commands::product_analytics::segment_templates_get(&cfg, "tpl-1").await;
+    cleanup_env();
+}

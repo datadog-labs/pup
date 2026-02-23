@@ -241,6 +241,92 @@ pup rum sessions search \
   --from="1h"
 ```
 
+## Product Analytics
+
+All POST commands accept a JSON request body via `--file`. Create a JSON file with
+the query parameters and pass it to the command.
+
+### Analytics
+
+```bash
+# Scalar query
+cat > query.json <<'EOF'
+{"compute": [{"aggregation": "count"}], "filter": {"from": "now-1h", "to": "now", "query": "*"}}
+EOF
+pup product-analytics analytics scalar --file=query.json
+
+# Timeseries query
+pup product-analytics analytics timeseries --file=query.json
+```
+
+### Journey Analysis
+
+```bash
+# Funnel analysis
+pup product-analytics journey funnel --file=funnel.json
+
+# Drop-off analysis
+pup product-analytics journey drop-off-analysis --file=drop_off.json
+
+# Journey list
+pup product-analytics journey list --file=journey.json
+```
+
+### Retention Analysis
+
+```bash
+# Retention grid (cohort table)
+pup product-analytics retention grid --file=retention.json
+
+# Retention timeseries
+pup product-analytics retention timeseries --file=retention.json
+
+# Retention metadata
+pup product-analytics retention meta --file=retention.json
+```
+
+### Sankey Flow
+
+```bash
+# Sankey diagram data
+pup product-analytics sankey --file=sankey.json
+```
+
+### Segment Management
+
+```bash
+# List all segments
+pup product-analytics segment list
+
+# Get a specific segment
+pup product-analytics segment get "seg-abc-123"
+
+# Create a dynamic segment
+cat > segment.json <<'EOF'
+{"data": {"type": "segment", "attributes": {"name": "Power Users", "query": "@action:purchase"}}}
+EOF
+pup product-analytics segment create --file=segment.json
+
+# Create a static segment
+pup product-analytics segment create-static --file=segment.json
+
+# Update a segment
+pup product-analytics segment update "seg-abc-123" --file=segment.json
+
+# Delete a segment
+pup product-analytics segment delete "seg-abc-123"
+```
+
+### Segment Templates
+
+```bash
+# List available segment templates
+pup product-analytics segment templates list
+
+# Get a specific template
+pup product-analytics segment templates get "tpl-abc-123"
+```
+
 ## Security
 
 ### List Security Rules
