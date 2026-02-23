@@ -28,6 +28,9 @@ zig-*/
 pkg/
 wasm-out/
 
+# Worktrees
+.worktrees/
+
 # Test artifacts
 tests/mockdd/mockdd
 tests/compare_bin
