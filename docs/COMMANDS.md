@@ -49,7 +49,7 @@ pup <domain> <subgroup> <action> [options] # Nested commands
 | usage | summary, hourly | src/commands/usage.rs | ✅ |
 | apm | services (list, stats, operations, resources), entities (list), dependencies (list), flow-map | src/commands/apm.rs | ✅ |
 | cost | projected, attribution, by-org | src/commands/cost.rs | ✅ |
-| product-analytics | events send | src/commands/product_analytics.rs | ✅ |
+| product-analytics | events send, analytics (scalar, timeseries), journey (funnel, timeseries, scalar, list, drop-off-analysis), retention (grid, timeseries, scalar, list, meta), sankey, segment (list, create, create-static, get, update, delete, templates) | src/commands/product_analytics.rs | ✅ |
 | data-governance | scanner-rules (list) | src/commands/data_governance.rs | ✅ |
 | obs-pipelines | list, get | src/commands/obs_pipelines.rs | ⏳ |
 | network | flows, devices | src/commands/network.rs | ⏳ |
@@ -167,7 +167,7 @@ pup infrastructure hosts list
 ### Configuration & Data Management
 - **obs-pipelines** - Observability pipelines (list, get)
 - **misc** - Miscellaneous (ip-ranges, status)
-- **product-analytics** - Product analytics events (send)
+- **product-analytics** - Product analytics (events, analytics queries, journey analysis, retention analysis, sankey flows, segment management)
 
 ## Global Flags
 

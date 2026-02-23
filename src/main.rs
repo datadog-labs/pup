@@ -305,10 +305,10 @@ enum Commands {
         #[command(subcommand)]
         action: OrgActions,
     },
-    /// Send product analytics events
+    /// Manage product analytics
     #[command(
         name = "product-analytics",
-        after_help = "EXAMPLES:\n  # Send a basic event\n  pup product-analytics events send --app-id=my-app --event=button_clicked\n\n  # Send event with properties and user context\n  pup product-analytics events send --app-id=my-app --event=purchase_completed --properties='{\"amount\":99.99,\"currency\":\"USD\"}' --user-id=user-123"
+        after_help = "EXAMPLES:\n  # Send a basic event\n  pup product-analytics events send --file=event.json\n\n  # Run a scalar analytics query\n  pup product-analytics analytics scalar --file=query.json\n\n  # Run a funnel analysis\n  pup product-analytics journey funnel --file=funnel.json\n\n  # List audience segments\n  pup product-analytics segment list\n\n  # Get a segment by ID\n  pup product-analytics segment get <id>"
     )]
     ProductAnalytics {
         #[command(subcommand)]
@@ -2454,6 +2454,31 @@ enum ProductAnalyticsActions {
         #[command(subcommand)]
         action: ProductAnalyticsEventActions,
     },
+    /// Run analytics queries
+    Analytics {
+        #[command(subcommand)]
+        action: ProductAnalyticsAnalyticsActions,
+    },
+    /// Run journey analysis
+    Journey {
+        #[command(subcommand)]
+        action: ProductAnalyticsJourneyActions,
+    },
+    /// Run retention analysis
+    Retention {
+        #[command(subcommand)]
+        action: ProductAnalyticsRetentionActions,
+    },
+    /// Run sankey flow analysis
+    Sankey {
+        #[arg(long)]
+        file: String,
+    },
+    /// Manage audience segments
+    Segment {
+        #[command(subcommand)]
+        action: ProductAnalyticsSegmentActions,
+    },
 }
 
 #[derive(Subcommand)]
@@ -2463,6 +2488,119 @@ enum ProductAnalyticsEventActions {
         #[arg(long)]
         file: String,
     },
+}
+
+#[derive(Subcommand)]
+enum ProductAnalyticsAnalyticsActions {
+    /// Compute scalar analytics results
+    Scalar {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute timeseries analytics results
+    Timeseries {
+        #[arg(long)]
+        file: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProductAnalyticsJourneyActions {
+    /// Compute funnel results
+    Funnel {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute journey timeseries results
+    Timeseries {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute journey scalar results
+    Scalar {
+        #[arg(long)]
+        file: String,
+    },
+    /// List journey results
+    List {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute drop-off analysis
+    #[command(name = "drop-off-analysis")]
+    DropOffAnalysis {
+        #[arg(long)]
+        file: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProductAnalyticsRetentionActions {
+    /// Compute retention grid results
+    Grid {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute retention timeseries results
+    Timeseries {
+        #[arg(long)]
+        file: String,
+    },
+    /// Compute retention scalar results
+    Scalar {
+        #[arg(long)]
+        file: String,
+    },
+    /// List retention results
+    List {
+        #[arg(long)]
+        file: String,
+    },
+    /// Get retention metadata
+    Meta {
+        #[arg(long)]
+        file: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProductAnalyticsSegmentActions {
+    /// List all segments
+    List,
+    /// Create a new segment
+    Create {
+        #[arg(long)]
+        file: String,
+    },
+    /// Create a new static segment
+    #[command(name = "create-static")]
+    CreateStatic {
+        #[arg(long)]
+        file: String,
+    },
+    /// Get a segment by ID
+    Get { id: String },
+    /// Update a segment by ID
+    Update {
+        id: String,
+        #[arg(long)]
+        file: String,
+    },
+    /// Delete a segment by ID
+    Delete { id: String },
+    /// Manage segment templates
+    Templates {
+        #[command(subcommand)]
+        action: ProductAnalyticsSegmentTemplatesActions,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProductAnalyticsSegmentTemplatesActions {
+    /// List all segment templates
+    List,
+    /// Get a segment template by ID
+    Get { id: String },
 }
 
 // ---- Static Analysis ----
@@ -4123,6 +4261,79 @@ async fn main_inner() -> anyhow::Result<()> {
                     ProductAnalyticsEventActions::Send { file } => {
                         commands::product_analytics::events_send(&cfg, &file).await?;
                     }
+                },
+                ProductAnalyticsActions::Analytics { action } => match action {
+                    ProductAnalyticsAnalyticsActions::Scalar { file } => {
+                        commands::product_analytics::analytics_scalar(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsAnalyticsActions::Timeseries { file } => {
+                        commands::product_analytics::analytics_timeseries(&cfg, &file).await?;
+                    }
+                },
+                ProductAnalyticsActions::Journey { action } => match action {
+                    ProductAnalyticsJourneyActions::Funnel { file } => {
+                        commands::product_analytics::journey_funnel(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsJourneyActions::Timeseries { file } => {
+                        commands::product_analytics::journey_timeseries(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsJourneyActions::Scalar { file } => {
+                        commands::product_analytics::journey_scalar(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsJourneyActions::List { file } => {
+                        commands::product_analytics::journey_list(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsJourneyActions::DropOffAnalysis { file } => {
+                        commands::product_analytics::journey_drop_off_analysis(&cfg, &file).await?;
+                    }
+                },
+                ProductAnalyticsActions::Retention { action } => match action {
+                    ProductAnalyticsRetentionActions::Grid { file } => {
+                        commands::product_analytics::retention_grid(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsRetentionActions::Timeseries { file } => {
+                        commands::product_analytics::retention_timeseries(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsRetentionActions::Scalar { file } => {
+                        commands::product_analytics::retention_scalar(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsRetentionActions::List { file } => {
+                        commands::product_analytics::retention_list(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsRetentionActions::Meta { file } => {
+                        commands::product_analytics::retention_meta(&cfg, &file).await?;
+                    }
+                },
+                ProductAnalyticsActions::Sankey { file } => {
+                    commands::product_analytics::sankey(&cfg, &file).await?;
+                }
+                ProductAnalyticsActions::Segment { action } => match action {
+                    ProductAnalyticsSegmentActions::List => {
+                        commands::product_analytics::segment_list(&cfg).await?;
+                    }
+                    ProductAnalyticsSegmentActions::Create { file } => {
+                        commands::product_analytics::segment_create(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsSegmentActions::CreateStatic { file } => {
+                        commands::product_analytics::segment_create_static(&cfg, &file).await?;
+                    }
+                    ProductAnalyticsSegmentActions::Get { id } => {
+                        commands::product_analytics::segment_get(&cfg, &id).await?;
+                    }
+                    ProductAnalyticsSegmentActions::Update { id, file } => {
+                        commands::product_analytics::segment_update(&cfg, &id, &file).await?;
+                    }
+                    ProductAnalyticsSegmentActions::Delete { id } => {
+                        commands::product_analytics::segment_delete(&cfg, &id).await?;
+                    }
+                    ProductAnalyticsSegmentActions::Templates { action } => match action {
+                        ProductAnalyticsSegmentTemplatesActions::List => {
+                            commands::product_analytics::segment_templates_list(&cfg).await?;
+                        }
+                        ProductAnalyticsSegmentTemplatesActions::Get { id } => {
+                            commands::product_analytics::segment_templates_get(&cfg, &id).await?;
+                        }
+                    },
                 },
             }
         }
