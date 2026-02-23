@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 
-pub fn schema() -> Result<()> {
+pub fn schema(_compact: bool) -> Result<()> {
     bail!("agent schema generation not yet implemented")
 }
 

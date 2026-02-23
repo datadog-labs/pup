@@ -151,6 +151,14 @@ def _extract_schema_value(v, depth=0):
 
 # ── Comparison ───────────────────────────────────────────────────────────────
 
+def _strip_read_only(obj):
+    """Recursively remove read_only keys from a JSON object."""
+    if isinstance(obj, dict):
+        return {k: _strip_read_only(v) for k, v in obj.items() if k != 'read_only'}
+    elif isinstance(obj, list):
+        return [_strip_read_only(item) for item in obj]
+    return obj
+
 def compare_agent_json(go_file, rust_file, go_ver, rust_ver):
     try:
         go_text = open(go_file).read()
@@ -159,7 +167,24 @@ def compare_agent_json(go_file, rust_file, go_ver, rust_ver):
         return "error"
     go_norm = normalize_json(go_text, go_ver, rust_ver)
     rust_norm = normalize_json(rust_text, go_ver, rust_ver)
-    return "pass" if go_norm == rust_norm else "diff"
+    if go_norm == rust_norm:
+        return "pass"
+    # Check if only read_only fields differ
+    try:
+        go_obj = _strip_read_only(_normalize_value(json.loads(go_text)))
+        rust_obj = _strip_read_only(_normalize_value(json.loads(rust_text)))
+        go_stripped = json.dumps(go_obj, indent=2, sort_keys=True, ensure_ascii=False)
+        rust_stripped = json.dumps(rust_obj, indent=2, sort_keys=True, ensure_ascii=False)
+        # Version-normalize after stripping
+        for ver in [go_ver, rust_ver]:
+            if ver:
+                go_stripped = go_stripped.replace(ver, "VERSION")
+                rust_stripped = rust_stripped.replace(ver, "VERSION")
+        if go_stripped == rust_stripped:
+            return "read_only"
+    except (json.JSONDecodeError, Exception):
+        pass
+    return "diff"
 
 def compare_json_structure(go_file, rust_file):
     try:
@@ -298,8 +323,8 @@ def render_test_row(t, go_ver, rust_ver, out, rendered_ids=None):
     </div>
 ''')
 
-    # Only render detail panels for diff/error, and only once per test ID
-    if t['status'] not in ('diff', 'error'):
+    # Only render detail panels for diff/error/ahead/read_only, and only once per test ID
+    if t['status'] not in ('diff', 'error', 'ahead', 'read_only'):
         return
     if row_id in rendered_ids:
         return
@@ -356,7 +381,17 @@ def count_statuses(test_list):
     return cc
 
 def stats_str(cc):
-    return f"{cc.get('pass',0)} pass, {cc.get('diff',0)} diff, {cc.get('error',0)} error, {cc.get('skip',0)} skip"
+    parts = [f"{cc.get('pass',0)} pass"]
+    if cc.get('ahead', 0):
+        parts.append(f"{cc['ahead']} ahead")
+    if cc.get('read_only', 0):
+        parts.append(f"{cc['read_only']} read_only")
+    parts.append(f"{cc.get('diff',0)} diff")
+    if cc.get('error', 0):
+        parts.append(f"{cc['error']} error")
+    if cc.get('skip', 0):
+        parts.append(f"{cc['skip']} skip")
+    return ", ".join(parts)
 
 def generate_report(results_tsv, report_dir, go_bin, rust_bin, go_ver, rust_ver):
     """Generate HTML report from results TSV and raw output files."""
@@ -410,10 +445,14 @@ def generate_report(results_tsv, report_dir, go_bin, rust_bin, go_ver, rust_ver)
 <div class="legend">
   <span class="legend-item"><span class="swatch swatch-del"></span> Go only (removed in Rust)</span>
   <span class="legend-item"><span class="swatch swatch-add"></span> Rust only (added vs Go)</span>
+  <span class="legend-item"><span class="badge ahead" style="font-size:11px">ahead</span> Rust has all Go features plus more</span>
+  <span class="legend-item"><span class="badge read_only" style="font-size:11px">read_only</span> Only read_only field differs</span>
 </div>
 <div class="summary">
   <div class="card total"><span class="num">{total}</span><span class="label">Total</span></div>
   <div class="card pass"><span class="num">{counts.get("pass",0)}</span><span class="label">Pass</span></div>
+  <div class="card ahead"><span class="num">{counts.get("ahead",0)}</span><span class="label">Ahead</span></div>
+  <div class="card read_only"><span class="num">{counts.get("read_only",0)}</span><span class="label">Read-Only</span></div>
   <div class="card diff"><span class="num">{counts.get("diff",0)}</span><span class="label">Diff</span></div>
   <div class="card error"><span class="num">{counts.get("error",0)}</span><span class="label">Error</span></div>
   <div class="card skip"><span class="num">{counts.get("skip",0)}</span><span class="label">Skip</span></div>
@@ -422,6 +461,8 @@ def generate_report(results_tsv, report_dir, go_bin, rust_bin, go_ver, rust_ver)
   <div class="filters">
     <button class="active" onclick="filterTests('all')">All</button>
     <button onclick="filterTests('pass')">Pass</button>
+    <button onclick="filterTests('ahead')">Ahead</button>
+    <button onclick="filterTests('read_only')">Read-Only</button>
     <button onclick="filterTests('diff')">Diff</button>
     <button onclick="filterTests('error')">Error</button>
     <button onclick="filterTests('skip')">Skip</button>
@@ -508,6 +549,8 @@ HTML_HEAD = '''<!DOCTYPE html>
   .card.diff .num { color: #d29922; }
   .card.error .num { color: #f85149; }
   .card.skip .num { color: #8b949e; }
+  .card.ahead .num { color: #58a6ff; }
+  .card.read_only .num { color: #a371f7; }
   .card.total .num { color: #58a6ff; }
   .controls { display: flex; justify-content: space-between; align-items: center;
               margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
@@ -539,6 +582,8 @@ HTML_HEAD = '''<!DOCTYPE html>
   .badge.diff { background: #2a1f00; color: #d29922; }
   .badge.error { background: #2d0000; color: #f85149; }
   .badge.skip { background: #1c1c1c; color: #8b949e; }
+  .badge.ahead { background: #0d2838; color: #58a6ff; }
+  .badge.read_only { background: #1c1c2e; color: #a371f7; }
   .test-id { font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace; color: #79c0ff;
              min-width: 240px; font-size: 12px; flex-shrink: 0; }
   .test-cmd { color: #8b949e; font-size: 12px; flex: 1; overflow: hidden;
@@ -1015,14 +1060,16 @@ if go_only_top:
         f.write(f"MISSING-toplevel-go-only\tdiff\tTop-level commands present in Go but not Rust\tFORCE_AGENT_MODE=1\t{go_f}\t{rust_f}\n")
 
 if rust_only_top:
-    go_text = "(not present in Go)"
-    rust_text = "Rust-only top-level commands: " + ", ".join(rust_only_top)
+    go_lines = ["Go top-level commands:"] + [f"  {c}" for c in sorted(go_top_cmds)]
+    rust_lines = ["Rust top-level commands:"] + [f"  {c}{' [Rust-only]' if c in rust_only_top else ''}" for c in sorted(rust_top_cmds)]
     go_f = os.path.join(report_dir, "go", "extra-toplevel.txt")
     rust_f = os.path.join(report_dir, "rust", "extra-toplevel.txt")
-    open(go_f, "w").write(go_text)
-    open(rust_f, "w").write(rust_text)
+    open(go_f, "w").write("\n".join(go_lines))
+    open(rust_f, "w").write("\n".join(rust_lines))
+    # If Rust has everything Go has plus more, it's ahead
+    status = "ahead" if not go_only_top else "diff"
     with open(results_tsv, "a") as f:
-        f.write(f"MISSING-toplevel-rust-only\tdiff\tTop-level commands present in Rust but not Go\tFORCE_AGENT_MODE=1\t{go_f}\t{rust_f}\n")
+        f.write(f"MISSING-toplevel-rust-only\t{status}\tTop-level commands present in Rust but not Go\tFORCE_AGENT_MODE=1\t{go_f}\t{rust_f}\n")
 
 if not go_only_top and not rust_only_top:
     with open(results_tsv, "a") as f:
@@ -1042,22 +1089,25 @@ for cmd in shared:
     rust_only = sorted(rust_paths - go_paths)
 
     if go_only or rust_only:
-        lines_go = []
-        lines_rust = []
-        if go_only:
-            lines_go.append(f"Go-only subcommands under '{cmd}':")
-            for p in go_only:
-                lines_go.append(f"  pup {p}")
-        if rust_only:
-            lines_rust.append(f"Rust-only subcommands under '{cmd}':")
-            for p in rust_only:
-                lines_rust.append(f"  pup {p}")
+        # Show full subcommand lists with markers for unique entries
+        go_lines = [f"Subcommands under '{cmd}' (Go):"]
+        for p in sorted(go_paths):
+            marker = " [Go-only]" if p in set(go_only) else ""
+            go_lines.append(f"  pup {p}{marker}")
+        rust_lines = [f"Subcommands under '{cmd}' (Rust):"]
+        for p in sorted(rust_paths):
+            marker = " [Rust-only]" if p in set(rust_only) else ""
+            rust_lines.append(f"  pup {p}{marker}")
+
         gf = os.path.join(report_dir, "go", f"missing-{cmd}.txt")
         rf = os.path.join(report_dir, "rust", f"missing-{cmd}.txt")
-        open(gf, "w").write("\n".join(lines_go) if lines_go else "(all present)")
-        open(rf, "w").write("\n".join(lines_rust) if lines_rust else "(all present)")
+        open(gf, "w").write("\n".join(go_lines))
+        open(rf, "w").write("\n".join(rust_lines))
+
+        # Rust superset of Go = ahead; Go has extras Rust lacks = diff
+        status = "ahead" if not go_only and rust_only else "diff"
         with open(results_tsv, "a") as f:
-            f.write(f"MISSING-{cmd}\tdiff\tpup {cmd} --help (subcommand diff)\tFORCE_AGENT_MODE=1\t{gf}\t{rf}\n")
+            f.write(f"MISSING-{cmd}\t{status}\tpup {cmd} --help (subcommand diff)\tFORCE_AGENT_MODE=1\t{gf}\t{rf}\n")
         total += 1
     else:
         with open(results_tsv, "a") as f:
@@ -1070,20 +1120,32 @@ PYEOF
 
 # ── Print summary to terminal ────────────────────────────────────────────────
 print_summary() {
-  local pass=0 diff_count=0 error=0 skip=0 total=0
+  local pass=0 diff_count=0 error=0 skip=0 ahead=0 read_only=0 total=0
   while IFS=$'\t' read -r tid status rest; do
     total=$((total + 1))
     case "$status" in
-      pass)  pass=$((pass + 1)) ;;
-      diff)  diff_count=$((diff_count + 1)) ;;
-      error) error=$((error + 1)) ;;
-      skip)  skip=$((skip + 1)) ;;
+      pass)      pass=$((pass + 1)) ;;
+      ahead)     ahead=$((ahead + 1)) ;;
+      read_only) read_only=$((read_only + 1)) ;;
+      diff)      diff_count=$((diff_count + 1)) ;;
+      error)     error=$((error + 1)) ;;
+      skip)      skip=$((skip + 1)) ;;
     esac
   done < "$RESULTS_TSV"
 
   echo ""
   echo "=== Summary ==="
-  echo "Total: $total | Pass: $pass | Diff: $diff_count | Error: $error | Skip: $skip"
+  echo "Total: $total | Pass: $pass | Ahead: $ahead | Read-Only: $read_only | Diff: $diff_count | Error: $error | Skip: $skip"
+
+  if (( ahead > 0 )); then
+    echo ""
+    echo "Ahead (Rust superset of Go):"
+    while IFS=$'\t' read -r tid status cmd rest; do
+      if [[ "$status" == "ahead" ]]; then
+        echo "  $tid: $cmd"
+      fi
+    done < <(sort "$RESULTS_TSV")
+  fi
 
   if (( diff_count > 0 )); then
     echo ""

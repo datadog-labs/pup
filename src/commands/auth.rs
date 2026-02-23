@@ -231,15 +231,17 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
 
     let site = &cfg.site;
 
-    let tokens = with_storage(|store| store.load_tokens(site))?
-        .ok_or_else(|| anyhow::anyhow!("no tokens found for site {site} — run 'pup auth login' first"))?;
+    let tokens = with_storage(|store| store.load_tokens(site))?.ok_or_else(|| {
+        anyhow::anyhow!("no tokens found for site {site} — run 'pup auth login' first")
+    })?;
 
     if tokens.refresh_token.is_empty() {
         bail!("no refresh token available — run 'pup auth login' to re-authenticate");
     }
 
-    let creds = with_storage(|store| store.load_client_credentials(site))?
-        .ok_or_else(|| anyhow::anyhow!("no client credentials found for site {site} — run 'pup auth login' first"))?;
+    let creds = with_storage(|store| store.load_client_credentials(site))?.ok_or_else(|| {
+        anyhow::anyhow!("no client credentials found for site {site} — run 'pup auth login' first")
+    })?;
 
     eprintln!("🔄 Refreshing access token for site: {site}...");
 
@@ -253,9 +255,10 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
         Ok(store.storage_location())
     })?;
 
-    let expires_at = chrono::DateTime::from_timestamp(new_tokens.issued_at + new_tokens.expires_in, 0)
-        .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
-        .unwrap_or_else(|| format!("in {} hours", new_tokens.expires_in / 3600));
+    let expires_at =
+        chrono::DateTime::from_timestamp(new_tokens.issued_at + new_tokens.expires_in, 0)
+            .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
+            .unwrap_or_else(|| format!("in {} hours", new_tokens.expires_in / 3600));
     let display_location = if location.contains("keychain") || location.contains("Keychain") {
         "macOS Keychain (secure)".to_string()
     } else {

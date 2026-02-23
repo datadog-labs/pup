@@ -45,8 +45,12 @@ pub async fn list(cfg: &Config, page_size: i64, page_number: i64) -> Result<()> 
     if page_number > 0 {
         query.push(("page[number]", page_number.to_string()));
     }
-    let data =
-        crate::api::get(cfg, "/api/v2/integration/action_connections/app-keys", &query).await?;
+    let data = crate::api::get(
+        cfg,
+        "/api/v2/integration/action_connections/app-keys",
+        &query,
+    )
+    .await?;
     crate::formatter::output(cfg, &data)
 }
 

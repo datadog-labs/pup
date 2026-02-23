@@ -89,6 +89,30 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     crate::formatter::output(cfg, &data)
 }
 
+pub async fn create_from_flags(
+    cfg: &Config,
+    title: &str,
+    type_id: &str,
+    priority: &str,
+    description: Option<&str>,
+) -> Result<()> {
+    let mut body = serde_json::json!({
+        "data": {
+            "type": "case",
+            "attributes": {
+                "title": title,
+                "priority": priority,
+                "type": type_id,
+            }
+        }
+    });
+    if let Some(desc) = description {
+        body["data"]["attributes"]["description"] = serde_json::json!(desc);
+    }
+    let data = crate::api::post(cfg, "/api/v2/cases", &body).await?;
+    crate::formatter::output(cfg, &data)
+}
+
 // ---------------------------------------------------------------------------
 // Projects
 // ---------------------------------------------------------------------------

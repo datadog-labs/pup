@@ -33,389 +33,1657 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Agent tooling: schema, guide, and diagnostics for AI coding assistants
-    #[command(
-        name = "agent",
-        after_help = "EXAMPLES:\n  # Output command schema as JSON (for AI coding assistants)\n  pup agent schema\n\n  # Output the comprehensive steering guide\n  pup agent guide"
-    )]
+    ///
+    /// Commands for AI coding assistants to interact with pup efficiently.
+    ///
+    /// In agent mode (auto-detected or via --agent / FORCE_AGENT_MODE=1),
+    /// --help returns structured JSON schema instead of human-readable text.
+    ///
+    /// COMMANDS:
+    ///   schema    Output the complete command schema as JSON
+    ///   guide     Output the comprehensive steering guide
+    ///
+    /// EXAMPLES:
+    ///   # Get full JSON schema (all commands, flags, query syntax)
+    ///   pup agent schema
+    ///
+    ///   # Get compact schema (command names and flags only, fewer tokens)
+    ///   pup agent schema --compact
+    ///
+    ///   # Get the steering guide
+    ///   pup agent guide
+    ///
+    ///   # Get guide for a specific domain
+    ///   pup agent guide logs
+    #[command(name = "agent", verbatim_doc_comment)]
     Agent {
         #[command(subcommand)]
         action: AgentActions,
     },
     /// Create shortcuts for pup commands
-    #[command(
-        after_help = "EXAMPLES:\n  # List your aliases\n  pup alias list\n\n  # Create a shortcut for a frequently used command\n  pup alias set prod-monitors \"monitors list --tags=env:production\"\n\n  # Delete an alias\n  pup alias delete prod-monitors\n\n  # Import aliases from a YAML file\n  pup alias import --file=aliases.yaml"
-    )]
+    ///
+    /// Aliases can be used to make shortcuts for pup commands or to compose multiple commands.
+    ///
+    /// Aliases are stored in ~/.config/pup/config.yml and can be used like any other pup command.
+    ///
+    /// EXAMPLES:
+    ///   # Create an alias for a complex logs query
+    ///   pup alias set prod-errors "logs search --query='status:error' --tag='env:prod'"
+    ///
+    ///   # Use the alias
+    ///   pup prod-errors
+    ///
+    ///   # List all aliases
+    ///   pup alias list
+    ///
+    ///   # Delete an alias
+    ///   pup alias delete prod-errors
+    ///
+    ///   # Import aliases from a file
+    ///   pup alias import aliases.yml
+    #[command(verbatim_doc_comment)]
     Alias {
         #[command(subcommand)]
         action: AliasActions,
     },
     /// Manage API keys
-    #[command(
-        name = "api-keys",
-        after_help = "EXAMPLES:\n  # List all API keys\n  pup api-keys list\n\n  # Get API key details\n  pup api-keys get key-id\n\n  # Create new API key\n  pup api-keys create --name=\"Production Key\"\n\n  # Delete an API key (with confirmation prompt)\n  pup api-keys delete key-id"
-    )]
+    ///
+    /// Manage Datadog API keys.
+    ///
+    /// API keys authenticate requests to Datadog APIs. This command manages API keys
+    /// only (not application keys).
+    ///
+    /// CAPABILITIES:
+    ///   • List API keys
+    ///   • Get API key details
+    ///   • Create new API keys
+    ///   • Update API keys (name only)
+    ///   • Delete API keys (requires confirmation)
+    ///
+    /// EXAMPLES:
+    ///   # List all API keys
+    ///   pup api-keys list
+    ///
+    ///   # Get API key details
+    ///   pup api-keys get key-id
+    ///
+    ///   # Create new API key
+    ///   pup api-keys create --name="Production Key"
+    ///
+    ///   # Delete an API key (with confirmation prompt)
+    ///   pup api-keys delete key-id
+    ///
+    /// AUTHENTICATION:
+    ///   Requires OAuth2 (via 'pup auth login') or a valid API key + Application key
+    ///   combination. Note: You cannot use an API key to delete itself.
+    #[command(name = "api-keys", verbatim_doc_comment)]
     ApiKeys {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
     /// Manage app key registrations
-    #[command(
-        name = "app-keys",
-        after_help = "EXAMPLES:\n  # List all app keys registered for Action Connections\n  pup app-keys list\n\n  # Get app key registration details\n  pup app-keys get <app-key-id>\n\n  # Register an existing app key for Action Connections\n  pup app-keys register <app-key-id>\n\n  # Unregister an app key from Action Connections\n  pup app-keys unregister <app-key-id>"
-    )]
+    ///
+    /// Manage Datadog app key registrations for Action Connections.
+    ///
+    /// App key registrations enable application keys to be used with Action Connections
+    /// and Workflow Automation features. This is separate from standard application key
+    /// management (see 'pup api-keys' for that).
+    ///
+    /// CAPABILITIES:
+    ///   • List registered app keys
+    ///   • Get app key registration details
+    ///   • Register an application key for Action Connections
+    ///   • Unregister an application key from Action Connections
+    ///
+    /// EXAMPLES:
+    ///   # List all registered app keys
+    ///   pup app-keys list
+    ///
+    ///   # Get app key registration details
+    ///   pup app-keys get <app-key-id>
+    ///
+    ///   # Register an application key
+    ///   pup app-keys register <app-key-id>
+    ///
+    ///   # Unregister an application key
+    ///   pup app-keys unregister <app-key-id>
+    ///
+    /// AUTHENTICATION:
+    ///   Requires OAuth2 (via 'pup auth login') or valid API + Application keys.
+    #[command(name = "app-keys", verbatim_doc_comment)]
     AppKeys {
         #[command(subcommand)]
         action: AppKeyActions,
     },
     /// Manage APM services and entities
-    #[command(
-        after_help = "EXAMPLES:\n  # List services with stats\n  pup apm services stats --start $(date -d '1 hour ago' +%s) --end $(date +%s)\n\n  # Query entities with filtering\n  pup apm entities list --start $(date -d '1 hour ago' +%s) --end $(date +%s) --env prod\n\n  # View service dependencies\n  pup apm dependencies list --env prod --start $(date -d '1 hour ago' +%s) --end $(date +%s)"
-    )]
+    ///
+    /// Manage Datadog APM services and entities.
+    ///
+    /// APM (Application Performance Monitoring) tracks your services, operations, and dependencies
+    /// to provide performance insights. This command provides access to dynamic operational data
+    /// about traced services, datastores, queues, and other APM entities.
+    ///
+    /// DISTINCTION FROM SERVICE CATALOG:
+    ///   • service-catalog: Static metadata registry (ownership, definitions, documentation)
+    ///   • apm: Dynamic operational data (performance stats, traces, actual runtime behavior)
+    ///
+    ///   Service catalog shows "what services exist and who owns them"
+    ///   APM shows "what's running, how it's performing, and what it's calling"
+    ///
+    /// CAPABILITIES:
+    ///   • List services with performance statistics (requests, errors, latency)
+    ///   • Query entities with rich metadata (services, datastores, queues, inferred services)
+    ///   • List operations and resources (endpoints) for services
+    ///   • View service dependencies and flow maps with performance metrics
+    ///
+    /// COMMAND GROUPS:
+    ///   services       List and query APM services with performance data
+    ///   entities       Query APM entities (services, datastores, queues, etc.)
+    ///   dependencies   View service dependencies and call relationships
+    ///   flow-map       Visualize service flow with performance metrics
+    ///
+    /// EXAMPLES:
+    ///   # List services with stats
+    ///   pup apm services stats --start $(date -d '1 hour ago' +%s) --end $(date +%s)
+    ///
+    ///   # Query entities with filtering
+    ///   pup apm entities list --start $(date -d '1 hour ago' +%s) --end $(date +%s) --env prod
+    ///
+    ///   # View service dependencies
+    ///   pup apm dependencies list --env prod --start $(date -d '1 hour ago' +%s) --end $(date +%s)
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Apm {
         #[command(subcommand)]
         action: ApmActions,
     },
     /// Query audit logs
-    #[command(
-        name = "audit-logs",
-        after_help = "EXAMPLES:\n  # List recent audit logs\n  pup audit-logs list\n\n  # Search for specific user actions\n  pup audit-logs search --query=\"@usr.name:admin@example.com\"\n\n  # Search for failed actions\n  pup audit-logs search --query=\"@evt.outcome:error\""
-    )]
+    ///
+    /// Search and list audit logs for your Datadog organization.
+    ///
+    /// Audit logs track all actions performed in your Datadog organization,
+    /// providing a complete audit trail for compliance and security.
+    ///
+    /// CAPABILITIES:
+    ///   • Search audit logs with queries
+    ///   • List recent audit events
+    ///   • Filter by action, user, resource, outcome
+    ///
+    /// EXAMPLES:
+    ///   # List recent audit logs
+    ///   pup audit-logs list
+    ///
+    ///   # Search for specific user actions
+    ///   pup audit-logs search --query="@usr.name:admin@example.com"
+    ///
+    ///   # Search for failed actions
+    ///   pup audit-logs search --query="@evt.outcome:error"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "audit-logs", verbatim_doc_comment)]
     AuditLogs {
         #[command(subcommand)]
         action: AuditLogActions,
     },
     /// OAuth2 authentication commands
-    #[command(
-        after_help = "EXAMPLES:\n  # Login with OAuth2\n  pup auth login\n\n  # Check authentication status\n  pup auth status\n\n  # Refresh access token\n  pup auth refresh\n\n  # Logout and clear credentials\n  pup auth logout\n\n  # Login to different Datadog site\n  DD_SITE=datadoghq.eu pup auth login"
-    )]
+    ///
+    /// Manage OAuth2 authentication with Datadog.
+    ///
+    /// OAuth2 provides secure, browser-based authentication with better security than
+    /// API keys. It uses PKCE (Proof Key for Code Exchange) and Dynamic Client
+    /// Registration for maximum security.
+    ///
+    /// AUTHENTICATION METHODS:
+    ///   Pup supports two authentication methods:
+    ///
+    ///   1. OAuth2 (RECOMMENDED):
+    ///      - Browser-based login flow
+    ///      - Short-lived access tokens (1 hour)
+    ///      - Automatic token refresh
+    ///      - Per-installation credentials
+    ///      - Granular OAuth scopes
+    ///      - Better audit trail
+    ///
+    ///   2. API Keys (LEGACY):
+    ///      - Environment variables (DD_API_KEY, DD_APP_KEY)
+    ///      - Long-lived credentials
+    ///      - Organization-wide access
+    ///      - Manual rotation required
+    ///
+    /// OAUTH2 FEATURES:
+    ///   • PKCE Protection (S256): Prevents authorization code interception
+    ///   • Dynamic Client Registration: Unique credentials per installation
+    ///   • CSRF Protection: State parameter validation
+    ///   • Secure Storage: Tokens stored in ~/.config/pup/ with 0600 permissions
+    ///   • Auto Refresh: Tokens refresh automatically before expiration
+    ///   • Multi-Site: Separate credentials for each Datadog site
+    ///
+    /// COMMANDS:
+    ///   login       Authenticate via browser with OAuth2
+    ///   status      Check current authentication status
+    ///   refresh     Manually refresh access token
+    ///   logout      Clear all stored credentials
+    ///
+    /// OAUTH2 SCOPES:
+    ///   The following scopes are requested during login:
+    ///   • Dashboards: dashboards_read, dashboards_write
+    ///   • Monitors: monitors_read, monitors_write, monitors_downtime
+    ///   • APM: apm_read
+    ///   • SLOs: slos_read, slos_write, slos_corrections
+    ///   • Incidents: incident_read, incident_write
+    ///   • Synthetics: synthetics_read, synthetics_write
+    ///   • Security: security_monitoring_*
+    ///   • RUM: rum_apps_read, rum_apps_write
+    ///   • Infrastructure: hosts_read
+    ///   • Users: user_access_read, user_self_profile_read
+    ///   • Cases: cases_read, cases_write
+    ///   • Events: events_read
+    ///   • Logs: logs_read_data, logs_read_index_data
+    ///   • Metrics: metrics_read, timeseries_query
+    ///   • Usage: usage_read
+    ///
+    /// EXAMPLES:
+    ///   # Login with OAuth2
+    ///   pup auth login
+    ///
+    ///   # Check authentication status
+    ///   pup auth status
+    ///
+    ///   # Refresh access token
+    ///   pup auth refresh
+    ///
+    ///   # Logout and clear credentials
+    ///   pup auth logout
+    ///
+    ///   # Login to different Datadog site
+    ///   DD_SITE=datadoghq.eu pup auth login
+    ///
+    /// MULTI-SITE SUPPORT:
+    ///   Each Datadog site maintains separate credentials:
+    ///
+    ///   DD_SITE=datadoghq.com pup auth login     # US1 (default)
+    ///   DD_SITE=datadoghq.eu pup auth login      # EU1
+    ///   DD_SITE=us3.datadoghq.com pup auth login # US3
+    ///   DD_SITE=us5.datadoghq.com pup auth login # US5
+    ///   DD_SITE=ap1.datadoghq.com pup auth login # AP1
+    ///
+    /// TOKEN STORAGE:
+    ///   Credentials are stored in:
+    ///   • ~/.config/pup/tokens_<site>.json - OAuth2 tokens
+    ///   • ~/.config/pup/client_<site>.json - DCR client credentials
+    ///
+    ///   File permissions are set to 0600 (read/write owner only).
+    ///
+    /// SECURITY:
+    ///   • Tokens never logged or printed
+    ///   • PKCE prevents code interception
+    ///   • State parameter prevents CSRF
+    ///   • Unique client per installation
+    ///   • Tokens auto-refresh before expiration
+    ///
+    /// For detailed OAuth2 documentation, see: docs/OAUTH2.md
+    #[command(verbatim_doc_comment)]
     Auth {
         #[command(subcommand)]
         action: AuthActions,
     },
     /// Manage case management cases and projects
-    #[command(
-        after_help = "EXAMPLES:\n  # Search cases\n  pup cases search --query=\"bug\"\n\n  # Get case details\n  pup cases get case-123\n\n  # Create a new case\n  pup cases create --title=\"Bug report\" --type-id=\"type-uuid\" --priority=P2\n\n  # List projects\n  pup cases projects list"
-    )]
+    ///
+    /// Manage Datadog Case Management for tracking and resolving issues.
+    ///
+    /// Case Management provides structured workflows for handling customer issues,
+    /// bugs, and internal requests. Cases can be organized into projects with
+    /// custom attributes, priorities, and assignments.
+    ///
+    /// CAPABILITIES:
+    ///   • Create and manage cases with custom attributes
+    ///   • Search and filter cases
+    ///   • Assign cases to users
+    ///   • Archive/unarchive cases
+    ///   • Manage projects
+    ///   • Add comments and track timelines
+    ///
+    /// CASE PRIORITIES:
+    ///   • NOT_DEFINED: No priority set
+    ///   • P1: Critical priority
+    ///   • P2: High priority
+    ///   • P3: Medium priority
+    ///   • P4: Low priority
+    ///   • P5: Lowest priority
+    ///
+    /// EXAMPLES:
+    ///   # Search cases
+    ///   pup cases search --query="bug"
+    ///
+    ///   # Get case details
+    ///   pup cases get case-123
+    ///
+    ///   # Create a new case
+    ///   pup cases create --title="Bug report" --type-id="type-uuid" --priority=P2
+    ///
+    ///   # List projects
+    ///   pup cases projects list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys.
+    #[command(verbatim_doc_comment)]
     Cases {
         #[command(subcommand)]
         action: CaseActions,
     },
     /// Manage CI/CD visibility
-    #[command(
-        after_help = "EXAMPLES:\n  # List recent pipelines\n  pup cicd pipelines list\n\n  # Get pipeline details\n  pup cicd pipelines get --pipeline-id=\"abc-123\"\n\n  # Search for failed pipelines\n  pup cicd events search --query=\"@ci.status:error\" --from=\"1h\"\n\n  # Aggregate by status\n  pup cicd events aggregate --query=\"*\" --compute=\"count\" --group-by=\"@ci.status\"\n\n  # List recent test events\n  pup cicd tests list --from=\"1h\"\n\n  # Search flaky tests\n  pup cicd flaky-tests search --query=\"flaky_test_state:active\""
-    )]
+    ///
+    /// Manage Datadog CI/CD visibility for pipeline and test monitoring.
+    ///
+    /// CI/CD Visibility provides insights into your CI/CD pipelines, tracking pipeline
+    /// performance, test results, and failure patterns.
+    ///
+    /// CAPABILITIES:
+    ///   • List and search CI pipelines with filtering
+    ///   • Get detailed pipeline execution information
+    ///   • Aggregate pipeline events for analytics
+    ///   • Track pipeline performance metrics
+    ///   • Query CI test events and flaky tests
+    ///
+    /// EXAMPLES:
+    ///   # List recent pipelines
+    ///   pup cicd pipelines list
+    ///
+    ///   # Get pipeline details
+    ///   pup cicd pipelines get --pipeline-id="abc-123"
+    ///
+    ///   # Search for failed pipelines
+    ///   pup cicd events search --query="@ci.status:error" --from="1h"
+    ///
+    ///   # Aggregate by status
+    ///   pup cicd events aggregate --query="*" --compute="count" --group-by="@ci.status"
+    ///
+    ///   # List recent test events
+    ///   pup cicd tests list --from="1h"
+    ///
+    ///   # Search flaky tests
+    ///   pup cicd flaky-tests search --query="flaky_test_state:active"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys.
+    #[command(verbatim_doc_comment)]
     Cicd {
         #[command(subcommand)]
         action: CicdActions,
     },
     /// Manage cloud integrations
-    #[command(
-        after_help = "EXAMPLES:\n  # List AWS integrations\n  pup cloud aws list\n\n  # List GCP integrations\n  pup cloud gcp list\n\n  # List Azure integrations\n  pup cloud azure list"
-    )]
+    ///
+    /// Manage cloud provider integrations (AWS, GCP, Azure).
+    ///
+    /// Cloud integrations collect metrics and logs from your cloud providers
+    /// and provide insights into cloud resource usage and performance.
+    ///
+    /// CAPABILITIES:
+    ///   • Manage AWS integrations
+    ///   • Manage GCP integrations
+    ///   • Manage Azure integrations
+    ///   • View cloud metrics
+    ///
+    /// EXAMPLES:
+    ///   # List AWS integrations
+    ///   pup cloud aws list
+    ///
+    ///   # List GCP integrations
+    ///   pup cloud gcp list
+    ///
+    ///   # List Azure integrations
+    ///   pup cloud azure list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Cloud {
         #[command(subcommand)]
         action: CloudActions,
     },
     /// Query code coverage data
-    #[command(
-        name = "code-coverage",
-        after_help = "EXAMPLES:\n  # Get branch coverage summary\n  pup code-coverage branch-summary --repo=\"my-org/my-repo\" --branch=\"main\"\n\n  # Get commit coverage summary\n  pup code-coverage commit-summary --repo=\"my-org/my-repo\" --commit=\"abc123def\""
-    )]
+    ///
+    /// Query code coverage summaries from Datadog Test Optimization.
+    ///
+    /// Code coverage provides branch-level and commit-level coverage summaries
+    /// for your repositories.
+    ///
+    /// EXAMPLES:
+    ///   # Get branch coverage summary
+    ///   pup code-coverage branch-summary --repo="github.com/org/repo" --branch="main"
+    ///
+    ///   # Get commit coverage summary
+    ///   pup code-coverage commit-summary --repo="github.com/org/repo" --commit="abc123"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "code-coverage", verbatim_doc_comment)]
     CodeCoverage {
         #[command(subcommand)]
         action: CodeCoverageActions,
     },
     /// Generate shell completions
-    #[command(
-        after_help = "EXAMPLES:\n  # Generate bash completions\n  pup completions bash > /etc/bash_completion.d/pup\n\n  # Generate zsh completions\n  pup completions zsh > ~/.zfunc/_pup\n\n  # Generate fish completions\n  pup completions fish > ~/.config/fish/completions/pup.fish"
-    )]
+    ///
+    /// Generate shell completions for pup.
+    ///
+    /// Shell completions enable tab-completion of commands, subcommands, and flags
+    /// in your terminal. After generating completions, source or install them
+    /// according to your shell's requirements.
+    ///
+    /// SUPPORTED SHELLS:
+    ///   • bash: Bourne Again Shell
+    ///   • zsh: Z Shell
+    ///   • fish: Friendly Interactive Shell
+    ///   • elvish: Elvish Shell
+    ///   • powershell: PowerShell
+    ///
+    /// EXAMPLES:
+    ///   # Generate bash completions
+    ///   pup completions bash > /etc/bash_completion.d/pup
+    ///
+    ///   # Generate zsh completions
+    ///   pup completions zsh > ~/.zfunc/_pup
+    ///   # Then add to .zshrc: fpath+=~/.zfunc; autoload -Uz compinit; compinit
+    ///
+    ///   # Generate fish completions
+    ///   pup completions fish > ~/.config/fish/completions/pup.fish
+    #[command(verbatim_doc_comment)]
     Completions {
         /// Shell to generate completions for
         shell: clap_complete::Shell,
     },
     /// Manage cost and billing data
-    #[command(
-        after_help = "EXAMPLES:\n  # Get projected costs for current month\n  pup cost projected\n\n  # Get cost attribution by team tag\n  pup cost attribution --start-month=2024-01 --fields=team\n\n  # Get actual costs for a specific month\n  pup cost by-org --start-month=2024-01"
-    )]
+    ///
+    /// Query cost management and billing information.
+    ///
+    /// Access projected costs, cost attribution by tags, and organizational cost breakdowns.
+    /// Cost data is typically available with 12-24 hour delay.
+    ///
+    /// CAPABILITIES:
+    ///   • View projected end-of-month costs
+    ///   • Get cost attribution by tags and teams
+    ///   • Query historical and estimated costs by organization
+    ///
+    /// EXAMPLES:
+    ///   # Get projected costs for current month
+    ///   pup cost projected
+    ///
+    ///   # Get cost attribution by team tag
+    ///   pup cost attribution --start-month=2024-01 --fields=team
+    ///
+    ///   # Get actual costs for a specific month
+    ///   pup cost by-org --start-month=2024-01
+    ///
+    /// AUTHENTICATION:
+    ///   Requires OAuth2 (via 'pup auth login') or valid API + Application keys.
+    ///   Cost management features require billing:read permissions.
+    #[command(verbatim_doc_comment)]
     Cost {
         #[command(subcommand)]
         action: CostActions,
     },
     /// Manage dashboards
-    #[command(
-        after_help = "EXAMPLES:\n  # List all dashboards\n  pup dashboards list\n\n  # Get detailed dashboard configuration\n  pup dashboards get abc-def-123\n\n  # Get dashboard and save to file\n  pup dashboards get abc-def-123 > dashboard.json\n\n  # Delete a dashboard with confirmation\n  pup dashboards delete abc-def-123\n\n  # Delete a dashboard without confirmation (automation)\n  pup dashboards delete abc-def-123 --yes"
-    )]
+    ///
+    /// Manage Datadog dashboards for data visualization and monitoring.
+    ///
+    /// Dashboards provide customizable views of your metrics, logs, traces, and other
+    /// observability data through various widget types including timeseries, heatmaps,
+    /// tables, and more.
+    ///
+    /// CAPABILITIES:
+    ///   • List all dashboards with metadata
+    ///   • Get detailed dashboard configuration including all widgets
+    ///   • Delete dashboards (requires confirmation unless --yes flag is used)
+    ///   • View dashboard layouts, templates, and template variables
+    ///
+    /// DASHBOARD TYPES:
+    ///   • Timeboard: Grid-based layout with synchronized timeseries graphs
+    ///   • Screenboard: Flexible free-form layout with any widget placement
+    ///
+    /// WIDGET TYPES:
+    ///   • Timeseries: Line, area, or bar graphs over time
+    ///   • Query value: Single numeric value with thresholds
+    ///   • Table: Tabular data with columns
+    ///   • Heatmap: Heat map visualization
+    ///   • Toplist: Top N values
+    ///   • Change: Value change over time
+    ///   • Event timeline: Event stream
+    ///   • Free text: Markdown text and images
+    ///   • Group: Container for organizing widgets
+    ///   • Note: Text annotations
+    ///   • Service map: Service dependency visualization
+    ///   • And many more...
+    ///
+    /// EXAMPLES:
+    ///   # List all dashboards
+    ///   pup dashboards list
+    ///
+    ///   # Get detailed dashboard configuration
+    ///   pup dashboards get abc-def-123
+    ///
+    ///   # Get dashboard and save to file
+    ///   pup dashboards get abc-def-123 > dashboard.json
+    ///
+    ///   # Delete a dashboard with confirmation
+    ///   pup dashboards delete abc-def-123
+    ///
+    ///   # Delete a dashboard without confirmation (automation)
+    ///   pup dashboards delete abc-def-123 --yes
+    ///
+    /// TEMPLATE VARIABLES:
+    ///   Dashboards can include template variables for dynamic filtering:
+    ///   • $env: Environment filter
+    ///   • $service: Service filter
+    ///   • $host: Host filter
+    ///   • Custom variables based on tags
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Dashboards {
         #[command(subcommand)]
         action: DashboardActions,
     },
     /// Manage data governance
-    #[command(
-        name = "data-governance",
-        after_help = "EXAMPLES:\n  # List scanning rules\n  pup data-governance scanner rules list\n\n  # Get rule details\n  pup data-governance scanner rules get rule-id"
-    )]
+    ///
+    /// Manage data governance, sensitive data scanning, and data deletion.
+    ///
+    /// CAPABILITIES:
+    ///   • Manage sensitive data scanner
+    ///   • Configure data deletion policies
+    ///   • View scan results
+    ///   • Manage scanning rules
+    ///
+    /// EXAMPLES:
+    ///   # List scanning rules
+    ///   pup data-governance scanner rules list
+    ///
+    ///   # Get rule details
+    ///   pup data-governance scanner rules get rule-id
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "data-governance", verbatim_doc_comment)]
     DataGovernance {
         #[command(subcommand)]
         action: DataGovActions,
     },
     /// Manage monitor downtimes
-    #[command(
-        after_help = "EXAMPLES:\n  # List all active downtimes\n  pup downtime list\n\n  # Get downtime details\n  pup downtime get abc-123-def\n\n  # Cancel a downtime\n  pup downtime cancel abc-123-def"
-    )]
+    ///
+    /// Manage downtimes to silence monitors during maintenance windows.
+    ///
+    /// Downtimes prevent monitors from alerting during scheduled maintenance,
+    /// deployments, or other planned events.
+    ///
+    /// CAPABILITIES:
+    ///   • List all downtimes
+    ///   • Get downtime details
+    ///   • Create new downtimes
+    ///   • Update existing downtimes
+    ///   • Cancel downtimes
+    ///
+    /// EXAMPLES:
+    ///   # List all active downtimes
+    ///   pup downtime list
+    ///
+    ///   # Get downtime details
+    ///   pup downtime get abc-123-def
+    ///
+    ///   # Cancel a downtime
+    ///   pup downtime cancel abc-123-def
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Downtime {
         #[command(subcommand)]
         action: DowntimeActions,
     },
     /// Manage error tracking
-    #[command(
-        name = "error-tracking",
-        after_help = "EXAMPLES:\n  # Search error issues\n  pup error-tracking issues search\n\n  # Get issue details\n  pup error-tracking issues get issue-id"
-    )]
+    ///
+    /// Manage error tracking for application errors and crashes.
+    ///
+    /// Error tracking automatically groups and prioritizes errors from
+    /// your applications to help you identify and fix critical issues.
+    ///
+    /// CAPABILITIES:
+    ///   • Search error issues with filtering and sorting
+    ///   • Get detailed information about a specific issue
+    ///
+    /// EXAMPLES:
+    ///   # Search error issues
+    ///   pup error-tracking issues search
+    ///
+    ///   # Get issue details
+    ///   pup error-tracking issues get issue-id
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "error-tracking", verbatim_doc_comment)]
     ErrorTracking {
         #[command(subcommand)]
         action: ErrorTrackingActions,
     },
     /// Manage Datadog events
-    #[command(
-        after_help = "EXAMPLES:\n  # List recent events\n  pup events list\n\n  # Search for deployment events\n  pup events search --query=\"tags:deployment\"\n\n  # Get specific event\n  pup events get 1234567890"
-    )]
+    ///
+    /// Query and search Datadog events.
+    ///
+    /// Events represent important occurrences in your infrastructure such as
+    /// deployments, configuration changes, alerts, and custom events.
+    ///
+    /// CAPABILITIES:
+    ///   • List recent events
+    ///   • Search events with queries
+    ///   • Get event details
+    ///
+    /// EXAMPLES:
+    ///   # List recent events
+    ///   pup events list
+    ///
+    ///   # Search for deployment events
+    ///   pup events search --query="tags:deployment"
+    ///
+    ///   # Get specific event
+    ///   pup events get 1234567890
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Events {
         #[command(subcommand)]
         action: EventActions,
     },
     /// Manage Fleet Automation
-    #[command(
-        after_help = "EXAMPLES:\n  # List fleet agents\n  pup fleet agents list\n\n  # Get agent details\n  pup fleet agents get <agent-key>\n\n  # List deployments\n  pup fleet deployments list\n\n  # Deploy a configuration change\n  pup fleet deployments configure --file=config.json\n\n  # List schedules\n  pup fleet schedules list"
-    )]
+    ///
+    /// Manage Fleet Automation for remote agent configuration and deployment.
+    ///
+    /// Fleet Automation provides centralized management of Datadog Agents across
+    /// your infrastructure, enabling remote configuration changes, scheduled
+    /// deployments, and agent lifecycle management.
+    ///
+    /// CAPABILITIES:
+    ///   • List and inspect fleet agents
+    ///   • Manage deployment configurations
+    ///   • Schedule configuration changes
+    ///   • Monitor agent health and status
+    ///
+    /// EXAMPLES:
+    ///   # List fleet agents
+    ///   pup fleet agents list
+    ///
+    ///   # Get agent details
+    ///   pup fleet agents get <agent-key>
+    ///
+    ///   # List deployments
+    ///   pup fleet deployments list
+    ///
+    ///   # Deploy a configuration change
+    ///   pup fleet deployments configure --file=config.json
+    ///
+    ///   # List schedules
+    ///   pup fleet schedules list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Fleet {
         #[command(subcommand)]
         action: FleetActions,
     },
     /// Manage High Availability Multi-Region (HAMR)
-    #[command(
-        after_help = "EXAMPLES:\n  # Get HAMR connection status\n  pup hamr connections get\n\n  # Create a HAMR connection\n  pup hamr connections create --file=connection.json"
-    )]
+    ///
+    /// Manage Datadog High Availability Multi-Region (HAMR) connections.
+    ///
+    /// HAMR provides high availability and multi-region failover capabilities
+    /// for your Datadog organization.
+    ///
+    /// EXAMPLES:
+    ///   # Get HAMR connection status
+    ///   pup hamr connections get
+    ///
+    ///   # Create a HAMR connection
+    ///   pup hamr connections create --file=connection.json
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Hamr {
         #[command(subcommand)]
         action: HamrActions,
     },
     /// Manage incidents
-    #[command(
-        after_help = "EXAMPLES:\n  # List all incidents\n  pup incidents list\n\n  # List incidents with a limit\n  pup incidents list --limit=10\n\n  # Get incident details\n  pup incidents get <incident-id>\n\n  # List incident attachments\n  pup incidents attachments list <incident-id>\n\n  # View global incident settings\n  pup incidents settings get\n\n  # List postmortem templates\n  pup incidents postmortem-templates list"
-    )]
+    ///
+    /// Manage Datadog incidents for incident response and tracking.
+    ///
+    /// Incidents provide a centralized place to track, communicate, and resolve issues
+    /// affecting your services. They integrate with monitors, timelines, tasks, and
+    /// postmortems.
+    ///
+    /// CAPABILITIES:
+    ///   • List all incidents with filtering and pagination
+    ///   • Get detailed incident information including timeline, tasks, and attachments
+    ///   • View incident severity, status, and customer impact
+    ///   • Track incident response and resolution
+    ///
+    /// INCIDENT SEVERITIES:
+    ///   • SEV-1: Critical impact - complete service outage
+    ///   • SEV-2: High impact - major functionality unavailable
+    ///   • SEV-3: Moderate impact - partial functionality affected
+    ///   • SEV-4: Low impact - minor issues
+    ///   • SEV-5: Minimal impact - cosmetic issues
+    ///
+    /// INCIDENT STATES:
+    ///   • active: Incident is ongoing, actively being worked
+    ///   • stable: Incident is under control but not fully resolved
+    ///   • resolved: Incident has been resolved
+    ///   • completed: Post-incident tasks completed (postmortem, etc.)
+    ///
+    /// EXAMPLES:
+    ///   # List all incidents
+    ///   pup incidents list
+    ///
+    ///   # Get detailed incident information
+    ///   pup incidents get abc-123-def
+    ///
+    ///   # Get incident and view timeline
+    ///   pup incidents get abc-123-def | jq '.data.timeline'
+    ///
+    ///   # Check incident status
+    ///   pup incidents get abc-123-def | jq '{status: .data.status, severity: .data.severity}'
+    ///
+    /// INCIDENT FIELDS:
+    ///   • id: Incident ID
+    ///   • title: Incident title
+    ///   • description: Detailed description
+    ///   • severity: Severity level (SEV-1 through SEV-5)
+    ///   • state: Incident state (active, stable, resolved, completed)
+    ///   • customer_impacted: Whether customers are affected
+    ///   • customer_impact_scope: Description of customer impact
+    ///   • detected_at: When incident was detected
+    ///   • created_at: When incident was created in Datadog
+    ///   • resolved_at: When incident was resolved
+    ///   • commander: Incident commander (user)
+    ///   • responders: Team members responding
+    ///   • attachments: Related documents, runbooks, etc.
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Incidents {
         #[command(subcommand)]
         action: IncidentActions,
     },
     /// Manage infrastructure monitoring
-    #[command(
-        after_help = "EXAMPLES:\n  # List all hosts\n  pup infrastructure hosts list\n\n  # Search for hosts by tag\n  pup infrastructure hosts list --filter=\"env:production\"\n\n  # Get host details\n  pup infrastructure hosts get my-host"
-    )]
+    ///
+    /// Query and manage infrastructure hosts and metrics.
+    ///
+    /// CAPABILITIES:
+    ///   • List hosts in your infrastructure
+    ///   • Get host details and metrics
+    ///   • Search hosts by tags or status
+    ///   • Monitor host health
+    ///
+    /// EXAMPLES:
+    ///   # List all hosts
+    ///   pup infrastructure hosts list
+    ///
+    ///   # Search for hosts by tag
+    ///   pup infrastructure hosts list --filter="env:production"
+    ///
+    ///   # Get host details
+    ///   pup infrastructure hosts get my-host
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Infrastructure {
         #[command(subcommand)]
         action: InfraActions,
     },
     /// Manage third-party integrations
-    #[command(
-        after_help = "EXAMPLES:\n  # List Slack integrations\n  pup integrations slack list\n\n  # List PagerDuty integrations\n  pup integrations pagerduty list\n\n  # List webhooks\n  pup integrations webhooks list"
-    )]
+    ///
+    /// Manage third-party integrations with external services.
+    ///
+    /// Integrations connect Datadog with external services like Slack, PagerDuty,
+    /// Jira, and many others for notifications and workflow automation.
+    ///
+    /// CAPABILITIES:
+    ///   • List Slack integrations
+    ///   • Manage PagerDuty integrations
+    ///   • Configure webhook integrations
+    ///   • View integration status
+    ///
+    /// EXAMPLES:
+    ///   # List Slack integrations
+    ///   pup integrations slack list
+    ///
+    ///   # List PagerDuty integrations
+    ///   pup integrations pagerduty list
+    ///
+    ///   # List webhooks
+    ///   pup integrations webhooks list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Integrations {
         #[command(subcommand)]
         action: IntegrationActions,
     },
     /// Manage Bits AI investigations
-    #[command(
-        after_help = "EXAMPLES:\n  # Trigger investigation from a monitor alert\n  pup investigations trigger --type=monitor_alert --monitor-id=123456 --event-id=\"evt-abc\" --event-ts=1706918956000\n\n  # Get investigation details\n  pup investigations get <investigation-id>\n\n  # List investigations\n  pup investigations list --page-limit=20"
-    )]
+    ///
+    /// Manage Bits AI investigations.
+    ///
+    /// Bits AI investigations allow you to trigger automated root cause analysis
+    /// for monitor alerts.
+    ///
+    /// CAPABILITIES:
+    ///   • Trigger a new investigation (monitor alert)
+    ///   • Get investigation details by ID
+    ///   • List investigations with optional filters
+    ///
+    /// EXAMPLES:
+    ///   # Trigger investigation from a monitor alert
+    ///   pup investigations trigger --type=monitor_alert --monitor-id=123456 --event-id="evt-abc" --event-ts=1706918956000
+    ///
+    ///   # Get investigation details
+    ///   pup investigations get <investigation-id>
+    ///
+    ///   # List investigations
+    ///   pup investigations list --page-limit=20
+    ///
+    /// AUTHENTICATION:
+    ///   Requires OAuth2 (via 'pup auth login') or a valid API key + Application key.
+    #[command(verbatim_doc_comment)]
     Investigations {
         #[command(subcommand)]
         action: InvestigationActions,
     },
     /// Search and analyze logs
-    #[command(
-        after_help = "EXAMPLES:\n  # Search for error logs in the last hour\n  pup logs search --query=\"status:error\" --from=\"1h\"\n\n  # Search Flex logs specifically\n  pup logs search --query=\"status:error\" --from=\"1h\" --storage=\"flex\"\n\n  # Query logs from a specific service\n  pup logs query --query=\"service:web-app\" --from=\"4h\" --to=\"now\"\n\n  # Query online archives\n  pup logs query --query=\"service:web-app\" --from=\"30d\" --storage=\"online-archives\"\n\n  # Aggregate logs by status\n  pup logs aggregate --query=\"*\" --compute=\"count\" --group-by=\"status\"\n\n  # List log archives\n  pup logs archives list\n\n  # List log-based metrics\n  pup logs metrics list\n\n  # List custom destinations\n  pup logs custom-destinations list\n\n  # List restriction queries\n  pup logs restriction-queries list"
-    )]
+    ///
+    /// Search and analyze log data with flexible queries and time ranges.
+    ///
+    /// The logs command provides comprehensive access to Datadog's log management capabilities
+    /// including search, querying, aggregation, archives management, custom destinations,
+    /// log-based metrics, and restriction queries.
+    ///
+    /// CAPABILITIES:
+    ///   • Search logs with flexible queries (v1 API)
+    ///   • Query and aggregate logs (v2 API)
+    ///   • List logs with filtering (v2 API)
+    ///   • Search across different storage tiers (indexes, online-archives, flex)
+    ///   • Manage log archives (CRUD operations)
+    ///   • Manage custom destinations for logs
+    ///   • Create and manage log-based metrics
+    ///   • Configure restriction queries for access control
+    ///
+    /// STORAGE TIERS:
+    ///   Datadog logs can be stored in different tiers with different performance and cost characteristics:
+    ///   • indexes - Standard indexed logs (default, real-time searchable)
+    ///   • online-archives - Rehydrated logs from archives (slower queries, lower cost)
+    ///   • flex - Flex logs (cost-optimized storage tier, balanced performance)
+    ///
+    /// LOG QUERY SYNTAX:
+    ///   Logs use a query language similar to web search:
+    ///   • status:error - Match by status
+    ///   • service:web-app - Match by service
+    ///   • @user.id:12345 - Match by attribute
+    ///   • host:i-* - Wildcard matching
+    ///   • "exact phrase" - Exact phrase matching
+    ///   • AND, OR, NOT - Boolean operators
+    ///
+    /// TIME RANGES:
+    ///   Supported time formats:
+    ///   • Relative short: 1h, 30m, 7d, 5s, 1w
+    ///   • Relative long: 5min, 5minutes, 2hr, 2hours, 3days, 1week
+    ///   • With spaces: "5 minutes", "2 hours"
+    ///   • With minus: -5m, -2h (treated same as 5m, 2h)
+    ///   • Absolute: Unix timestamp in milliseconds
+    ///   • RFC3339: 2024-01-01T00:00:00Z
+    ///   • now: Current time
+    ///
+    /// EXAMPLES:
+    ///   # Search for error logs in the last hour
+    ///   pup logs search --query="status:error" --from="1h"
+    ///
+    ///   # Search Flex logs specifically
+    ///   pup logs search --query="status:error" --from="1h" --storage="flex"
+    ///
+    ///   # Query logs from a specific service
+    ///   pup logs query --query="service:web-app" --from="4h" --to="now"
+    ///
+    ///   # Query online archives
+    ///   pup logs query --query="service:web-app" --from="30d" --storage="online-archives"
+    ///
+    ///   # Aggregate logs by status
+    ///   pup logs aggregate --query="*" --compute="count" --group-by="status"
+    ///
+    ///   # List log archives
+    ///   pup logs archives list
+    ///
+    ///   # Get specific archive details
+    ///   pup logs archives get "my-archive-id"
+    ///
+    ///   # List log-based metrics
+    ///   pup logs metrics list
+    ///
+    ///   # Create a log-based metric
+    ///   pup logs metrics create --name="error.count" --query="status:error"
+    ///
+    ///   # List custom destinations
+    ///   pup logs custom-destinations list
+    ///
+    ///   # List restriction queries
+    ///   pup logs restriction-queries list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Logs {
         #[command(subcommand)]
         action: LogActions,
     },
     /// Query and manage metrics
-    #[command(
-        after_help = "EXAMPLES:\n  # Query metrics\n  pup metrics query --query=\"avg:system.cpu.user{*}\" --from=\"1h\" --to=\"now\"\n  pup metrics query --query=\"sum:app.requests{env:prod} by {service}\" --from=\"4h\"\n\n  # List metrics\n  pup metrics list\n  pup metrics list --filter=\"system.*\"\n\n  # Get metric metadata\n  pup metrics metadata get system.cpu.user\n\n  # Submit custom metrics\n  pup metrics submit --name=\"custom.metric\" --value=123 --tags=\"env:prod,team:backend\"\n\n  # List metric tags\n  pup metrics tags list system.cpu.user"
-    )]
+    ///
+    /// Query time-series metrics, list available metrics, and manage metric metadata.
+    ///
+    /// Metrics are the foundation of monitoring in Datadog. This command provides
+    /// comprehensive access to query metrics data, list available metrics, manage
+    /// metadata, and submit custom metrics.
+    ///
+    /// CAPABILITIES:
+    ///   • Query time-series metrics data with flexible time ranges
+    ///   • List all available metrics with optional filtering
+    ///   • Get and update metric metadata (description, unit, type)
+    ///   • Submit custom metrics to Datadog
+    ///   • List metric tags and tag configurations
+    ///
+    /// METRIC TYPES:
+    ///   • gauge: Point-in-time value (e.g., CPU usage, memory)
+    ///   • count: Cumulative count (e.g., request count, errors)
+    ///   • rate: Rate of change per second (e.g., requests per second)
+    ///   • distribution: Statistical distribution (e.g., latency percentiles)
+    ///
+    /// TIME RANGES:
+    ///   Supports flexible time range specifications:
+    ///   • Relative: 1h, 30m, 7d, 1w (hours, minutes, days, weeks)
+    ///   • Absolute: Unix timestamps or ISO 8601 format
+    ///   • Special: now (current time)
+    ///
+    /// EXAMPLES:
+    ///   # Query metrics
+    ///   pup metrics query --query="avg:system.cpu.user{*}" --from="1h" --to="now"
+    ///   pup metrics query --query="sum:app.requests{env:prod} by {service}" --from="4h"
+    ///
+    ///   # List metrics
+    ///   pup metrics list
+    ///   pup metrics list --filter="system.*"
+    ///
+    ///   # Get metric metadata
+    ///   pup metrics metadata get system.cpu.user
+    ///   pup metrics metadata get system.cpu.user --output=table
+    ///
+    ///   # Update metric metadata
+    ///   pup metrics metadata update system.cpu.user \
+    ///     --description="CPU user time" \
+    ///     --unit="percent" \
+    ///     --type="gauge"
+    ///
+    ///   # Submit custom metrics
+    ///   pup metrics submit --name="custom.metric" --value=123 --tags="env:prod,team:backend"
+    ///   pup metrics submit --name="custom.gauge" --value=99.5 --type="gauge" --timestamp=now
+    ///
+    ///   # List metric tags
+    ///   pup metrics tags list system.cpu.user
+    ///   pup metrics tags list system.cpu.user --from="1h"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Metrics {
         #[command(subcommand)]
         action: MetricActions,
     },
     /// Miscellaneous API operations
-    #[command(
-        after_help = "EXAMPLES:\n  # Get Datadog IP ranges\n  pup misc ip-ranges\n\n  # Check API status\n  pup misc status"
-    )]
+    ///
+    /// Miscellaneous API operations for various Datadog features.
+    ///
+    /// CAPABILITIES:
+    ///   • Query IP ranges
+    ///   • Check API status
+    ///   • View service level agreements
+    ///   • Access miscellaneous endpoints
+    ///
+    /// EXAMPLES:
+    ///   # Get Datadog IP ranges
+    ///   pup misc ip-ranges
+    ///
+    ///   # Check API status
+    ///   pup misc status
+    ///
+    /// AUTHENTICATION:
+    ///   Some endpoints may not require authentication.
+    #[command(verbatim_doc_comment)]
     Misc {
         #[command(subcommand)]
         action: MiscActions,
     },
     /// Manage monitors
-    #[command(
-        after_help = "EXAMPLES:\n  # List all monitors\n  pup monitors list\n\n  # Filter monitors by name\n  pup monitors list --name=\"CPU\"\n\n  # Filter monitors by tags\n  pup monitors list --tags=\"env:production,team:backend\"\n\n  # Get detailed information about a specific monitor\n  pup monitors get 12345678\n\n  # Delete a monitor with confirmation prompt\n  pup monitors delete 12345678\n\n  # Delete a monitor without confirmation (automation)\n  pup monitors delete 12345678 --yes"
-    )]
+    ///
+    /// Manage Datadog monitors for alerting and notifications.
+    ///
+    /// Monitors watch your metrics, logs, traces, and other data sources to alert you when
+    /// conditions are met. They support various monitor types including metric, log, trace,
+    /// composite, and more.
+    ///
+    /// CAPABILITIES:
+    ///   • List all monitors with optional filtering by name or tags
+    ///   • Get detailed information about a specific monitor
+    ///   • Delete monitors (requires confirmation unless --yes flag is used)
+    ///   • View monitor configuration, thresholds, and notification settings
+    ///
+    /// MONITOR TYPES:
+    ///   • metric alert: Alert on metric threshold
+    ///   • log alert: Alert on log query matches
+    ///   • trace-analytics alert: Alert on APM trace patterns
+    ///   • composite: Combine multiple monitors with boolean logic
+    ///   • service check: Alert on service check status
+    ///   • event alert: Alert on event patterns
+    ///   • process alert: Alert on process status
+    ///
+    /// EXAMPLES:
+    ///   # List all monitors
+    ///   pup monitors list
+    ///
+    ///   # Filter monitors by name
+    ///   pup monitors list --name="CPU"
+    ///
+    ///   # Filter monitors by tags
+    ///   pup monitors list --tags="env:production,team:backend"
+    ///
+    ///   # Get detailed information about a specific monitor
+    ///   pup monitors get 12345678
+    ///
+    ///   # Delete a monitor with confirmation prompt
+    ///   pup monitors delete 12345678
+    ///
+    ///   # Delete a monitor without confirmation (automation)
+    ///   pup monitors delete 12345678 --yes
+    ///
+    /// OUTPUT FORMAT:
+    ///   All commands output JSON by default. Use --output flag for other formats.
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Monitors {
         #[command(subcommand)]
         action: MonitorActions,
     },
     /// Manage network monitoring
-    #[command(
-        after_help = "EXAMPLES:\n  # List network devices/monitors\n  pup network list\n\n  # List network flows\n  pup network flows list\n\n  # List network devices\n  pup network devices list"
-    )]
+    ///
+    /// Query network monitoring data including flows and devices.
+    ///
+    /// Network Performance Monitoring provides visibility into network traffic
+    /// flows between services, containers, and availability zones.
+    ///
+    /// CAPABILITIES:
+    ///   • Query network flows
+    ///   • List network devices
+    ///   • View network metrics
+    ///   • Monitor network performance
+    ///
+    /// EXAMPLES:
+    ///   # List network flows
+    ///   pup network flows list
+    ///
+    ///   # List network devices
+    ///   pup network devices list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Network {
         #[command(subcommand)]
         action: NetworkActions,
     },
     /// Manage notebooks
-    #[command(
-        after_help = "EXAMPLES:\n  # List all notebooks\n  pup notebooks list\n\n  # Get notebook details\n  pup notebooks get notebook-id\n\n  # Create a notebook from file\n  pup notebooks create --body @notebook.json\n\n  # Create from stdin\n  cat notebook.json | pup notebooks create --body -\n\n  # Update a notebook\n  pup notebooks update 12345 --body @updated.json\n\n  # Delete a notebook\n  pup notebooks delete 12345"
-    )]
+    ///
+    /// Manage Datadog notebooks for investigation and documentation.
+    ///
+    /// Notebooks combine graphs, logs, and narrative text to document
+    /// investigations, share findings, and create runbooks.
+    ///
+    /// CAPABILITIES:
+    ///   • List notebooks
+    ///   • Get notebook details
+    ///   • Create new notebooks
+    ///   • Update notebooks
+    ///   • Delete notebooks
+    ///
+    /// EXAMPLES:
+    ///   # List all notebooks
+    ///   pup notebooks list
+    ///
+    ///   # Get notebook details
+    ///   pup notebooks get notebook-id
+    ///
+    ///   # Create a notebook from file
+    ///   pup notebooks create --body @notebook.json
+    ///
+    ///   # Create from stdin
+    ///   cat notebook.json | pup notebooks create --body -
+    ///
+    ///   # Update a notebook
+    ///   pup notebooks update 12345 --body @updated.json
+    ///
+    ///   # Delete a notebook
+    ///   pup notebooks delete 12345
+    ///
+    /// AUTHENTICATION:
+    ///   Requires API key authentication (DD_API_KEY + DD_APP_KEY).
+    ///   OAuth2 is not supported for this endpoint.
+    #[command(verbatim_doc_comment)]
     Notebooks {
         #[command(subcommand)]
         action: NotebookActions,
     },
     /// Manage observability pipelines
-    #[command(
-        name = "obs-pipelines",
-        after_help = "EXAMPLES:\n  # List observability pipelines\n  pup obs-pipelines list\n\n  # Get pipeline details\n  pup obs-pipelines get <pipeline-id>"
-    )]
+    ///
+    /// Manage observability pipelines for data collection and routing.
+    ///
+    /// Observability Pipelines allow you to collect, transform, and route
+    /// observability data at scale before sending it to Datadog or other destinations.
+    ///
+    /// CAPABILITIES:
+    ///   • List pipeline configurations
+    ///   • Get pipeline details
+    ///   • View pipeline metrics
+    ///   • Monitor pipeline health
+    ///
+    /// EXAMPLES:
+    ///   # List pipelines
+    ///   pup obs-pipelines list
+    ///
+    ///   # Get pipeline details
+    ///   pup obs-pipelines get pipeline-id
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "obs-pipelines", verbatim_doc_comment)]
     ObsPipelines {
         #[command(subcommand)]
         action: ObsPipelinesActions,
     },
     /// Manage teams and on-call operations
-    #[command(
-        name = "on-call",
-        after_help = "EXAMPLES:\n  # List all teams\n  pup on-call teams list\n\n  # Create a new team\n  pup on-call teams create --name=\"SRE Team\" --handle=\"sre-team\"\n\n  # Add a member to a team\n  pup on-call teams memberships add <team-id> --user-id=<uuid> --role=member\n\n  # List team members\n  pup on-call teams memberships list <team-id>"
-    )]
+    ///
+    /// Manage teams, memberships, links, and notification rules.
+    ///
+    /// Teams in Datadog represent groups of users that collaborate on monitoring,
+    /// incident response, and on-call duties. Use this command to manage team
+    /// structure, members, and notification settings.
+    ///
+    /// CAPABILITIES:
+    ///   • Create, update, and delete teams
+    ///   • Manage team memberships and roles
+    ///   • Configure team links (documentation, runbooks)
+    ///   • Set up notification rules for team alerts
+    ///
+    /// EXAMPLES:
+    ///   # List all teams
+    ///   pup on-call teams list
+    ///
+    ///   # Create a new team
+    ///   pup on-call teams create --name="SRE Team" --handle="sre-team"
+    ///
+    ///   # Add a member to a team
+    ///   pup on-call teams memberships add <team-id> --user-id=<uuid> --role=member
+    ///
+    ///   # List team members
+    ///   pup on-call teams memberships list <team-id>
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys.
+    #[command(name = "on-call", verbatim_doc_comment)]
     OnCall {
         #[command(subcommand)]
         action: OnCallActions,
     },
     /// Manage organization settings
-    #[command(
-        after_help = "EXAMPLES:\n  # Get organization details\n  pup organizations get\n\n  # List child organizations\n  pup organizations list"
-    )]
+    ///
+    /// Manage organization-level settings and configuration.
+    ///
+    /// CAPABILITIES:
+    ///   • View organization details
+    ///   • List child organizations
+    ///   • Manage organization settings
+    ///   • Configure billing and usage
+    ///
+    /// EXAMPLES:
+    ///   # Get organization details
+    ///   pup organizations get
+    ///
+    ///   # List child organizations
+    ///   pup organizations list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys with org management permissions.
+    #[command(verbatim_doc_comment)]
     Organizations {
         #[command(subcommand)]
         action: OrgActions,
     },
     /// Send product analytics events
-    #[command(
-        name = "product-analytics",
-        after_help = "EXAMPLES:\n  # Send a basic event\n  pup product-analytics events send --app-id=my-app --event=button_clicked\n\n  # Send event with properties and user context\n  pup product-analytics events send --app-id=my-app --event=purchase_completed --properties='{\"amount\":99.99,\"currency\":\"USD\"}' --user-id=user-123"
-    )]
+    ///
+    /// Send server-side product analytics events to Datadog.
+    ///
+    /// Product Analytics provides insights into user behavior and product usage
+    /// through server-side event tracking.
+    ///
+    /// CAPABILITIES:
+    ///   • Send individual server-side events with custom properties
+    ///
+    /// EXAMPLES:
+    ///   # Send a basic event
+    ///   pup product-analytics events send \
+    ///     --app-id=my-app \
+    ///     --event=button_clicked
+    ///
+    ///   # Send event with properties and user context
+    ///   pup product-analytics events send \
+    ///     --app-id=my-app \
+    ///     --event=purchase_completed \
+    ///     --properties='{"amount":99.99,"currency":"USD"}' \
+    ///     --user-id=user-123
+    ///
+    /// AUTHENTICATION:
+    ///   Requires OAuth2 (via 'pup auth login') or valid API + Application keys.
+    #[command(name = "product-analytics", verbatim_doc_comment)]
     ProductAnalytics {
         #[command(subcommand)]
         action: ProductAnalyticsActions,
     },
     /// Manage Real User Monitoring (RUM)
-    #[command(
-        after_help = "EXAMPLES:\n  # List all RUM applications\n  pup rum apps list\n\n  # Get RUM application details\n  pup rum apps get --app-id=\"abc-123-def\"\n\n  # Create a new browser RUM application\n  pup rum apps create --name=\"my-web-app\" --type=\"browser\"\n\n  # List RUM custom metrics\n  pup rum metrics list\n\n  # List retention filters\n  pup rum retention-filters list\n\n  # Query session replay data\n  pup rum sessions list --from=\"1h\""
-    )]
+    ///
+    /// Manage Datadog Real User Monitoring (RUM) for frontend application performance.
+    ///
+    /// RUM provides visibility into real user experiences across web and mobile applications,
+    /// capturing frontend performance metrics, user sessions, errors, and user journeys.
+    ///
+    /// CAPABILITIES:
+    ///   • Manage RUM applications (web, mobile, browser)
+    ///   • Configure RUM metrics and custom metrics
+    ///   • Set up retention filters for session replay and data
+    ///   • Query session replay data and playlists
+    ///   • Analyze user interaction heatmaps
+    ///
+    /// RUM DATA TYPES:
+    ///   • Views: Page views and screen loads
+    ///   • Actions: User interactions (clicks, taps, scrolls)
+    ///   • Errors: Frontend errors and crashes
+    ///   • Resources: Network requests and asset loading
+    ///   • Long Tasks: Performance bottlenecks
+    ///
+    /// APPLICATION TYPES:
+    ///   • browser: Web applications
+    ///   • ios: iOS mobile applications
+    ///   • android: Android mobile applications
+    ///   • react-native: React Native applications
+    ///   • flutter: Flutter applications
+    ///
+    /// EXAMPLES:
+    ///   # List all RUM applications
+    ///   pup rum apps list
+    ///
+    ///   # Get RUM application details
+    ///   pup rum apps get --app-id="abc-123-def"
+    ///
+    ///   # Create a new browser RUM application
+    ///   pup rum apps create --name="my-web-app" --type="browser"
+    ///
+    ///   # List RUM custom metrics
+    ///   pup rum metrics list
+    ///
+    ///   # List retention filters
+    ///   pup rum retention-filters list
+    ///
+    ///   # Query session replay data
+    ///   pup rum sessions list --from="1h"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Rum {
         #[command(subcommand)]
         action: RumActions,
     },
     /// Manage service scorecards
-    #[command(
-        after_help = "EXAMPLES:\n  # List scorecards\n  pup scorecards list\n\n  # Get scorecard details\n  pup scorecards get <scorecard-id>"
-    )]
+    ///
+    /// Manage service quality scorecards and rules.
+    ///
+    /// Scorecards help you track and improve service quality by defining
+    /// rules and measuring compliance across your services.
+    ///
+    /// CAPABILITIES:
+    ///   • List scorecards
+    ///   • Get scorecard details
+    ///   • View scorecard rules
+    ///   • Track service scores
+    ///
+    /// EXAMPLES:
+    ///   # List scorecards
+    ///   pup scorecards list
+    ///
+    ///   # Get scorecard details
+    ///   pup scorecards get scorecard-id
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Scorecards {
         #[command(subcommand)]
         action: ScorecardsActions,
     },
     /// Manage security monitoring
-    #[command(
-        after_help = "EXAMPLES:\n  # List security monitoring rules\n  pup security rules list\n\n  # Get rule details\n  pup security rules get rule-id\n\n  # List security signals\n  pup security signals list"
-    )]
+    ///
+    /// Manage security monitoring rules, signals, and findings.
+    ///
+    /// CAPABILITIES:
+    ///   • List and manage security monitoring rules
+    ///   • View security signals and findings
+    ///   • Configure suppression rules
+    ///   • Manage security filters
+    ///
+    /// EXAMPLES:
+    ///   # List security monitoring rules
+    ///   pup security rules list
+    ///
+    ///   # Get rule details
+    ///   pup security rules get rule-id
+    ///
+    ///   # List security signals
+    ///   pup security signals list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Security {
         #[command(subcommand)]
         action: SecurityActions,
     },
     /// Manage service catalog
-    #[command(
-        name = "service-catalog",
-        after_help = "EXAMPLES:\n  # List all services\n  pup service-catalog list\n\n  # Get service details\n  pup service-catalog get service-name"
-    )]
+    ///
+    /// Manage services in the Datadog service catalog.
+    ///
+    /// The service catalog provides a centralized registry of all services
+    /// in your infrastructure with ownership, dependencies, and documentation.
+    ///
+    /// CAPABILITIES:
+    ///   • List services in the catalog
+    ///   • Get service details
+    ///   • View service definitions
+    ///   • Manage service metadata
+    ///
+    /// EXAMPLES:
+    ///   # List all services
+    ///   pup service-catalog list
+    ///
+    ///   # Get service details
+    ///   pup service-catalog get service-name
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "service-catalog", verbatim_doc_comment)]
     ServiceCatalog {
         #[command(subcommand)]
         action: ServiceCatalogActions,
     },
     /// Manage Service Level Objectives
-    #[command(
-        after_help = "EXAMPLES:\n  # List all SLOs\n  pup slos list\n\n  # Get detailed SLO information\n  pup slos get abc-123-def\n\n  # Get SLO history and status\n  pup slos get abc-123-def | jq '.data'\n\n  # Delete an SLO with confirmation\n  pup slos delete abc-123-def\n\n  # Delete an SLO without confirmation (automation)\n  pup slos delete abc-123-def --yes"
-    )]
+    ///
+    /// Manage Datadog Service Level Objectives (SLOs) for tracking service reliability.
+    ///
+    /// SLOs help you define and track service reliability targets based on Service Level
+    /// Indicators (SLIs). They support various calculation types and target windows.
+    ///
+    /// CAPABILITIES:
+    ///   • List all SLOs with status and error budget
+    ///   • Get detailed SLO configuration and history
+    ///   • Delete SLOs (requires confirmation unless --yes flag is used)
+    ///   • View SLO status, error budget burn rate, and target compliance
+    ///
+    /// SLO TYPES:
+    ///   • Metric-based: Based on metric queries (e.g., success rate, latency)
+    ///   • Monitor-based: Based on monitor uptime
+    ///   • Time slice: Based on time slices meeting criteria
+    ///
+    /// TARGET WINDOWS:
+    ///   • 7 days (7d)
+    ///   • 30 days (30d)
+    ///   • 90 days (90d)
+    ///   • Custom rolling windows
+    ///
+    /// CALCULATION METHODS:
+    ///   • by_count: Count of good events / total events
+    ///   • by_uptime: Percentage of time in good state
+    ///
+    /// EXAMPLES:
+    ///   # List all SLOs
+    ///   pup slos list
+    ///
+    ///   # Get detailed SLO information
+    ///   pup slos get abc-123-def
+    ///
+    ///   # Get SLO history and status
+    ///   pup slos get abc-123-def | jq '.data'
+    ///
+    ///   # Delete an SLO with confirmation
+    ///   pup slos delete abc-123-def
+    ///
+    ///   # Delete an SLO without confirmation (automation)
+    ///   pup slos delete abc-123-def --yes
+    ///
+    /// ERROR BUDGET:
+    ///   Error budget represents the allowed amount of unreliability before breaching
+    ///   the SLO target. It's calculated as (1 - target) * time_window.
+    ///
+    ///   Example: 99.9% target over 30 days = 0.1% * 30 days = 43.2 minutes allowed downtime
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (pup auth login) or API keys
+    ///   (DD_API_KEY and DD_APP_KEY environment variables).
+    #[command(verbatim_doc_comment)]
     Slos {
         #[command(subcommand)]
         action: SloActions,
     },
     /// Manage static analysis
-    #[command(
-        name = "static-analysis",
-        after_help = "EXAMPLES:\n  # List custom rulesets\n  pup static-analysis custom-rulesets list\n\n  # Get ruleset details\n  pup static-analysis custom-rulesets get abc-123"
-    )]
+    ///
+    /// Manage static analysis for code security and quality.
+    ///
+    /// CAPABILITIES:
+    ///   • AST analysis results
+    ///   • Custom security rulesets
+    ///   • Software Composition Analysis (SCA)
+    ///   • Code coverage analysis
+    ///
+    /// EXAMPLES:
+    ///   # List custom rulesets
+    ///   pup static-analysis custom-rulesets list
+    ///
+    ///   # Get ruleset details
+    ///   pup static-analysis custom-rulesets get abc-123
+    #[command(name = "static-analysis", verbatim_doc_comment)]
     StaticAnalysis {
         #[command(subcommand)]
         action: StaticAnalysisActions,
     },
     /// Manage status pages
-    #[command(
-        name = "status-pages",
-        after_help = "EXAMPLES:\n  # List all status pages\n  pup status-pages pages list\n\n  # Get status page details\n  pup status-pages pages get <page-id>\n\n  # Create a status page\n  pup status-pages pages create --file=page.json\n\n  # List status page components\n  pup status-pages components list <page-id>\n\n  # List degradations\n  pup status-pages degradations list <page-id>\n\n  # View third-party outage signals\n  pup status-pages third-party list"
-    )]
+    ///
+    /// Manage Datadog Status Pages for communicating service status.
+    ///
+    /// Status Pages provide a public-facing view of your service health, including
+    /// components, degradations, and incident updates.
+    ///
+    /// CAPABILITIES:
+    ///   • Manage status pages (list, create, update, delete)
+    ///   • Manage page components
+    ///   • Manage degradation events
+    ///
+    /// EXAMPLES:
+    ///   # List status pages
+    ///   pup status-pages pages list
+    ///
+    ///   # Create a status page
+    ///   pup status-pages pages create --file=page.json
+    ///
+    ///   # List components for a page
+    ///   pup status-pages components list <page-id>
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(name = "status-pages", verbatim_doc_comment)]
     StatusPages {
         #[command(subcommand)]
         action: StatusPageActions,
     },
     /// Manage synthetic monitoring
-    #[command(
-        after_help = "EXAMPLES:\n  # List all synthetic tests\n  pup synthetics tests list\n\n  # Search tests by creator or team\n  pup synthetics tests search --text='creator:\"Jane Doe\"'\n  pup synthetics tests search --text=\"team:my-team\"\n\n  # Get test details\n  pup synthetics tests get test-id\n\n  # List available locations\n  pup synthetics locations list"
-    )]
+    ///
+    /// Manage synthetic tests for monitoring application availability.
+    ///
+    /// Synthetic monitoring simulates user interactions and API requests to
+    /// monitor application performance and availability from various locations.
+    ///
+    /// CAPABILITIES:
+    ///   • List synthetic tests
+    ///   • Search synthetic tests by text query
+    ///   • Get test details
+    ///   • Get test results
+    ///   • List test locations
+    ///   • Manage global variables
+    ///
+    /// EXAMPLES:
+    ///   # List all synthetic tests
+    ///   pup synthetics tests list
+    ///
+    ///   # Search tests by creator or team
+    ///   pup synthetics tests search --text='creator:"Jane Doe"'
+    ///   pup synthetics tests search --text="team:my-team"
+    ///
+    ///   # Get test details
+    ///   pup synthetics tests get test-id
+    ///
+    ///   # List available locations
+    ///   pup synthetics locations list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Synthetics {
         #[command(subcommand)]
         action: SyntheticsActions,
     },
     /// Manage host tags
-    #[command(
-        after_help = "EXAMPLES:\n  # List all host tags\n  pup tags list\n\n  # Get tags for a host\n  pup tags get my-host\n\n  # Add tags to a host\n  pup tags add my-host env:prod team:backend"
-    )]
+    ///
+    /// Manage tags for hosts in your infrastructure.
+    ///
+    /// Tags provide metadata about your hosts and help organize and filter
+    /// your infrastructure.
+    ///
+    /// CAPABILITIES:
+    ///   • List all host tags
+    ///   • Get tags for a specific host
+    ///   • Add tags to a host
+    ///   • Update host tags
+    ///   • Remove tags from a host
+    ///
+    /// EXAMPLES:
+    ///   # List all host tags
+    ///   pup tags list
+    ///
+    ///   # Get tags for a host
+    ///   pup tags get my-host
+    ///
+    ///   # Add tags to a host
+    ///   pup tags add my-host env:prod team:backend
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Tags {
         #[command(subcommand)]
         action: TagActions,
     },
     /// Test connection and credentials
-    #[command(after_help = "EXAMPLES:\n  # Test connection and credentials\n  pup test")]
     Test,
     /// Query APM traces
-    #[command(after_help = "EXAMPLES:\n  # List recent traces\n  pup traces list")]
     Traces {
         #[command(subcommand)]
         action: TracesActions,
     },
     /// Query usage and billing information
-    #[command(
-        after_help = "EXAMPLES:\n  # Get usage summary for the last 30 days\n  pup usage summary\n\n  # Get usage summary for a specific period\n  pup usage summary --start=\"60d\" --end=\"now\"\n\n  # Get hourly usage for the last day\n  pup usage hourly\n\n  # Get hourly usage for a specific period\n  pup usage hourly --start=\"2d\" --end=\"1d\""
-    )]
+    ///
+    /// Query usage metrics and billing information for your organization.
+    ///
+    /// CAPABILITIES:
+    ///   • View usage summary
+    ///   • Get hourly usage
+    ///   • Track usage by product
+    ///   • Monitor cost attribution
+    ///
+    /// EXAMPLES:
+    ///   # Get usage summary
+    ///   pup usage summary --start="2024-01-01" --end="2024-01-31"
+    ///
+    ///   # Get hourly usage
+    ///   pup usage hourly --start="2024-01-01" --end="2024-01-02"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys with billing permissions.
+    #[command(verbatim_doc_comment)]
     Usage {
         #[command(subcommand)]
         action: UsageActions,
     },
     /// Manage users and access
-    #[command(
-        after_help = "EXAMPLES:\n  # List all users\n  pup users list\n\n  # Get user details\n  pup users get user-id\n\n  # List roles\n  pup users roles list"
-    )]
+    ///
+    /// Manage users, roles, and access permissions.
+    ///
+    /// CAPABILITIES:
+    ///   • List users in your organization
+    ///   • Get user details
+    ///   • Manage user roles and permissions
+    ///   • Invite new users
+    ///   • Disable users
+    ///
+    /// EXAMPLES:
+    ///   # List all users
+    ///   pup users list
+    ///
+    ///   # Get user details
+    ///   pup users get user-id
+    ///
+    ///   # List roles
+    ///   pup users roles list
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication or API keys.
+    #[command(verbatim_doc_comment)]
     Users {
         #[command(subcommand)]
         action: UserActions,
     },
     /// Print version information
-    #[command(after_help = "EXAMPLES:\n  # Print version\n  pup version")]
     Version,
 }
 
@@ -426,9 +1694,16 @@ enum MonitorActions {
     List {
         #[arg(long, help = "Filter monitors by name")]
         name: Option<String>,
-        #[arg(long, help = "Filter by monitor tags (comma-separated, e.g., team:backend,env:prod)")]
+        #[arg(
+            long,
+            help = "Filter by monitor tags (comma-separated, e.g., team:backend,env:prod)"
+        )]
         tags: Option<String>,
-        #[arg(long, default_value_t = 200, help = "Maximum number of monitors to return (default: 200, max: 1000)")]
+        #[arg(
+            long,
+            default_value_t = 200,
+            help = "Maximum number of monitors to return (default: 200, max: 1000)"
+        )]
         limit: i32,
     },
     /// Get monitor details
@@ -448,6 +1723,12 @@ enum MonitorActions {
     Search {
         #[arg(long, help = "Search query string")]
         query: Option<String>,
+        #[arg(long, default_value_t = 0, help = "Page number")]
+        page: i64,
+        #[arg(long, default_value_t = 30, help = "Results per page")]
+        per_page: i64,
+        #[arg(long, help = "Sort order")]
+        sort: Option<String>,
     },
     /// Delete a monitor
     Delete { monitor_id: i64 },
@@ -652,7 +1933,7 @@ enum IncidentSettingsActions {
     Get,
     /// Update global incident settings
     Update {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with settings (required)")]
         file: String,
     },
 }
@@ -663,12 +1944,12 @@ enum IncidentHandleActions {
     List,
     /// Create global incident handle
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with handle data (required)")]
         file: String,
     },
     /// Update global incident handle
     Update {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with handle data (required)")]
         file: String,
     },
     /// Delete global incident handle
@@ -683,13 +1964,13 @@ enum IncidentPostmortemActions {
     Get { template_id: String },
     /// Create postmortem template
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with template (required)")]
         file: String,
     },
     /// Update postmortem template
     Update {
         template_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with template (required)")]
         file: String,
     },
     /// Delete postmortem template
@@ -723,8 +2004,13 @@ enum DashboardActions {
 enum MetricActions {
     /// List all available metrics
     List {
-        #[arg(long, help = "Filter metrics by name pattern (e.g., system.*, *.cpu.*)")]
+        #[arg(
+            long,
+            help = "Filter metrics by name pattern (e.g., system.*, *.cpu.*)"
+        )]
         filter: Option<String>,
+        #[arg(long, help = "Filter metrics by tags (e.g., env:prod,service:api)")]
+        tag_filter: Option<String>,
         #[arg(long, default_value = "1h")]
         from: String,
     },
@@ -732,24 +2018,64 @@ enum MetricActions {
     Search {
         #[arg(long, help = "Metric query string (required)")]
         query: String,
-        #[arg(long, default_value = "1h", help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")]
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)"
+        )]
         from: String,
-        #[arg(long, default_value = "now", help = "End time (e.g., now, unix timestamp)")]
+        #[arg(
+            long,
+            default_value = "now",
+            help = "End time (e.g., now, unix timestamp)"
+        )]
         to: String,
     },
     /// Query time-series metrics data (v2 API)
     Query {
         #[arg(long, help = "Metric query string (required)")]
         query: String,
-        #[arg(long, default_value = "1h", help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")]
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)"
+        )]
         from: String,
-        #[arg(long, default_value = "now", help = "End time (e.g., now, unix timestamp)")]
+        #[arg(
+            long,
+            default_value = "now",
+            help = "End time (e.g., now, unix timestamp)"
+        )]
         to: String,
     },
     /// Submit custom metrics to Datadog
     Submit {
-        #[arg(long)]
-        file: String,
+        #[arg(
+            long,
+            help = "Metric name (required)",
+            required_unless_present = "file"
+        )]
+        name: Option<String>,
+        #[arg(long, default_value_t = 0.0, help = "Metric value (required)")]
+        value: f64,
+        #[arg(long, help = "Tags (comma-separated)")]
+        tags: Option<String>,
+        #[arg(
+            long,
+            default_value = "gauge",
+            help = "Metric type (gauge, count, rate)"
+        )]
+        r#type: String,
+        #[arg(long, help = "Host name")]
+        host: Option<String>,
+        #[arg(
+            long,
+            default_value_t = 0,
+            help = "Interval in seconds for rate/count metrics"
+        )]
+        interval: i64,
+        #[arg(long, help = "JSON file with metrics data", conflicts_with = "name")]
+        file: Option<String>,
     },
     /// Manage metric metadata
     Metadata {
@@ -766,7 +2092,13 @@ enum MetricActions {
 #[derive(Subcommand)]
 enum MetricTagActions {
     /// List tags for a metric
-    List { metric_name: String },
+    List {
+        metric_name: String,
+        #[arg(long, default_value = "1h", help = "Start time")]
+        from: String,
+        #[arg(long, default_value = "now", help = "End time")]
+        to: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -776,8 +2108,18 @@ enum MetricMetadataActions {
     /// Update metric metadata
     Update {
         metric_name: String,
-        #[arg(long)]
-        file: String,
+        #[arg(long, help = "Metric description", required_unless_present = "file")]
+        description: Option<String>,
+        #[arg(long, help = "Short display name")]
+        short_name: Option<String>,
+        #[arg(long, help = "Metric unit")]
+        unit: Option<String>,
+        #[arg(long, help = "Per-unit for rate metrics")]
+        per_unit: Option<String>,
+        #[arg(long, help = "Metric type (gauge, count, rate, distribution)")]
+        r#type: Option<String>,
+        #[arg(long, help = "JSON file with metadata", conflicts_with = "description")]
+        file: Option<String>,
     },
 }
 
@@ -804,10 +2146,10 @@ enum SloActions {
     /// Get SLO status
     Status {
         id: String,
-        #[arg(long)]
-        from_ts: i64,
-        #[arg(long)]
-        to_ts: i64,
+        #[arg(long, help = "Start time (1h, 30d, Unix timestamp, or RFC3339)")]
+        from: String,
+        #[arg(long, help = "End time (now, Unix timestamp, or RFC3339)")]
+        to: String,
     },
 }
 
@@ -834,12 +2176,19 @@ enum SyntheticsActions {
 #[derive(Subcommand)]
 enum SyntheticsTestActions {
     /// List synthetic tests
-    List,
+    List {
+        #[arg(long, help = "Return only facets (no test results)")]
+        facets_only: bool,
+        #[arg(long, help = "Include full test configuration in results")]
+        include_full_config: bool,
+        #[arg(long, help = "Sort order")]
+        sort: Option<String>,
+    },
     /// Get test details
     Get { public_id: String },
     /// Search synthetic tests
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search text query")]
         text: Option<String>,
         #[arg(long, default_value_t = 50)]
         count: i64,
@@ -865,19 +2214,21 @@ enum SyntheticsSuiteActions {
     Get { suite_id: String },
     /// Create a synthetic suite
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with suite definition (required)")]
         file: String,
     },
     /// Update a synthetic suite
     Update {
         suite_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with suite definition (required)")]
         file: String,
     },
     /// Delete synthetic suites
     Delete {
         /// Suite IDs to delete
         suite_ids: Vec<String>,
+        #[arg(long, help = "Comma-separated suite public IDs (required)")]
+        ids: Option<String>,
     },
 }
 
@@ -886,10 +2237,12 @@ enum SyntheticsSuiteActions {
 enum EventActions {
     /// List recent events
     List {
-        #[arg(long, default_value_t = 0, help = "Start timestamp")]
-        start: i64,
-        #[arg(long, default_value_t = 0, help = "End timestamp")]
-        end: i64,
+        #[arg(long, default_value = "1h", help = "Start time (1h, 30m, 7d, Unix timestamp, or RFC3339)")]
+        from: String,
+        #[arg(long, default_value = "now", help = "End time (now, Unix timestamp, or RFC3339)")]
+        to: String,
+        #[arg(long, help = "Filter query")]
+        filter: Option<String>,
         #[arg(long, help = "Filter by tags")]
         tags: Option<String>,
     },
@@ -973,11 +2326,11 @@ enum InfraActions {
 enum InfraHostActions {
     /// List hosts
     List {
-        #[arg(long)]
+        #[arg(long, help = "Filter hosts")]
         filter: Option<String>,
-        #[arg(long, default_value = "status")]
+        #[arg(long, default_value = "status", help = "Sort field")]
         sort: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Maximum hosts")]
         count: i64,
     },
     /// Get host details
@@ -1044,7 +2397,10 @@ enum SecurityActions {
 #[derive(Subcommand)]
 enum SecurityRuleActions {
     /// List security rules
-    List,
+    List {
+        #[arg(long, help = "Filter query")]
+        filter: Option<String>,
+    },
     /// Get rule details
     Get { rule_id: String },
     /// Bulk export security monitoring rules
@@ -1057,16 +2413,18 @@ enum SecurityRuleActions {
 
 #[derive(Subcommand)]
 enum SecuritySignalActions {
-    /// Search security signals
-    Search {
-        #[arg(long)]
+    /// List security signals
+    List {
+        #[arg(long, help = "Search query using log search syntax (required)")]
         query: String,
         #[arg(long, default_value = "1h")]
         from: String,
         #[arg(long, default_value = "now")]
         to: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Maximum results (1-1000)")]
         limit: i32,
+        #[arg(long, help = "Sort field: severity, status, timestamp")]
+        sort: Option<String>,
     },
 }
 
@@ -1170,7 +2528,7 @@ enum CloudOciActions {
 enum CloudOciProductActions {
     /// List OCI tenancy products
     List {
-        /// Product keys to query
+        #[arg(long, help = "Comma-separated product keys (required)")]
         product_keys: String,
     },
 }
@@ -1183,13 +2541,13 @@ enum CloudOciTenancyActions {
     Get { tenancy_id: String },
     /// Create OCI tenancy configuration
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update OCI tenancy configuration
     Update {
         tenancy_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete OCI tenancy configuration
@@ -1203,15 +2561,30 @@ enum CaseActions {
     Search {
         #[arg(long, help = "Search query")]
         query: Option<String>,
-        #[arg(long, default_value_t = 50, help = "Results per page")]
+        #[arg(long, default_value_t = 10, help = "Results per page")]
         page_size: i64,
+        #[arg(long, default_value_t = 0, help = "Page number")]
+        page_number: i64,
     },
     /// Get case details
     Get { case_id: String },
     /// Create a new case
     Create {
-        #[arg(long)]
-        file: String,
+        #[arg(long, help = "Case title (required)", required_unless_present = "file")]
+        title: Option<String>,
+        #[arg(
+            long,
+            name = "type-id",
+            help = "Case type UUID (required)",
+            required_unless_present = "file"
+        )]
+        type_id: Option<String>,
+        #[arg(long, default_value = "NOT_DEFINED", help = "Priority level")]
+        priority: String,
+        #[arg(long, help = "Case description")]
+        description: Option<String>,
+        #[arg(long, help = "JSON file with request body (required)", conflicts_with_all = ["title", "type_id"])]
+        file: Option<String>,
     },
     /// Archive a case
     Archive { case_id: String },
@@ -1234,7 +2607,7 @@ enum CaseActions {
     #[command(name = "update-status")]
     UpdateStatus {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "New status (required)")]
         status: String,
     },
     /// Manage case projects
@@ -1275,9 +2648,9 @@ enum CaseProjectActions {
     Get { project_id: String },
     /// Create a new project
     Create {
-        #[arg(long)]
+        #[arg(long, help = "Project name (required)")]
         name: String,
-        #[arg(long)]
+        #[arg(long, help = "Project key (required)")]
         key: String,
     },
     /// Delete a project
@@ -1285,7 +2658,7 @@ enum CaseProjectActions {
     /// Update a project
     Update {
         project_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Manage project notification rules
@@ -1302,13 +2675,13 @@ enum CaseJiraActions {
     #[command(name = "create-issue")]
     CreateIssue {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Link a Jira issue to a case
     Link {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Unlink a Jira issue from a case
@@ -1321,7 +2694,7 @@ enum CaseServicenowActions {
     #[command(name = "create-ticket")]
     CreateTicket {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
 }
@@ -1333,14 +2706,14 @@ enum CaseNotificationRuleActions {
     /// Create a notification rule
     Create {
         project_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update a notification rule
     Update {
         project_id: String,
         rule_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete a notification rule
@@ -1375,28 +2748,32 @@ enum ApiKeyActions {
 // ---- App Keys ----
 #[derive(Subcommand)]
 enum AppKeyActions {
-    /// List all app keys registered for Action Connections
+    /// List registered app keys
     List {
         /// Results per page
-        #[arg(long, default_value = "10", help = "Results per page")]
+        #[arg(long, default_value = "10", help = "Number of results per page")]
         page_size: i64,
         /// Page number (0-indexed)
-        #[arg(long, default_value = "0", help = "Page number")]
+        #[arg(
+            long,
+            default_value = "0",
+            help = "Page number to retrieve (0-indexed)"
+        )]
         page_number: i64,
     },
-    /// Get details for a specific app key registration
+    /// Get app key registration details
     Get {
         /// App key ID
         #[arg(name = "app-key-id")]
         key_id: String,
     },
-    /// Register an existing application key for use with Action Connections
+    /// Register an application key
     Register {
         /// App key ID to register
         #[arg(name = "app-key-id")]
         key_id: String,
     },
-    /// Unregister an application key from Action Connections (DESTRUCTIVE)
+    /// Unregister an application key
     Unregister {
         /// App key ID to unregister
         #[arg(name = "app-key-id")]
@@ -1409,17 +2786,17 @@ enum AppKeyActions {
 enum UsageActions {
     /// Get usage summary
     Summary {
-        #[arg(long, default_value = "30d", help = "Start date (YYYY-MM-DD)")]
-        start: String,
-        #[arg(long, help = "End date (YYYY-MM-DD)")]
-        end: Option<String>,
+        #[arg(long, default_value = "30d", help = "Start time (30d, 60d, YYYY-MM-DD, or RFC3339)")]
+        from: String,
+        #[arg(long, help = "End time (now, YYYY-MM-DD, or RFC3339)")]
+        to: Option<String>,
     },
     /// Get hourly usage
     Hourly {
-        #[arg(long, default_value = "1d", help = "Start date (YYYY-MM-DD)")]
-        start: String,
-        #[arg(long, help = "End date (YYYY-MM-DD)")]
-        end: Option<String>,
+        #[arg(long, default_value = "1d", help = "Start time (1d, 7d, YYYY-MM-DD, or RFC3339)")]
+        from: String,
+        #[arg(long, help = "End time (now, YYYY-MM-DD, or RFC3339)")]
+        to: Option<String>,
     },
 }
 
@@ -1432,13 +2809,21 @@ enum NotebookActions {
     Get { notebook_id: i64 },
     /// Create a new notebook
     Create {
-        #[arg(long)]
+        #[arg(
+            long,
+            name = "body",
+            help = "JSON body (@filepath or - for stdin) (required)"
+        )]
         file: String,
     },
     /// Update a notebook
     Update {
         notebook_id: i64,
-        #[arg(long)]
+        #[arg(
+            long,
+            name = "body",
+            help = "JSON body (@filepath or - for stdin) (required)"
+        )]
         file: String,
     },
     /// Delete a notebook
@@ -1495,22 +2880,33 @@ enum RumAppActions {
     /// List all RUM applications
     List,
     /// Get RUM application details
-    Get { app_id: String },
+    Get {
+        #[arg(help = "Application ID (required)")]
+        app_id: String,
+    },
     /// Create a new RUM application
     Create {
-        #[arg(long)]
+        #[arg(long, help = "Application name (required)")]
         name: String,
-        #[arg(long, name = "type")]
+        #[arg(long, name = "type", help = "Application type (required)")]
         app_type: Option<String>,
     },
     /// Update a RUM application
     Update {
+        #[arg(help = "Application ID (required)")]
         app_id: String,
+        #[arg(long, help = "Application name")]
+        name: Option<String>,
+        #[arg(long, name = "type", help = "Application type")]
+        app_type: Option<String>,
         #[arg(long)]
-        file: String,
+        file: Option<String>,
     },
     /// Delete a RUM application
-    Delete { app_id: String },
+    Delete {
+        #[arg(help = "Application ID (required)")]
+        app_id: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1595,6 +2991,10 @@ enum RumHeatmapActions {
     Query {
         #[arg(long)]
         view_name: String,
+        #[arg(long, help = "Time range start")]
+        from: Option<String>,
+        #[arg(long, help = "Time range end")]
+        to: Option<String>,
     },
 }
 
@@ -1633,51 +3033,64 @@ enum CicdActions {
 enum CicdPipelineActions {
     /// List CI pipelines
     List {
-        #[arg(long)]
+        #[arg(long, help = "Search query")]
         query: Option<String>,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum results")]
         limit: i32,
+        #[arg(long, help = "Filter by git branch")]
+        branch: Option<String>,
+        #[arg(long, help = "Filter by pipeline name")]
+        pipeline_name: Option<String>,
     },
     /// Get pipeline details
-    Get { pipeline_id: String },
+    Get {
+        #[arg(long, help = "Pipeline ID (required)")]
+        pipeline_id: String,
+    },
 }
 
 #[derive(Subcommand)]
 enum CicdTestActions {
     /// List CI test events
     List {
-        #[arg(long)]
+        #[arg(long, help = "Search query")]
         query: Option<String>,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum results")]
         limit: i32,
     },
     /// Search CI test events
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum results")]
         limit: i32,
     },
     /// Aggregate CI test events
     Aggregate {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, default_value = "count", help = "Aggregation function")]
+        compute: String,
+        #[arg(long, help = "Group by field(s)")]
+        group_by: Option<String>,
+        #[arg(long, default_value_t = 10, help = "Maximum groups")]
+        limit: i32,
     },
 }
 
@@ -1685,23 +3098,31 @@ enum CicdTestActions {
 enum CicdEventActions {
     /// Search CI/CD events
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum results")]
         limit: i32,
+        #[arg(long, default_value = "desc", help = "Sort order (asc or desc)")]
+        sort: String,
     },
     /// Aggregate CI/CD events
     Aggregate {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, default_value = "count", help = "Aggregation function")]
+        compute: String,
+        #[arg(long, help = "Group by field(s)")]
+        group_by: Option<String>,
+        #[arg(long, default_value_t = 10, help = "Maximum groups")]
+        limit: i32,
     },
 }
 
@@ -1711,7 +3132,7 @@ enum CicdDoraActions {
     #[command(name = "patch-deployment")]
     PatchDeployment {
         deployment_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with patch data (required)")]
         file: String,
     },
 }
@@ -1720,12 +3141,20 @@ enum CicdDoraActions {
 enum CicdFlakyTestActions {
     /// Search flaky tests
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query")]
         query: Option<String>,
+        #[arg(long, help = "Pagination cursor")]
+        cursor: Option<String>,
+        #[arg(long, default_value_t = 100, help = "Maximum results")]
+        limit: i64,
+        #[arg(long, default_value_t = false, help = "Include status history")]
+        include_history: bool,
+        #[arg(long, help = "Sort order (fqn, -fqn)")]
+        sort: Option<String>,
     },
     /// Update flaky tests
     Update {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with flaky tests data (required)")]
         file: String,
     },
 }
@@ -1748,17 +3177,23 @@ enum OnCallTeamActions {
     Get { team_id: String },
     /// Create a new team
     Create {
-        #[arg(long)]
+        #[arg(long, help = "Team display name (required)")]
         name: String,
-        #[arg(long)]
+        #[arg(long, help = "Team handle (required)")]
         handle: String,
+        #[arg(long, help = "Team description")]
+        description: Option<String>,
+        #[arg(long, help = "Team avatar URL")]
+        avatar: Option<String>,
+        #[arg(long, default_value_t = false, help = "Hide team from UI")]
+        hidden: bool,
     },
     /// Update team details
     Update {
         team_id: String,
-        #[arg(long)]
+        #[arg(long, help = "Team display name (required)")]
         name: String,
-        #[arg(long)]
+        #[arg(long, help = "Team handle (required)")]
         handle: String,
     },
     /// Delete a team
@@ -1775,22 +3210,26 @@ enum OnCallMembershipActions {
     /// List team members
     List {
         team_id: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Results per page")]
         page_size: i64,
+        #[arg(long, default_value_t = 0, help = "Page number")]
+        page_number: i64,
+        #[arg(long, default_value = "name", help = "Sort order: name, email")]
+        sort: String,
     },
     /// Add a member to team
     Add {
         team_id: String,
-        #[arg(long)]
+        #[arg(long, help = "User UUID (required)")]
         user_id: String,
-        #[arg(long)]
+        #[arg(long, default_value = "member", help = "Role: member or admin")]
         role: Option<String>,
     },
     /// Update member role
     Update {
         team_id: String,
         user_id: String,
-        #[arg(long)]
+        #[arg(long, help = "Role: member or admin")]
         role: String,
     },
     /// Remove member from team
@@ -1915,10 +3354,24 @@ enum ErrorTrackingActions {
 enum ErrorTrackingIssueActions {
     /// Search error issues
     Search {
-        #[arg(long)]
+        #[arg(long, default_value = "*", help = "Search query to filter issues")]
         query: Option<String>,
-        #[arg(long, default_value_t = 50)]
+        #[arg(
+            long,
+            default_value_t = 10,
+            help = "Maximum number of issues to return"
+        )]
         limit: i32,
+        #[arg(long, default_value = "1d", help = "Start time (relative or absolute)")]
+        from: String,
+        #[arg(long, default_value = "now", help = "End time (relative or absolute)")]
+        to: String,
+        #[arg(
+            long,
+            default_value = "TOTAL_COUNT",
+            help = "Sort order: TOTAL_COUNT, FIRST_SEEN, IMPACTED_SESSIONS, PRIORITY"
+        )]
+        order_by: String,
     },
     /// Get issue details
     Get { issue_id: String },
@@ -1961,7 +3414,7 @@ enum HamrConnectionActions {
     Get,
     /// Create HAMR organization connection
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
 }
@@ -2000,13 +3453,13 @@ enum StatusPagePageActions {
     Get { page_id: String },
     /// Create a status page
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update a status page
     Update {
         page_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete a status page
@@ -2025,14 +3478,14 @@ enum StatusPageComponentActions {
     /// Create a component
     Create {
         page_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update a component
     Update {
         page_id: String,
         component_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete a component
@@ -2054,14 +3507,14 @@ enum StatusPageDegradationActions {
     /// Create a degradation
     Create {
         page_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update a degradation
     Update {
         page_id: String,
         degradation_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete a degradation
@@ -2074,7 +3527,15 @@ enum StatusPageDegradationActions {
 #[derive(Subcommand)]
 enum StatusPageThirdPartyActions {
     /// List third-party status pages
-    List,
+    List {
+        #[arg(long, help = "Show only providers with active (unresolved) outages")]
+        active: bool,
+        #[arg(
+            long,
+            help = "Search by provider name or display name (case-insensitive)"
+        )]
+        search: Option<String>,
+    },
 }
 
 // ---- Integrations ----
@@ -2137,13 +3598,13 @@ enum JiraTemplateActions {
     Get { template_id: String },
     /// Create Jira issue template
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update Jira issue template
     Update {
         template_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete Jira issue template
@@ -2213,13 +3674,13 @@ enum ServiceNowTemplateActions {
     Get { template_id: String },
     /// Create ServiceNow template
     Create {
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Update ServiceNow template
     Update {
         template_id: String,
-        #[arg(long)]
+        #[arg(long, help = "JSON file with request body (required)")]
         file: String,
     },
     /// Delete ServiceNow template
@@ -2256,11 +3717,19 @@ enum CostActions {
         start_month: String,
         #[arg(long, help = "End month (YYYY-MM)")]
         end_month: Option<String>,
+        #[arg(
+            long,
+            default_value = "actual",
+            help = "View type: actual, estimated, historical"
+        )]
+        view: String,
     },
     /// Get cost attribution by tags
     Attribution {
-        #[arg(long)]
+        #[arg(long, name = "start-month", help = "Start month (YYYY-MM) (required)")]
         start: String,
+        #[arg(long, name = "end-month", help = "End month (YYYY-MM)")]
+        end: Option<String>,
         #[arg(long, help = "Tag keys for breakdown (required)")]
         fields: Option<String>,
     },
@@ -2301,10 +3770,12 @@ enum ApmActions {
         query: String,
         #[arg(long, default_value_t = 100, help = "Max nodes")]
         limit: i64,
-        #[arg(long, default_value = "1h", help = "Start time (Unix timestamp)")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now", help = "End time (Unix timestamp)")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Environment filter")]
+        env: Option<String>,
     },
 }
 
@@ -2312,45 +3783,57 @@ enum ApmActions {
 enum ApmServiceActions {
     /// List APM services
     List {
-        #[arg(long)]
+        #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Primary tag")]
+        primary_tag: Option<String>,
     },
     /// List services with performance statistics
     Stats {
-        #[arg(long)]
+        #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long)]
+        #[arg(long, help = "Start time")]
         from: String,
-        #[arg(long)]
+        #[arg(long, help = "End time")]
         to: String,
+        #[arg(long, help = "Primary tag")]
+        primary_tag: Option<String>,
     },
     /// List operations for a service
     Operations {
-        #[arg(long)]
+        #[arg(long, help = "Service name (required)")]
         service: String,
-        #[arg(long)]
+        #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Primary tag")]
+        primary_tag: Option<String>,
+        #[arg(long, default_value_t = false, help = "Only primary operations")]
+        primary_only: bool,
     },
     /// List resources (endpoints) for a service operation
     Resources {
-        #[arg(long)]
+        #[arg(long, help = "Service name (required)")]
         service: String,
-        #[arg(long)]
+        #[arg(long, help = "Operation name (required)")]
         operation: String,
-        #[arg(long)]
+        #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Primary tag")]
+        primary_tag: Option<String>,
+        #[arg(long, help = "Peer service filter")]
+        peer_service: Option<String>,
     },
 }
 
@@ -2358,10 +3841,22 @@ enum ApmServiceActions {
 enum ApmEntityActions {
     /// Query APM entities
     List {
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Environment filter")]
+        env: Option<String>,
+        #[arg(long, help = "Fields to include (comma-separated)")]
+        include: Option<String>,
+        #[arg(long, default_value_t = 50, help = "Max results")]
+        limit: i32,
+        #[arg(long, default_value_t = 0, help = "Page offset")]
+        offset: i32,
+        #[arg(long, help = "Primary tag")]
+        primary_tag: Option<String>,
+        #[arg(long, help = "Entity types (comma-separated)")]
+        types: Option<String>,
     },
 }
 
@@ -2369,12 +3864,14 @@ enum ApmEntityActions {
 enum ApmDependencyActions {
     /// List service dependencies
     List {
-        #[arg(long)]
+        #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, help = "Primary tag (group:value)")]
+        primary_tag: Option<String>,
     },
 }
 
@@ -2383,17 +3880,39 @@ enum ApmDependencyActions {
 enum InvestigationActions {
     /// List investigations
     List {
-        #[arg(long, default_value_t = 50, help = "Page size")]
+        #[arg(long, default_value_t = 10, help = "Page size")]
         page_limit: i64,
         #[arg(long, default_value_t = 0, help = "Pagination offset")]
         page_offset: i64,
+        #[arg(long, default_value_t = 0, help = "Filter by monitor ID")]
+        monitor_id: i64,
     },
     /// Get investigation details
     Get { investigation_id: String },
     /// Trigger a new investigation
     Trigger {
-        #[arg(long)]
-        file: String,
+        #[arg(
+            long,
+            help = "Investigation type: monitor_alert (required)",
+            required_unless_present = "file"
+        )]
+        r#type: Option<String>,
+        #[arg(
+            long,
+            default_value_t = 0,
+            help = "Monitor ID (required for monitor_alert)"
+        )]
+        monitor_id: i64,
+        #[arg(long, help = "Event ID (required for monitor_alert)")]
+        event_id: Option<String>,
+        #[arg(
+            long,
+            default_value_t = 0,
+            help = "Event timestamp in milliseconds (required for monitor_alert)"
+        )]
+        event_ts: i64,
+        #[arg(long, help = "JSON file with request body", conflicts_with_all = ["type", "event_id"])]
+        file: Option<String>,
     },
 }
 
@@ -2455,7 +3974,14 @@ enum TracesActions {
 #[derive(Subcommand)]
 enum AgentActions {
     /// Output command schema as JSON
-    Schema,
+    Schema {
+        #[arg(
+            long,
+            default_value_t = false,
+            help = "Output minimal schema (names + flags only)"
+        )]
+        compact: bool,
+    },
     /// Output the comprehensive steering guide
     Guide,
 }
@@ -2491,7 +4017,15 @@ enum ProductAnalyticsEventActions {
     /// Send a product analytics event
     Send {
         #[arg(long)]
-        file: String,
+        file: Option<String>,
+        #[arg(long, name = "app-id", help = "Application ID")]
+        app_id: Option<String>,
+        #[arg(long, help = "Event name")]
+        event: Option<String>,
+        #[arg(long, help = "Event properties (JSON string)")]
+        properties: Option<String>,
+        #[arg(long, name = "user-id", help = "User ID")]
+        user_id: Option<String>,
     },
 }
 
@@ -2524,7 +4058,22 @@ enum StaticAnalysisActions {
 #[derive(Subcommand)]
 enum StaticAnalysisAstActions {
     /// List AST analyses
-    List,
+    List {
+        #[arg(long, help = "Filter by branch")]
+        branch: Option<String>,
+        #[arg(long, help = "Start time")]
+        from: Option<String>,
+        #[arg(long, help = "End time")]
+        to: Option<String>,
+        #[arg(long, help = "Filter by repository")]
+        repository: Option<String>,
+        #[arg(long, help = "Filter by language")]
+        language: Option<String>,
+        #[arg(long, help = "Filter by severity")]
+        severity: Option<String>,
+        #[arg(long, help = "Filter by status")]
+        status: Option<String>,
+    },
     /// Get AST analysis details
     Get { id: String },
 }
@@ -2532,7 +4081,22 @@ enum StaticAnalysisAstActions {
 #[derive(Subcommand)]
 enum StaticAnalysisCustomRulesetActions {
     /// List custom rulesets
-    List,
+    List {
+        #[arg(long, help = "Filter by branch")]
+        branch: Option<String>,
+        #[arg(long, help = "Start time")]
+        from: Option<String>,
+        #[arg(long, help = "End time")]
+        to: Option<String>,
+        #[arg(long, help = "Filter by repository")]
+        repository: Option<String>,
+        #[arg(long, help = "Filter by language")]
+        language: Option<String>,
+        #[arg(long, help = "Filter by severity")]
+        severity: Option<String>,
+        #[arg(long, help = "Filter by status")]
+        status: Option<String>,
+    },
     /// Get custom ruleset details
     Get { id: String },
 }
@@ -2540,7 +4104,22 @@ enum StaticAnalysisCustomRulesetActions {
 #[derive(Subcommand)]
 enum StaticAnalysisScaActions {
     /// List SCA results
-    List,
+    List {
+        #[arg(long, help = "Filter by branch")]
+        branch: Option<String>,
+        #[arg(long, help = "Start time")]
+        from: Option<String>,
+        #[arg(long, help = "End time")]
+        to: Option<String>,
+        #[arg(long, help = "Filter by repository")]
+        repository: Option<String>,
+        #[arg(long, help = "Filter by language")]
+        language: Option<String>,
+        #[arg(long, help = "Filter by severity")]
+        severity: Option<String>,
+        #[arg(long, help = "Filter by status")]
+        status: Option<String>,
+    },
     /// Get SCA scan details
     Get { id: String },
 }
@@ -2548,7 +4127,22 @@ enum StaticAnalysisScaActions {
 #[derive(Subcommand)]
 enum StaticAnalysisCoverageActions {
     /// List coverage analyses
-    List,
+    List {
+        #[arg(long, help = "Filter by branch")]
+        branch: Option<String>,
+        #[arg(long, help = "Start time")]
+        from: Option<String>,
+        #[arg(long, help = "End time")]
+        to: Option<String>,
+        #[arg(long, help = "Filter by repository")]
+        repository: Option<String>,
+        #[arg(long, help = "Filter by language")]
+        language: Option<String>,
+        #[arg(long, help = "Filter by severity")]
+        severity: Option<String>,
+        #[arg(long, help = "Filter by status")]
+        status: Option<String>,
+    },
     /// Get coverage analysis details
     Get { id: String },
 }
@@ -3041,7 +4635,7 @@ async fn main_inner() -> anyhow::Result<()> {
                 MonitorActions::Update { monitor_id, file } => {
                     commands::monitors::update(&cfg, monitor_id, &file).await?;
                 }
-                MonitorActions::Search { query } => {
+                MonitorActions::Search { query, .. } => {
                     commands::monitors::search(&cfg, query).await?;
                 }
                 MonitorActions::Delete { monitor_id } => {
@@ -3216,7 +4810,7 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Metrics { action } => {
             cfg.validate_auth()?;
             match action {
-                MetricActions::List { filter, from } => {
+                MetricActions::List { filter, from, .. } => {
                     commands::metrics::list(&cfg, filter, from).await?;
                 }
                 MetricActions::Search { query, from, to } => {
@@ -3225,19 +4819,31 @@ async fn main_inner() -> anyhow::Result<()> {
                 MetricActions::Query { query, from, to } => {
                     commands::metrics::query(&cfg, query, from, to).await?;
                 }
-                MetricActions::Submit { file } => {
-                    commands::metrics::submit(&cfg, &file).await?;
+                MetricActions::Submit { file, .. } => {
+                    if let Some(f) = file {
+                        commands::metrics::submit(&cfg, &f).await?;
+                    } else {
+                        anyhow::bail!("flag-based submit not yet implemented; use --file");
+                    }
                 }
                 MetricActions::Metadata { action } => match action {
                     MetricMetadataActions::Get { metric_name } => {
                         commands::metrics::metadata_get(&cfg, &metric_name).await?;
                     }
-                    MetricMetadataActions::Update { metric_name, file } => {
-                        commands::metrics::metadata_update(&cfg, &metric_name, &file).await?;
+                    MetricMetadataActions::Update {
+                        metric_name, file, ..
+                    } => {
+                        if let Some(f) = file {
+                            commands::metrics::metadata_update(&cfg, &metric_name, &f).await?;
+                        } else {
+                            anyhow::bail!(
+                                "flag-based metadata update not yet implemented; use --file"
+                            );
+                        }
                     }
                 },
                 MetricActions::Tags { action } => match action {
-                    MetricTagActions::List { metric_name } => {
+                    MetricTagActions::List { metric_name, .. } => {
                         commands::metrics::tags_list(&cfg, &metric_name).await?;
                     }
                 },
@@ -3254,7 +4860,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     commands::slos::update(&cfg, &id, &file).await?;
                 }
                 SloActions::Delete { id } => commands::slos::delete(&cfg, &id).await?,
-                SloActions::Status { id, from_ts, to_ts } => {
+                SloActions::Status { id, from, to } => {
+                    let from_ts = util::parse_time_to_unix_millis(&from)? / 1000;
+                    let to_ts = util::parse_time_to_unix_millis(&to)? / 1000;
                     commands::slos::status(&cfg, &id, from_ts, to_ts).await?;
                 }
             }
@@ -3264,7 +4872,9 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 SyntheticsActions::Tests { action } => match action {
-                    SyntheticsTestActions::List => commands::synthetics::tests_list(&cfg).await?,
+                    SyntheticsTestActions::List { .. } => {
+                        commands::synthetics::tests_list(&cfg).await?
+                    }
                     SyntheticsTestActions::Get { public_id } => {
                         commands::synthetics::tests_get(&cfg, &public_id).await?;
                     }
@@ -3290,7 +4900,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     SyntheticsSuiteActions::Update { suite_id, file } => {
                         commands::synthetics::suites_update(&cfg, &suite_id, &file).await?;
                     }
-                    SyntheticsSuiteActions::Delete { suite_ids } => {
+                    SyntheticsSuiteActions::Delete { suite_ids, .. } => {
                         commands::synthetics::suites_delete(&cfg, suite_ids).await?;
                     }
                 },
@@ -3300,7 +4910,11 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Events { action } => {
             cfg.validate_auth()?;
             match action {
-                EventActions::List { start, end, tags } => {
+                EventActions::List {
+                    from, to, tags, ..
+                } => {
+                    let start = util::parse_time_to_unix_millis(&from)? / 1000;
+                    let end = util::parse_time_to_unix_millis(&to)? / 1000;
                     commands::events::list(&cfg, start, end, tags).await?;
                 }
                 EventActions::Search {
@@ -3396,7 +5010,9 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 SecurityActions::Rules { action } => match action {
-                    SecurityRuleActions::List => commands::security::rules_list(&cfg).await?,
+                    SecurityRuleActions::List { .. } => {
+                        commands::security::rules_list(&cfg).await?
+                    }
                     SecurityRuleActions::Get { rule_id } => {
                         commands::security::rules_get(&cfg, &rule_id).await?;
                     }
@@ -3405,11 +5021,12 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 SecurityActions::Signals { action } => match action {
-                    SecuritySignalActions::Search {
+                    SecuritySignalActions::List {
                         query,
                         from,
                         to,
                         limit,
+                        ..
                     } => {
                         commands::security::signals_search(&cfg, query, from, to, limit).await?;
                     }
@@ -3488,12 +5105,31 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Cases { action } => {
             cfg.validate_auth()?;
             match action {
-                CaseActions::Search { query, page_size } => {
+                CaseActions::Search {
+                    query, page_size, ..
+                } => {
                     commands::cases::search(&cfg, query, page_size).await?;
                 }
                 CaseActions::Get { case_id } => commands::cases::get(&cfg, &case_id).await?,
-                CaseActions::Create { file } => {
-                    commands::cases::create(&cfg, &file).await?;
+                CaseActions::Create {
+                    title,
+                    type_id,
+                    priority,
+                    description,
+                    file,
+                } => {
+                    if let Some(f) = file {
+                        commands::cases::create(&cfg, &f).await?;
+                    } else {
+                        commands::cases::create_from_flags(
+                            &cfg,
+                            &title.unwrap(),
+                            &type_id.unwrap(),
+                            &priority,
+                            description.as_deref(),
+                        )
+                        .await?;
+                    }
                 }
                 CaseActions::Archive { case_id } => {
                     commands::cases::archive(&cfg, &case_id).await?;
@@ -3621,9 +5257,7 @@ async fn main_inner() -> anyhow::Result<()> {
                 AppKeyActions::List {
                     page_size,
                     page_number,
-                } => {
-                    commands::app_keys::list(&cfg, page_size, page_number).await?
-                }
+                } => commands::app_keys::list(&cfg, page_size, page_number).await?,
                 AppKeyActions::Get { key_id } => commands::app_keys::get(&cfg, &key_id).await?,
                 AppKeyActions::Register { key_id } => {
                     commands::app_keys::register(&cfg, &key_id).await?
@@ -3648,11 +5282,11 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Usage { action } => {
             cfg.validate_auth()?;
             match action {
-                UsageActions::Summary { start, end } => {
-                    commands::usage::summary(&cfg, start, end).await?;
+                UsageActions::Summary { from, to } => {
+                    commands::usage::summary(&cfg, from, to).await?;
                 }
-                UsageActions::Hourly { start, end } => {
-                    commands::usage::hourly(&cfg, start, end).await?;
+                UsageActions::Hourly { from, to } => {
+                    commands::usage::hourly(&cfg, from, to).await?;
                 }
             }
         }
@@ -3685,8 +5319,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     RumAppActions::Create { name, app_type } => {
                         commands::rum::apps_create(&cfg, &name, app_type).await?;
                     }
-                    RumAppActions::Update { app_id, file } => {
-                        commands::rum::apps_update(&cfg, &app_id, &file).await?;
+                    RumAppActions::Update { app_id, file, .. } => {
+                        let f = file.unwrap_or_default();
+                        commands::rum::apps_update(&cfg, &app_id, &f).await?;
                     }
                     RumAppActions::Delete { app_id } => {
                         commands::rum::apps_delete(&cfg, &app_id).await?;
@@ -3752,7 +5387,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 RumActions::Heatmaps { action } => match action {
-                    RumHeatmapActions::Query { view_name } => {
+                    RumHeatmapActions::Query { view_name, .. } => {
                         commands::rum::heatmaps_query(&cfg, &view_name).await?;
                     }
                 },
@@ -3768,6 +5403,7 @@ async fn main_inner() -> anyhow::Result<()> {
                         from,
                         to,
                         limit,
+                        ..
                     } => {
                         commands::cicd::pipelines_list(&cfg, query, from, to, limit).await?;
                     }
@@ -3792,7 +5428,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     } => {
                         commands::cicd::tests_search(&cfg, query, from, to, limit).await?;
                     }
-                    CicdTestActions::Aggregate { query, from, to } => {
+                    CicdTestActions::Aggregate {
+                        query, from, to, ..
+                    } => {
                         commands::cicd::tests_aggregate(&cfg, query, from, to).await?;
                     }
                 },
@@ -3802,10 +5440,13 @@ async fn main_inner() -> anyhow::Result<()> {
                         from,
                         to,
                         limit,
+                        ..
                     } => {
                         commands::cicd::events_search(&cfg, query, from, to, limit).await?;
                     }
-                    CicdEventActions::Aggregate { query, from, to } => {
+                    CicdEventActions::Aggregate {
+                        query, from, to, ..
+                    } => {
                         commands::cicd::events_aggregate(&cfg, query, from, to).await?;
                     }
                 },
@@ -3818,7 +5459,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 CicdActions::FlakyTests { action } => match action {
-                    CicdFlakyTestActions::Search { query } => {
+                    CicdFlakyTestActions::Search { query, .. } => {
                         commands::cicd::flaky_tests_search(&cfg, query).await?;
                     }
                     CicdFlakyTestActions::Update { file } => {
@@ -3836,7 +5477,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     OnCallTeamActions::Get { team_id } => {
                         commands::on_call::teams_get(&cfg, &team_id).await?;
                     }
-                    OnCallTeamActions::Create { name, handle } => {
+                    OnCallTeamActions::Create { name, handle, .. } => {
                         commands::on_call::teams_create(&cfg, &name, &handle).await?;
                     }
                     OnCallTeamActions::Update {
@@ -3850,7 +5491,9 @@ async fn main_inner() -> anyhow::Result<()> {
                         commands::on_call::teams_delete(&cfg, &team_id).await?;
                     }
                     OnCallTeamActions::Memberships { action } => match action {
-                        OnCallMembershipActions::List { team_id, page_size } => {
+                        OnCallMembershipActions::List {
+                            team_id, page_size, ..
+                        } => {
                             commands::on_call::memberships_list(&cfg, &team_id, page_size).await?;
                         }
                         OnCallMembershipActions::Add {
@@ -3944,7 +5587,7 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 ErrorTrackingActions::Issues { action } => match action {
-                    ErrorTrackingIssueActions::Search { query, limit } => {
+                    ErrorTrackingIssueActions::Search { query, limit, .. } => {
                         commands::error_tracking::issues_search(&cfg, query, limit).await?;
                     }
                     ErrorTrackingIssueActions::Get { issue_id } => {
@@ -4071,7 +5714,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 StatusPageActions::ThirdParty { action } => match action {
-                    StatusPageThirdPartyActions::List => {
+                    StatusPageThirdPartyActions::List { .. } => {
                         commands::status_pages::third_party_list(&cfg).await?;
                     }
                 },
@@ -4191,10 +5834,11 @@ async fn main_inner() -> anyhow::Result<()> {
                 CostActions::ByOrg {
                     start_month,
                     end_month,
+                    ..
                 } => {
                     commands::cost::by_org(&cfg, start_month, end_month).await?;
                 }
-                CostActions::Attribution { start, fields } => {
+                CostActions::Attribution { start, fields, .. } => {
                     commands::cost::attribution(&cfg, start, fields).await?;
                 }
             }
@@ -4212,10 +5856,10 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 ApmActions::Services { action } => match action {
-                    ApmServiceActions::List { env, from, to } => {
+                    ApmServiceActions::List { env, from, to, .. } => {
                         commands::apm::services_list(&cfg, env, from, to).await?;
                     }
-                    ApmServiceActions::Stats { env, from, to } => {
+                    ApmServiceActions::Stats { env, from, to, .. } => {
                         commands::apm::services_stats(&cfg, env, from, to).await?;
                     }
                     ApmServiceActions::Operations {
@@ -4223,6 +5867,7 @@ async fn main_inner() -> anyhow::Result<()> {
                         env,
                         from,
                         to,
+                        ..
                     } => {
                         commands::apm::services_operations(&cfg, service, env, from, to).await?;
                     }
@@ -4232,18 +5877,19 @@ async fn main_inner() -> anyhow::Result<()> {
                         env,
                         from,
                         to,
+                        ..
                     } => {
                         commands::apm::services_resources(&cfg, service, operation, env, from, to)
                             .await?;
                     }
                 },
                 ApmActions::Entities { action } => match action {
-                    ApmEntityActions::List { from, to } => {
+                    ApmEntityActions::List { from, to, .. } => {
                         commands::apm::entities_list(&cfg, from, to).await?;
                     }
                 },
                 ApmActions::Dependencies { action } => match action {
-                    ApmDependencyActions::List { env, from, to } => {
+                    ApmDependencyActions::List { env, from, to, .. } => {
                         commands::apm::dependencies_list(&cfg, env, from, to).await?;
                     }
                 },
@@ -4252,6 +5898,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     limit,
                     from,
                     to,
+                    ..
                 } => {
                     commands::apm::flow_map(&cfg, query, limit, from, to).await?;
                 }
@@ -4264,14 +5911,19 @@ async fn main_inner() -> anyhow::Result<()> {
                 InvestigationActions::List {
                     page_limit,
                     page_offset,
+                    ..
                 } => {
                     commands::investigations::list(&cfg, page_limit, page_offset).await?;
                 }
                 InvestigationActions::Get { investigation_id } => {
                     commands::investigations::get(&cfg, &investigation_id).await?;
                 }
-                InvestigationActions::Trigger { file } => {
-                    commands::investigations::trigger(&cfg, &file).await?;
+                InvestigationActions::Trigger { file, .. } => {
+                    if let Some(f) = file {
+                        commands::investigations::trigger(&cfg, &f).await?;
+                    } else {
+                        anyhow::bail!("flag-based trigger not yet implemented; use --file");
+                    }
                 }
             }
         }
@@ -4311,7 +5963,7 @@ async fn main_inner() -> anyhow::Result<()> {
         },
         // --- Agent (placeholder) ---
         Commands::Agent { action } => match action {
-            AgentActions::Schema => commands::agent::schema()?,
+            AgentActions::Schema { compact } => commands::agent::schema(compact)?,
             AgentActions::Guide => commands::agent::guide()?,
         },
         // --- Alias ---
@@ -4326,8 +5978,9 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 ProductAnalyticsActions::Events { action } => match action {
-                    ProductAnalyticsEventActions::Send { file } => {
-                        commands::product_analytics::events_send(&cfg, &file).await?;
+                    ProductAnalyticsEventActions::Send { file, .. } => {
+                        let f = file.unwrap_or_default();
+                        commands::product_analytics::events_send(&cfg, &f).await?;
                     }
                 },
             }
@@ -4337,7 +5990,7 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 StaticAnalysisActions::Ast { action } => match action {
-                    StaticAnalysisAstActions::List => {
+                    StaticAnalysisAstActions::List { .. } => {
                         commands::static_analysis::ast_list(&cfg).await?;
                     }
                     StaticAnalysisAstActions::Get { id } => {
@@ -4345,7 +5998,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 StaticAnalysisActions::CustomRulesets { action } => match action {
-                    StaticAnalysisCustomRulesetActions::List => {
+                    StaticAnalysisCustomRulesetActions::List { .. } => {
                         commands::static_analysis::custom_rulesets_list(&cfg).await?;
                     }
                     StaticAnalysisCustomRulesetActions::Get { id } => {
@@ -4353,7 +6006,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 StaticAnalysisActions::Sca { action } => match action {
-                    StaticAnalysisScaActions::List => {
+                    StaticAnalysisScaActions::List { .. } => {
                         commands::static_analysis::sca_list(&cfg).await?;
                     }
                     StaticAnalysisScaActions::Get { id } => {
@@ -4361,7 +6014,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 StaticAnalysisActions::Coverage { action } => match action {
-                    StaticAnalysisCoverageActions::List => {
+                    StaticAnalysisCoverageActions::List { .. } => {
                         commands::static_analysis::coverage_list(&cfg).await?;
                     }
                     StaticAnalysisCoverageActions::Get { id } => {
