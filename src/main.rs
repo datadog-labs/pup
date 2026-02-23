@@ -2470,6 +2470,7 @@ enum ProductAnalyticsActions {
         action: ProductAnalyticsRetentionActions,
     },
     /// Run sankey flow analysis
+    #[command(after_help = "REQUEST TYPE: sankey_request\n\nREQUIRED: time (from/to), search.query, definition (source OR target, not both), data_source\nNOTE: entries_per_step max 10, number_of_steps max 10.")]
     Sankey {
         #[arg(long)]
         file: String,
@@ -2493,11 +2494,13 @@ enum ProductAnalyticsEventActions {
 #[derive(Subcommand)]
 enum ProductAnalyticsAnalyticsActions {
     /// Compute scalar analytics results
+    #[command(after_help = "REQUEST TYPE: formula_analytics_extended_request\n\nREQUIRED: from (epoch ms), to (epoch ms), query.query (data_source + search), query.compute (aggregation)")]
     Scalar {
         #[arg(long)]
         file: String,
     },
     /// Compute timeseries analytics results
+    #[command(after_help = "REQUEST TYPE: formula_analytics_extended_request\n\nREQUIRED: from, to, query.query, query.compute (must include interval for timeseries)")]
     Timeseries {
         #[arg(long)]
         file: String,
@@ -2507,27 +2510,31 @@ enum ProductAnalyticsAnalyticsActions {
 #[derive(Subcommand)]
 enum ProductAnalyticsJourneyActions {
     /// Compute funnel results
+    #[command(after_help = "REQUEST TYPE: journey_request\n\nREQUIRED: from, to, query.data_source, query.search (expression + node_objects), query.compute\nNOTE: Max 1 group_by. Join key defaults to @session.id.")]
     Funnel {
         #[arg(long)]
         file: String,
     },
     /// Compute journey timeseries results
+    #[command(after_help = "REQUEST TYPE: formula_journey_request\n\nREQUIRED: from, to, query.search, query.compute (include interval for time bucketing)")]
     Timeseries {
         #[arg(long)]
         file: String,
     },
     /// Compute journey scalar results
+    #[command(after_help = "REQUEST TYPE: formula_journey_request")]
     Scalar {
         #[arg(long)]
         file: String,
     },
-    /// List journey results
+    /// List journey users (converters or drop-offs)
+    #[command(after_help = "REQUEST TYPE: journey_list_request\n\nREQUIRED: from, to, query.data_source, query.search, query.conversion_type\nNOTE: Join key must be @session.id (not @usr.id).")]
     List {
         #[arg(long)]
         file: String,
     },
     /// Compute drop-off analysis
-    #[command(name = "drop-off-analysis")]
+    #[command(name = "drop-off-analysis", after_help = "REQUEST TYPE: journey_drop_off_analysis_request\n\nNOTE: Join key must be @session.id (not @usr.id). top_issue_count defaults to 5.")]
     DropOffAnalysis {
         #[arg(long)]
         file: String,
@@ -2537,26 +2544,31 @@ enum ProductAnalyticsJourneyActions {
 #[derive(Subcommand)]
 enum ProductAnalyticsRetentionActions {
     /// Compute retention grid results
+    #[command(after_help = "REQUEST TYPE: retention_grid_request\n\nREQUIRED: from, to, query.search (cohort_criteria with calendar time_interval, retention_entity, return_condition), query.compute\nNOTE: Cohort time_interval must be calendar type with value {type: day|week|month, quantity: N}.\nMax buckets: daily=32, weekly=54, monthly=16.")]
     Grid {
         #[arg(long)]
         file: String,
     },
     /// Compute retention timeseries results
+    #[command(after_help = "REQUEST TYPE: formula_retention_request\n\nREQUIRED: computation_scope must be return_period type.")]
     Timeseries {
         #[arg(long)]
         file: String,
     },
     /// Compute retention scalar results
+    #[command(after_help = "REQUEST TYPE: formula_retention_request\n\nREQUIRED: computation_scope must be cell type (cohort_target + return_period_target).")]
     Scalar {
         #[arg(long)]
         file: String,
     },
-    /// List retention results
+    /// List retained users for a specific cohort/period cell
+    #[command(after_help = "REQUEST TYPE: retention_list_request\n\nREQUIRED: computation_scope must be cell type.")]
     List {
         #[arg(long)]
         file: String,
     },
-    /// Get retention metadata
+    /// Get retention cohort metadata
+    #[command(after_help = "REQUEST TYPE: retention_meta_request")]
     Meta {
         #[arg(long)]
         file: String,
@@ -2567,13 +2579,14 @@ enum ProductAnalyticsRetentionActions {
 enum ProductAnalyticsSegmentActions {
     /// List all segments
     List,
-    /// Create a new segment
+    /// Create a new dynamic segment
+    #[command(after_help = "REQUEST TYPE: segment\n\nREQUIRED: name, data_query (with event_platform or user_store blocks)")]
     Create {
         #[arg(long)]
         file: String,
     },
-    /// Create a new static segment
-    #[command(name = "create-static")]
+    /// Create a new static segment from a journey query
+    #[command(name = "create-static", after_help = "REQUEST TYPE: static_segment_request\n\nREQUIRED: name, description, journey_query_object (with search expression + node_objects)\nNOTE: 2-minute timeout. Creates an immutable snapshot of users matching the journey.")]
     CreateStatic {
         #[arg(long)]
         file: String,
