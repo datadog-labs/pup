@@ -1404,7 +1404,7 @@ async fn test_app_keys_list() {
     let mut s = mockito::Server::new_async().await;
     let cfg = test_config(&s.url());
     mock_all(&mut s, r#"{"data": []}"#).await;
-    let _ = crate::commands::app_keys::list(&cfg, false, &None, &None, 10, 0).await;
+    let _ = crate::commands::app_keys::list(&cfg, 10, 0).await;
     cleanup_env();
 }
 #[tokio::test]
@@ -1417,12 +1417,12 @@ async fn test_app_keys_get() {
     cleanup_env();
 }
 #[tokio::test]
-async fn test_app_keys_delete() {
+async fn test_app_keys_unregister() {
     let _lock = lock_env();
     let mut s = mockito::Server::new_async().await;
     let cfg = test_config(&s.url());
     mock_all(&mut s, r#"{}"#).await;
-    let _ = crate::commands::app_keys::delete(&cfg, "k1").await;
+    let _ = crate::commands::app_keys::unregister(&cfg, "k1").await;
     cleanup_env();
 }
 

@@ -131,7 +131,6 @@ impl DcrClient {
     }
 
     /// Refresh an access token.
-    #[allow(dead_code)]
     pub async fn refresh_token(
         &self,
         refresh_token: &str,

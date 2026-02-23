@@ -31,6 +31,13 @@ pub async fn ip_ranges(cfg: &Config) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn status(cfg: &Config) -> Result<()> {
+    if !cfg.has_bearer_token() && !cfg.has_api_keys() {
+        let transformed = serde_json::json!({
+            "message": "no credentials configured",
+            "status": "unauthenticated"
+        });
+        return formatter::output(cfg, &transformed);
+    }
     let dd_cfg = client::make_dd_config(cfg);
     let api = match client::make_bearer_client(cfg) {
         Some(c) => AuthenticationAPI::with_client_and_config(dd_cfg, c),

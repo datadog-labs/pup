@@ -225,6 +225,54 @@ pub fn token(cfg: &Config) -> Result<()> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn refresh(cfg: &Config) -> Result<()> {
+    use crate::auth::dcr;
+
+    let site = &cfg.site;
+
+    let tokens = with_storage(|store| store.load_tokens(site))?
+        .ok_or_else(|| anyhow::anyhow!("no tokens found for site {site} — run 'pup auth login' first"))?;
+
+    if tokens.refresh_token.is_empty() {
+        bail!("no refresh token available — run 'pup auth login' to re-authenticate");
+    }
+
+    let creds = with_storage(|store| store.load_client_credentials(site))?
+        .ok_or_else(|| anyhow::anyhow!("no client credentials found for site {site} — run 'pup auth login' first"))?;
+
+    eprintln!("🔄 Refreshing access token for site: {site}...");
+
+    let dcr_client = dcr::DcrClient::new(site);
+    let new_tokens = dcr_client
+        .refresh_token(&tokens.refresh_token, &creds)
+        .await?;
+
+    let location = with_storage(|store| {
+        store.save_tokens(site, &new_tokens)?;
+        Ok(store.storage_location())
+    })?;
+
+    let expires_at = chrono::DateTime::from_timestamp(new_tokens.issued_at + new_tokens.expires_in, 0)
+        .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
+        .unwrap_or_else(|| format!("in {} hours", new_tokens.expires_in / 3600));
+    let display_location = if location.contains("keychain") || location.contains("Keychain") {
+        "macOS Keychain (secure)".to_string()
+    } else {
+        location
+    };
+
+    eprintln!("✅ Token refreshed successfully!");
+    eprintln!("   Access token expires: {expires_at}");
+    eprintln!("   Token stored in: {display_location}");
+
+    Ok(())
+}
+
+#[cfg(target_arch = "wasm32")]
 pub async fn refresh(_cfg: &Config) -> Result<()> {
-    anyhow::bail!("token refresh not yet implemented — use 'pup auth login' to re-authenticate")
+    bail!(
+        "Token refresh is not available in WASM builds.\n\
+         Use DD_ACCESS_TOKEN env var for bearer token auth."
+    )
 }

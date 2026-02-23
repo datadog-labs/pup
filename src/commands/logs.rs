@@ -59,7 +59,26 @@ pub async fn search(
         .await
         .map_err(|e| anyhow::anyhow!("failed to search logs: {:?}", e))?;
 
-    formatter::output(cfg, &resp)?;
+    let meta = if cfg.agent_mode {
+        let count = resp.data.as_ref().map(|d| d.len());
+        let truncated = count.map_or(false, |c| c as i32 >= limit);
+        Some(formatter::Metadata {
+            count,
+            truncated,
+            command: Some("logs search".into()),
+            next_action: if truncated {
+                Some(format!(
+                    "Results may be truncated at {limit}. Use --limit={} or narrow the --query",
+                    limit + 1
+                ))
+            } else {
+                None
+            },
+        })
+    } else {
+        None
+    };
+    formatter::format_and_print(&resp, &cfg.output_format, cfg.agent_mode, meta.as_ref())?;
     Ok(())
 }
 

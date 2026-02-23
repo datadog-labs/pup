@@ -58,10 +58,10 @@ enum Commands {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
-    /// Manage application keys
+    /// Manage app key registrations
     #[command(
         name = "app-keys",
-        after_help = "EXAMPLES:\n  # List your application keys\n  pup app-keys list\n\n  # List all application keys in the org (requires API keys)\n  pup app-keys list --all\n\n  # Get application key details\n  pup app-keys get <app-key-id>\n\n  # Create a new application key\n  pup app-keys create --name=\"My Key\"\n\n  # Create a scoped application key\n  pup app-keys create --name=\"Read Only\" --scopes=\"dashboards_read,metrics_read\"\n\n  # Update an application key name\n  pup app-keys update <app-key-id> --name=\"New Name\"\n\n  # Delete an application key\n  pup app-keys delete <app-key-id>"
+        after_help = "EXAMPLES:\n  # List all app keys registered for Action Connections\n  pup app-keys list\n\n  # Get app key registration details\n  pup app-keys get <app-key-id>\n\n  # Register an existing app key for Action Connections\n  pup app-keys register <app-key-id>\n\n  # Unregister an app key from Action Connections\n  pup app-keys unregister <app-key-id>"
     )]
     AppKeys {
         #[command(subcommand)]
@@ -424,11 +424,11 @@ enum Commands {
 enum MonitorActions {
     /// List monitors (limited results)
     List {
-        #[arg(long)]
+        #[arg(long, help = "Filter monitors by name")]
         name: Option<String>,
-        #[arg(long)]
+        #[arg(long, help = "Filter by monitor tags (comma-separated, e.g., team:backend,env:prod)")]
         tags: Option<String>,
-        #[arg(long, default_value_t = 200)]
+        #[arg(long, default_value_t = 200, help = "Maximum number of monitors to return (default: 200, max: 1000)")]
         limit: i32,
     },
     /// Get monitor details
@@ -446,7 +446,7 @@ enum MonitorActions {
     },
     /// Search monitors
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query string")]
         query: Option<String>,
     },
     /// Delete a monitor
@@ -458,45 +458,89 @@ enum MonitorActions {
 enum LogActions {
     /// Search logs (v1 API)
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 5min, 2hours, '5 minutes', RFC3339, Unix timestamp, or 'now'"
+        )]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(
+            long,
+            default_value = "now",
+            help = "End time: 1h, 5min, 2hours, '5 minutes', RFC3339, Unix timestamp, or 'now'"
+        )]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum number of logs (1-1000)")]
         limit: i32,
+        #[arg(long, help = "Sort order: asc or desc", default_value = "desc")]
+        sort: String,
+        #[arg(long, help = "Comma-separated log indexes")]
+        index: Option<String>,
+        #[arg(long, help = "Storage tier: indexes, online-archives, or flex")]
+        storage: Option<String>,
     },
     /// List logs (v2 API)
     List {
-        #[arg(long, default_value = "*")]
+        #[arg(long, default_value = "*", help = "Search query")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 5min, 2hours, '5 minutes', RFC3339, Unix timestamp, or 'now'"
+        )]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 10, help = "Number of logs")]
         limit: i32,
+        #[arg(long, default_value = "-timestamp", help = "Sort order")]
+        sort: String,
+        #[arg(long, help = "Storage tier: indexes, online-archives, or flex")]
+        storage: Option<String>,
     },
     /// Query logs (v2 API)
     Query {
-        #[arg(long)]
+        #[arg(long, help = "Log query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 5min, 2hours, '5 minutes', RFC3339, Unix timestamp, or 'now'"
+        )]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Maximum results")]
         limit: i32,
+        #[arg(long, default_value = "-timestamp", help = "Sort order")]
+        sort: String,
+        #[arg(long, help = "Storage tier: indexes, online-archives, or flex")]
+        storage: Option<String>,
+        #[arg(long, help = "Timezone for timestamps")]
+        timezone: Option<String>,
     },
     /// Aggregate logs (v2 API)
     Aggregate {
-        #[arg(long, default_value = "*")]
-        query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, help = "Log query (required)")]
+        query: Option<String>,
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 5min, 2hours, '5 minutes', RFC3339, Unix timestamp, or 'now'"
+        )]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
+        #[arg(long, default_value = "count", help = "Metric to compute")]
+        compute: String,
+        #[arg(long, help = "Field to group by")]
+        group_by: Option<String>,
+        #[arg(long, default_value_t = 10, help = "Maximum groups")]
+        limit: i32,
+        #[arg(long, help = "Storage tier: indexes, online-archives, or flex")]
+        storage: Option<String>,
     },
     /// Manage log archives
     Archives {
@@ -679,27 +723,27 @@ enum DashboardActions {
 enum MetricActions {
     /// List all available metrics
     List {
-        #[arg(long)]
+        #[arg(long, help = "Filter metrics by name pattern (e.g., system.*, *.cpu.*)")]
         filter: Option<String>,
         #[arg(long, default_value = "1h")]
         from: String,
     },
     /// Search metrics (v1 API)
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Metric query string (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time (e.g., now, unix timestamp)")]
         to: String,
     },
     /// Query time-series metrics data (v2 API)
     Query {
-        #[arg(long)]
+        #[arg(long, help = "Metric query string (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time (e.g., 1h, 30m, 7d, now, unix timestamp)")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time (e.g., now, unix timestamp)")]
         to: String,
     },
     /// Submit custom metrics to Datadog
@@ -842,22 +886,22 @@ enum SyntheticsSuiteActions {
 enum EventActions {
     /// List recent events
     List {
-        #[arg(long, default_value_t = 0)]
+        #[arg(long, default_value_t = 0, help = "Start timestamp")]
         start: i64,
-        #[arg(long, default_value_t = 0)]
+        #[arg(long, default_value_t = 0, help = "End timestamp")]
         end: i64,
-        #[arg(long)]
+        #[arg(long, help = "Filter by tags")]
         tags: Option<String>,
     },
     /// Search events
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Maximum results")]
         limit: i32,
     },
     /// Get event details
@@ -945,22 +989,22 @@ enum InfraHostActions {
 enum AuditLogActions {
     /// List recent audit logs
     List {
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Maximum results")]
         limit: i32,
     },
     /// Search audit logs
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query (required)")]
         query: String,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Maximum results")]
         limit: i32,
     },
 }
@@ -1157,9 +1201,9 @@ enum CloudOciTenancyActions {
 enum CaseActions {
     /// Search cases
     Search {
-        #[arg(long)]
+        #[arg(long, help = "Search query")]
         query: Option<String>,
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Results per page")]
         page_size: i64,
     },
     /// Get case details
@@ -1176,14 +1220,14 @@ enum CaseActions {
     /// Assign a case to a user
     Assign {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "User UUID (required)")]
         user_id: String,
     },
     /// Update case priority
     #[command(name = "update-priority")]
     UpdatePriority {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "New priority (required)")]
         priority: String,
     },
     /// Update case status
@@ -1201,14 +1245,14 @@ enum CaseActions {
     /// Move a case to a different project
     Move {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "Target project ID (required)")]
         project_id: String,
     },
     /// Update case title
     #[command(name = "update-title")]
     UpdateTitle {
         case_id: String,
-        #[arg(long)]
+        #[arg(long, help = "New title (required)")]
         title: String,
     },
     /// Manage Jira integrations for cases
@@ -1321,7 +1365,7 @@ enum ApiKeyActions {
     Get { key_id: String },
     /// Create new API key
     Create {
-        #[arg(long)]
+        #[arg(long, help = "API key name (required)")]
         name: String,
     },
     /// Delete an API key (DESTRUCTIVE)
@@ -1331,47 +1375,33 @@ enum ApiKeyActions {
 // ---- App Keys ----
 #[derive(Subcommand)]
 enum AppKeyActions {
-    /// List application keys
+    /// List all app keys registered for Action Connections
     List {
-        /// List all org keys (requires API keys, not OAuth)
-        #[arg(long)]
-        all: bool,
-        /// Filter by key name
-        #[arg(long)]
-        filter: Option<String>,
-        /// Sort field (name, -name, created_at, -created_at)
-        #[arg(long)]
-        sort: Option<String>,
-        /// Number of results per page
-        #[arg(long, default_value = "10")]
+        /// Results per page
+        #[arg(long, default_value = "10", help = "Results per page")]
         page_size: i64,
         /// Page number (0-indexed)
-        #[arg(long, default_value = "0")]
+        #[arg(long, default_value = "0", help = "Page number")]
         page_number: i64,
     },
-    /// Get application key details
-    Get { key_id: String },
-    /// Create a new application key
-    Create {
-        /// Application key name
-        #[arg(long)]
-        name: String,
-        /// Comma-separated authorization scopes
-        #[arg(long)]
-        scopes: Option<String>,
-    },
-    /// Update an application key
-    Update {
+    /// Get details for a specific app key registration
+    Get {
+        /// App key ID
+        #[arg(name = "app-key-id")]
         key_id: String,
-        /// New name for the application key
-        #[arg(long)]
-        name: Option<String>,
-        /// Comma-separated authorization scopes
-        #[arg(long)]
-        scopes: Option<String>,
     },
-    /// Delete an application key (DESTRUCTIVE)
-    Delete { key_id: String },
+    /// Register an existing application key for use with Action Connections
+    Register {
+        /// App key ID to register
+        #[arg(name = "app-key-id")]
+        key_id: String,
+    },
+    /// Unregister an application key from Action Connections (DESTRUCTIVE)
+    Unregister {
+        /// App key ID to unregister
+        #[arg(name = "app-key-id")]
+        key_id: String,
+    },
 }
 
 // ---- Usage ----
@@ -1379,16 +1409,16 @@ enum AppKeyActions {
 enum UsageActions {
     /// Get usage summary
     Summary {
-        #[arg(long, default_value = "30d")]
+        #[arg(long, default_value = "30d", help = "Start date (YYYY-MM-DD)")]
         start: String,
-        #[arg(long)]
+        #[arg(long, help = "End date (YYYY-MM-DD)")]
         end: Option<String>,
     },
     /// Get hourly usage
     Hourly {
-        #[arg(long, default_value = "1d")]
+        #[arg(long, default_value = "1d", help = "Start date (YYYY-MM-DD)")]
         start: String,
-        #[arg(long)]
+        #[arg(long, help = "End date (YYYY-MM-DD)")]
         end: Option<String>,
     },
 }
@@ -1900,17 +1930,17 @@ enum CodeCoverageActions {
     /// Get branch coverage summary
     #[command(name = "branch-summary")]
     BranchSummary {
-        #[arg(long)]
+        #[arg(long, help = "Repository name (required)")]
         repo: String,
-        #[arg(long)]
+        #[arg(long, help = "Branch name (required)")]
         branch: String,
     },
     /// Get commit coverage summary
     #[command(name = "commit-summary")]
     CommitSummary {
-        #[arg(long)]
+        #[arg(long, help = "Repository name (required)")]
         repo: String,
-        #[arg(long)]
+        #[arg(long, help = "Commit SHA (required)")]
         commit: String,
     },
 }
@@ -2222,16 +2252,16 @@ enum CostActions {
     /// Get costs by organization
     #[command(name = "by-org")]
     ByOrg {
-        #[arg(long)]
+        #[arg(long, help = "Start month (YYYY-MM) (required)")]
         start_month: String,
-        #[arg(long)]
+        #[arg(long, help = "End month (YYYY-MM)")]
         end_month: Option<String>,
     },
     /// Get cost attribution by tags
     Attribution {
         #[arg(long)]
         start: String,
-        #[arg(long)]
+        #[arg(long, help = "Tag keys for breakdown (required)")]
         fields: Option<String>,
     },
 }
@@ -2267,13 +2297,13 @@ enum ApmActions {
     /// View service flow map
     #[command(name = "flow-map")]
     FlowMap {
-        #[arg(long)]
+        #[arg(long, help = "Query filter (required)")]
         query: String,
-        #[arg(long, default_value_t = 100)]
+        #[arg(long, default_value_t = 100, help = "Max nodes")]
         limit: i64,
-        #[arg(long, default_value = "1h")]
+        #[arg(long, default_value = "1h", help = "Start time (Unix timestamp)")]
         from: String,
-        #[arg(long, default_value = "now")]
+        #[arg(long, default_value = "now", help = "End time (Unix timestamp)")]
         to: String,
     },
 }
@@ -2353,9 +2383,9 @@ enum ApmDependencyActions {
 enum InvestigationActions {
     /// List investigations
     List {
-        #[arg(long, default_value_t = 50)]
+        #[arg(long, default_value_t = 50, help = "Page size")]
         page_limit: i64,
-        #[arg(long, default_value_t = 0)]
+        #[arg(long, default_value_t = 0, help = "Pagination offset")]
         page_offset: i64,
     },
     /// Get investigation details
@@ -2441,7 +2471,7 @@ enum AliasActions {
     Delete { names: Vec<String> },
     /// Import aliases from a YAML file
     Import {
-        #[arg(long)]
+        /// Path to YAML file containing aliases
         file: String,
     },
 }
@@ -2540,9 +2570,143 @@ enum AuthActions {
 
 // ---- Agent-mode JSON schema for --help ----
 
+/// Walk the clap command tree to find the subcommand matching the given path.
+fn find_subcommand<'a>(cmd: &'a clap::Command, path: &[&str]) -> Option<&'a clap::Command> {
+    let mut current = cmd;
+    for name in path {
+        current = current.get_subcommands().find(|s| s.get_name() == *name)?;
+    }
+    if path.is_empty() {
+        None
+    } else {
+        Some(current)
+    }
+}
+
+/// Build a scoped agent schema for a specific subcommand (e.g. `pup logs --help`).
+fn build_agent_schema_scoped(
+    _root_cmd: &clap::Command,
+    target: &clap::Command,
+    sub_path: &[&str],
+) -> serde_json::Value {
+    let mut root = serde_json::Map::new();
+    root.insert("version".into(), serde_json::json!(version::VERSION));
+
+    // Use the subcommand's description
+    let desc = target
+        .get_about()
+        .map(|a| a.to_string())
+        .unwrap_or_default();
+    root.insert("description".into(), serde_json::json!(desc));
+
+    let mut auth = serde_json::Map::new();
+    auth.insert("oauth".into(), serde_json::json!("pup auth login"));
+    auth.insert(
+        "api_keys".into(),
+        serde_json::json!("Set DD_API_KEY + DD_APP_KEY + DD_SITE environment variables"),
+    );
+    root.insert("auth".into(), serde_json::Value::Object(auth));
+
+    // Global flags
+    root.insert(
+        "global_flags".into(),
+        serde_json::json!([
+            {
+                "name": "--agent",
+                "type": "bool",
+                "default": "false",
+                "description": "Enable agent mode (auto-detected for AI coding assistants)"
+            },
+            {
+                "name": "--output",
+                "type": "string",
+                "default": "json",
+                "description": "Output format (json, table, yaml)"
+            },
+            {
+                "name": "--yes",
+                "type": "bool",
+                "default": "false",
+                "description": "Skip confirmation prompts (auto-approve all operations)"
+            }
+        ]),
+    );
+
+    // Build scoped command tree — only the target command
+    let cmd_schema = build_command_schema(target, "");
+    root.insert("commands".into(), serde_json::json!([cmd_schema]));
+
+    // Include query_syntax: scoped to the matching command if it has one, full map otherwise
+    let top_name = sub_path[0];
+    let all_syntax = serde_json::json!({
+        "apm": "service:<name> resource_name:<path> @duration:>5000000000 (nanoseconds!) status:error operation_name:<op>. Duration is always in nanoseconds",
+        "events": "sources:nagios,pagerduty status:error priority:normal tags:env:prod",
+        "logs": "status:error, service:web-app, @attr:val, host:i-*, \"exact phrase\", AND/OR/NOT operators, -status:info (negation), wildcards with *",
+        "metrics": "<aggregation>:<metric_name>{<filter>} by {<group>}. Example: avg:system.cpu.user{env:prod} by {host}. Aggregations: avg, sum, min, max, count",
+        "monitors": "Use --name for substring search, --tags for tag filtering (comma-separated). Search via --query for full-text search",
+        "rum": "@type:error @session.type:user @view.url_path:/checkout @action.type:click service:<app-name>",
+        "security": "@workflow.rule.type:log_detection source:cloudtrail @network.client.ip:10.0.0.0/8 status:critical",
+        "traces": "service:<name> resource_name:<path> @duration:>5s (shorthand) env:production"
+    });
+    if let Some(syntax) = all_syntax.get(top_name) {
+        // Scope to just this command's entry
+        let mut scoped = serde_json::Map::new();
+        scoped.insert(top_name.to_string(), syntax.clone());
+        root.insert("query_syntax".into(), serde_json::Value::Object(scoped));
+    } else {
+        // No match — include the full map
+        root.insert("query_syntax".into(), all_syntax);
+    }
+
+    root.insert(
+        "time_formats".into(),
+        serde_json::json!({
+            "relative": ["5s", "30m", "1h", "4h", "1d", "7d", "1w", "30d", "5min", "2hours", "3days"],
+            "absolute": ["Unix timestamp in milliseconds", "RFC3339 (2024-01-01T00:00:00Z)"],
+            "examples": [
+                "--from=1h (1 hour ago)",
+                "--from=30m --to=now",
+                "--from=7d --to=1d (7 days ago to 1 day ago)",
+                "--from=2024-01-01T00:00:00Z --to=2024-01-02T00:00:00Z",
+                "--from=\"5 minutes\""
+            ]
+        }),
+    );
+
+    // No workflows for scoped help
+    root.insert("workflows".into(), serde_json::Value::Null);
+
+    root.insert("best_practices".into(), serde_json::json!([
+        "Always specify --from to set a time range; most commands default to 1h but be explicit",
+        "Start with narrow time ranges (1h) then widen if needed; large ranges are slow and expensive",
+        "Filter by service first when investigating issues: --query='service:<name>'",
+        "Use --limit to control result size; default varies by command (50-200)",
+        "For monitors, use --tags to filter rather than listing all and parsing locally",
+        "APM durations are in NANOSECONDS: 1 second = 1000000000, 5ms = 5000000",
+        "Use 'pup logs aggregate' for counts and distributions instead of fetching all logs and counting locally",
+        "Prefer JSON output (default) for structured parsing; use --output=table only for human display",
+        "Chain narrow queries: first aggregate to find patterns, then search for specific examples",
+        "Use 'pup monitors search' for full-text search, 'pup monitors list' for tag/name filtering"
+    ]));
+
+    root.insert("anti_patterns".into(), serde_json::json!([
+        "Don't omit --from on time-series queries; you'll get unexpected time ranges or errors",
+        "Don't use --limit=1000 as a first step; start with small limits and refine queries",
+        "Don't list all monitors/logs without filters in large organizations (>10k monitors)",
+        "Don't assume APM durations are in seconds or milliseconds; they are in NANOSECONDS",
+        "Don't fetch raw logs to count them; use 'pup logs aggregate --compute=count' instead",
+        "Don't use --from=30d unless you specifically need a month of data; it's slow",
+        "Don't retry failed requests without checking the error; 401 means re-authenticate, 403 means missing permissions",
+        "Don't use 'pup metrics query' without specifying an aggregation (avg, sum, max, min, count)",
+        "Don't pipe large JSON responses through multiple jq transforms; use query filters at the API level"
+    ]));
+
+    serde_json::Value::Object(root)
+}
+
 fn build_agent_schema(cmd: &clap::Command) -> serde_json::Value {
     let mut root = serde_json::Map::new();
-    root.insert("version".into(), serde_json::json!("dev"));
+    root.insert("version".into(), serde_json::json!(version::VERSION));
     root.insert(
         "description".into(),
         serde_json::json!(
@@ -2706,7 +2870,8 @@ fn build_command_schema(cmd: &clap::Command, parent_path: &str) -> serde_json::V
         obj.insert("description".into(), serde_json::json!(about.to_string()));
     }
 
-    // Determine read_only based on command name
+    // Determine read_only based on command name — but only emit for leaf commands
+    // (commands with no subcommands), matching Go behavior
     let is_write = name == "delete"
         || name == "create"
         || name == "update"
@@ -2729,28 +2894,33 @@ fn build_command_schema(cmd: &clap::Command, parent_path: &str) -> serde_json::V
         || name == "unregister"
         || name.contains("delete")
         || name.contains("patch");
-    obj.insert("read_only".into(), serde_json::json!(!is_write));
 
-    // Flags (non-global arguments specific to this command)
+    // Flags (named --flags only, excluding positional args and globals)
     let flags: Vec<serde_json::Value> = cmd
         .get_arguments()
         .filter(|a| {
             let id = a.get_id().as_str();
-            id != "help" && id != "version" && !a.is_global_set()
+            id != "help" && id != "version" && !a.is_global_set() && a.get_long().is_some()
         })
         .map(|a| {
             let mut flag = serde_json::Map::new();
-            let flag_name = if let Some(long) = a.get_long() {
-                format!("--{long}")
-            } else {
-                // Positional arg
-                a.get_id().to_string()
-            };
+            let flag_name = format!("--{}", a.get_long().unwrap());
             flag.insert("name".into(), serde_json::json!(flag_name));
-            let type_str = if a.get_action().takes_values() {
-                "string"
-            } else {
+            // Detect int types by checking if the default value parses as an integer
+            let type_str = if !a.get_action().takes_values() {
                 "bool"
+            } else {
+                let is_int = a
+                    .get_default_values()
+                    .first()
+                    .and_then(|d| d.to_str())
+                    .map(|s| s.parse::<i64>().is_ok())
+                    .unwrap_or(false);
+                if is_int {
+                    "int"
+                } else {
+                    "string"
+                }
             };
             flag.insert("type".into(), serde_json::json!(type_str));
             if let Some(def) = a.get_default_values().first() {
@@ -2765,9 +2935,21 @@ fn build_command_schema(cmd: &clap::Command, parent_path: &str) -> serde_json::V
             serde_json::Value::Object(flag)
         })
         .collect();
+
+    // Sort flags alphabetically to match Go output
+    let mut flags = flags;
+    flags.sort_by(|a, b| {
+        let an = a.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let bn = b.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        an.cmp(bn)
+    });
+
     if !flags.is_empty() {
         obj.insert("flags".into(), serde_json::Value::Array(flags));
     }
+
+    // read_only goes after flags but before subcommands (matching Go field ordering)
+    obj.insert("read_only".into(), serde_json::json!(!is_write));
 
     // Subcommands — sorted alphabetically to match Go
     let mut subs: Vec<serde_json::Value> = cmd
@@ -2807,7 +2989,22 @@ async fn main_inner() -> anyhow::Result<()> {
     let has_help = args.iter().any(|a| a == "--help" || a == "-h");
     if has_help && useragent::is_agent_mode() {
         let cmd = Cli::command();
-        let schema = build_agent_schema(&cmd);
+        // Collect subcommand path from args (skip binary name, flags, and --help/-h)
+        let sub_path: Vec<&str> = args
+            .iter()
+            .skip(1)
+            .filter(|a| *a != "--help" && *a != "-h" && !a.starts_with('-'))
+            .map(|s| s.as_str())
+            .collect();
+        // Always scope to the top-level subcommand (e.g., "logs" even if "logs search")
+        let top_level: Vec<&str> = sub_path.iter().take(1).copied().collect();
+        let target_cmd = find_subcommand(&cmd, &top_level);
+        let schema = match target_cmd {
+            Some(target) if !top_level.is_empty() => {
+                build_agent_schema_scoped(&cmd, target, &top_level)
+            }
+            _ => build_agent_schema(&cmd),
+        };
         println!("{}", serde_json::to_string_pretty(&schema).unwrap());
         return Ok(());
     }
@@ -2861,6 +3058,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     from,
                     to,
                     limit,
+                    sort: _,
+                    index: _,
+                    storage: _,
                 } => {
                     commands::logs::search(&cfg, query, from, to, limit).await?;
                 }
@@ -2869,6 +3069,8 @@ async fn main_inner() -> anyhow::Result<()> {
                     from,
                     to,
                     limit,
+                    sort: _,
+                    storage: _,
                 } => {
                     commands::logs::list(&cfg, query, from, to, limit).await?;
                 }
@@ -2877,11 +3079,22 @@ async fn main_inner() -> anyhow::Result<()> {
                     from,
                     to,
                     limit,
+                    sort: _,
+                    storage: _,
+                    timezone: _,
                 } => {
                     commands::logs::query(&cfg, query, from, to, limit).await?;
                 }
-                LogActions::Aggregate { query, from, to } => {
-                    commands::logs::aggregate(&cfg, query, from, to).await?;
+                LogActions::Aggregate {
+                    query,
+                    from,
+                    to,
+                    compute: _,
+                    group_by: _,
+                    limit: _,
+                    storage: _,
+                } => {
+                    commands::logs::aggregate(&cfg, query.unwrap_or_default(), from, to).await?;
                 }
                 LogActions::Archives { action } => match action {
                     LogArchiveActions::List => commands::logs::archives_list(&cfg).await?,
@@ -3406,27 +3619,20 @@ async fn main_inner() -> anyhow::Result<()> {
             cfg.validate_auth()?;
             match action {
                 AppKeyActions::List {
-                    all,
-                    filter,
-                    sort,
                     page_size,
                     page_number,
                 } => {
-                    commands::app_keys::list(&cfg, all, &filter, &sort, page_size, page_number)
-                        .await?
+                    commands::app_keys::list(&cfg, page_size, page_number).await?
                 }
                 AppKeyActions::Get { key_id } => commands::app_keys::get(&cfg, &key_id).await?,
-                AppKeyActions::Create { name, scopes } => {
-                    commands::app_keys::create(&cfg, &name, &scopes).await?
+                AppKeyActions::Register { key_id } => {
+                    commands::app_keys::register(&cfg, &key_id).await?
                 }
-                AppKeyActions::Update {
-                    key_id,
-                    name,
-                    scopes,
-                } => commands::app_keys::update(&cfg, &key_id, &name, &scopes).await?,
-                AppKeyActions::Delete { key_id } => {
+                AppKeyActions::Unregister { key_id } => {
                     if !cfg.auto_approve {
-                        eprint!("Delete application key {key_id}? Type 'yes' to confirm: ");
+                        eprint!(
+                            "Unregister app key {key_id} from Action Connections? Type 'yes' to confirm: "
+                        );
                         let mut input = String::new();
                         std::io::stdin().read_line(&mut input)?;
                         if input.trim() != "yes" {
@@ -3434,7 +3640,7 @@ async fn main_inner() -> anyhow::Result<()> {
                             return Ok(());
                         }
                     }
-                    commands::app_keys::delete(&cfg, &key_id).await?
+                    commands::app_keys::unregister(&cfg, &key_id).await?
                 }
             }
         }
@@ -3995,7 +4201,7 @@ async fn main_inner() -> anyhow::Result<()> {
         }
         // --- Misc ---
         Commands::Misc { action } => {
-            cfg.validate_auth()?;
+            // No validate_auth() — ip-ranges is public, status IS the auth check
             match action {
                 MiscActions::IpRanges => commands::misc::ip_ranges(&cfg).await?,
                 MiscActions::Status => commands::misc::status(&cfg).await?,
