@@ -2,6 +2,7 @@
 name = "pup"
 version = "0.22.2"
 edition = "2021"
+publish = false
 
 [lib]
 name = "pup_wasm"
