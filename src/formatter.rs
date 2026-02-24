@@ -97,10 +97,32 @@ fn print_yaml<T: Serialize>(data: &T) -> Result<()> {
     Ok(())
 }
 
+/// Flatten one level of nested objects into dot-notation keys.
+/// e.g. {"id": "x", "attributes": {"host": "foo"}} → {"id": "x", "attributes.host": "foo"}
+fn flatten_row(value: &serde_json::Value) -> serde_json::Value {
+    if let serde_json::Value::Object(map) = value {
+        let mut flat = serde_json::Map::new();
+        for (k, v) in map {
+            if let serde_json::Value::Object(inner) = v {
+                for (ik, iv) in inner {
+                    flat.insert(format!("{k}.{ik}"), iv.clone());
+                }
+            } else {
+                flat.insert(k.clone(), v.clone());
+            }
+        }
+        serde_json::Value::Object(flat)
+    } else {
+        value.clone()
+    }
+}
+
 fn print_table<T: Serialize>(data: &T) -> Result<()> {
     // Convert to serde_json::Value to inspect structure
     let value = serde_json::to_value(data)?;
-    let rows = extract_rows(&value);
+    let raw_rows = extract_rows(&value);
+    let owned_rows: Vec<serde_json::Value> = raw_rows.iter().map(|r| flatten_row(r)).collect();
+    let rows: Vec<&serde_json::Value> = owned_rows.iter().collect();
 
     if rows.is_empty() {
         println!("No results found");
@@ -120,7 +142,7 @@ fn print_table<T: Serialize>(data: &T) -> Result<()> {
         }
     }
 
-    // Prioritize common fields
+    // Prioritize common fields (including flattened log attribute fields)
     let priority = [
         "id",
         "title",
@@ -133,6 +155,11 @@ fn print_table<T: Serialize>(data: &T) -> Result<()> {
         "updated_at",
         "created",
         "modified",
+        "attributes.timestamp",
+        "attributes.service",
+        "attributes.host",
+        "attributes.status",
+        "attributes.message",
     ];
     let mut final_headers: Vec<String> = Vec::new();
     for &p in &priority {
@@ -295,6 +322,38 @@ mod tests {
             format_cell(Some(&serde_json::json!({"a": 1, "b": 2}))),
             "{2 fields}"
         );
+    }
+
+    #[test]
+    fn test_flatten_row_nested_object() {
+        let row = serde_json::json!({
+            "id": "abc",
+            "type": "log",
+            "attributes": {"host": "web-1", "status": "info"}
+        });
+        let flat = flatten_row(&row);
+        let obj = flat.as_object().unwrap();
+        assert_eq!(obj.get("id").unwrap(), "abc");
+        assert_eq!(obj.get("type").unwrap(), "log");
+        assert_eq!(obj.get("attributes.host").unwrap(), "web-1");
+        assert_eq!(obj.get("attributes.status").unwrap(), "info");
+        assert!(!obj.contains_key("attributes"));
+    }
+
+    #[test]
+    fn test_flatten_row_no_nested() {
+        let row = serde_json::json!({"id": "abc", "name": "foo"});
+        let flat = flatten_row(&row);
+        let obj = flat.as_object().unwrap();
+        assert_eq!(obj.get("id").unwrap(), "abc");
+        assert_eq!(obj.get("name").unwrap(), "foo");
+    }
+
+    #[test]
+    fn test_flatten_row_non_object() {
+        let val = serde_json::json!([1, 2, 3]);
+        let flat = flatten_row(&val);
+        assert_eq!(flat, val);
     }
 
     #[test]
