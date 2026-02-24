@@ -97,15 +97,22 @@ fn print_yaml<T: Serialize>(data: &T) -> Result<()> {
     Ok(())
 }
 
-/// Flatten one level of nested objects into dot-notation keys.
-/// e.g. {"id": "x", "attributes": {"host": "foo"}} → {"id": "x", "attributes.host": "foo"}
+/// Flatten up to two levels of nested objects into dot-notation keys.
+/// e.g. {"id": "x", "attributes": {"host": "foo", "tags": {"env": "prod"}}}
+///   → {"id": "x", "attributes.host": "foo", "attributes.tags.env": "prod"}
 fn flatten_row(value: &serde_json::Value) -> serde_json::Value {
     if let serde_json::Value::Object(map) = value {
         let mut flat = serde_json::Map::new();
         for (k, v) in map {
             if let serde_json::Value::Object(inner) = v {
                 for (ik, iv) in inner {
-                    flat.insert(format!("{k}.{ik}"), iv.clone());
+                    if let serde_json::Value::Object(inner2) = iv {
+                        for (iik, iiv) in inner2 {
+                            flat.insert(format!("{k}.{ik}.{iik}"), iiv.clone());
+                        }
+                    } else {
+                        flat.insert(format!("{k}.{ik}"), iv.clone());
+                    }
                 }
             } else {
                 flat.insert(k.clone(), v.clone());
@@ -213,6 +220,24 @@ fn extract_rows(value: &serde_json::Value) -> Vec<&serde_json::Value> {
     }
 }
 
+/// Compact label for a single array element, used when previewing arrays in table cells.
+/// For objects, tries id/name/title/type in order; falls back to format_cell for primitives.
+fn format_array_item(value: &serde_json::Value) -> String {
+    if let serde_json::Value::Object(map) = value {
+        for key in &["name", "title", "id", "type"] {
+            if let Some(serde_json::Value::String(s)) = map.get(*key) {
+                return if s.len() > 16 {
+                    format!("{}...", &s[..13])
+                } else {
+                    s.clone()
+                };
+            }
+        }
+        return format!("{{{} fields}}", map.len());
+    }
+    format_cell(Some(value))
+}
+
 fn format_cell(value: Option<&serde_json::Value>) -> String {
     match value {
         None | Some(serde_json::Value::Null) => String::new(),
@@ -227,17 +252,17 @@ fn format_cell(value: Option<&serde_json::Value>) -> String {
         Some(serde_json::Value::Bool(b)) => b.to_string(),
         Some(serde_json::Value::Array(arr)) => {
             if arr.is_empty() {
-                "[]".to_string()
-            } else if arr.len() <= 3 {
-                format!(
-                    "[{}]",
-                    arr.iter()
-                        .map(|v| format_cell(Some(v)))
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )
+                return "[]".to_string();
+            }
+            let mut parts: Vec<String> = arr.iter().take(4).map(format_array_item).collect();
+            if arr.len() > 4 {
+                parts.push(format!("+{} more", arr.len() - 4));
+            }
+            let result = format!("[{}]", parts.join(", "));
+            if result.len() > 50 {
+                format!("{}...", &result[..47])
             } else {
-                format!("[{} items]", arr.len())
+                result
             }
         }
         Some(serde_json::Value::Object(map)) => format!("{{{} fields}}", map.len()),
@@ -312,8 +337,93 @@ mod tests {
         assert_eq!(format_cell(Some(&serde_json::json!([1, 2]))), "[1, 2]");
         assert_eq!(
             format_cell(Some(&serde_json::json!([1, 2, 3, 4, 5]))),
-            "[5 items]"
+            "[1, 2, 3, 4, +1 more]"
         );
+    }
+
+    #[test]
+    fn test_format_cell_array_of_objects_with_name() {
+        // name takes priority over id; first 4 shown, 5th collapsed into "+1 more"
+        let arr = serde_json::json!([
+            {"id": "abc", "name": "API"},
+            {"id": "def", "name": "Web"},
+            {"id": "ghi", "name": "DB"},
+            {"id": "jkl", "name": "Cache"},
+            {"id": "mno", "name": "Queue"},
+        ]);
+        let result = format_cell(Some(&arr));
+        assert!(result.contains("API"), "got: {result}");
+        assert!(result.contains("Web"), "got: {result}");
+        assert!(result.contains("DB"), "got: {result}");
+        assert!(result.contains("Cache"), "got: {result}");
+        assert!(result.contains("+1 more"), "got: {result}");
+        assert!(!result.contains("Queue"), "got: {result}");
+    }
+
+    #[test]
+    fn test_format_cell_array_of_name_only_objects() {
+        // Objects with only name: shows name values
+        let arr = serde_json::json!([
+            {"name": "API"},
+            {"name": "Web"},
+            {"name": "DB"},
+            {"name": "Cache"},
+            {"name": "Queue"},
+        ]);
+        let result = format_cell(Some(&arr));
+        assert!(result.contains("API"), "got: {result}");
+        assert!(result.contains("Web"), "got: {result}");
+        assert!(result.contains("+1 more"), "got: {result}");
+        assert!(!result.contains("Queue"), "got: {result}");
+    }
+
+    #[test]
+    fn test_format_cell_array_truncated() {
+        // Array whose rendered form exceeds 50 chars should be truncated with "..."
+        let arr = serde_json::json!([
+            {"name": "very-long-name-abc"},
+            {"name": "very-long-name-def"},
+            {"name": "very-long-name-ghi"},
+            {"name": "very-long-name-jkl"},
+        ]);
+        let result = format_cell(Some(&arr));
+        assert!(
+            result.ends_with("..."),
+            "expected truncation, got: {result}"
+        );
+        assert!(result.len() == 50);
+    }
+
+    #[test]
+    fn test_format_array_item_object_with_id() {
+        let obj = serde_json::json!({"id": "abc123", "status": "ok"});
+        assert_eq!(format_array_item(&obj), "abc123");
+    }
+
+    #[test]
+    fn test_format_array_item_object_prefers_name_over_id() {
+        let obj = serde_json::json!({"id": "abc", "name": "MyComp"});
+        assert_eq!(format_array_item(&obj), "MyComp");
+    }
+
+    #[test]
+    fn test_format_array_item_object_long_id() {
+        let obj = serde_json::json!({"id": "32d06127-d03a-4da3-9ce6-41eb7bc8fd50"});
+        let result = format_array_item(&obj);
+        assert!(result.ends_with("..."));
+        assert_eq!(result.len(), 16);
+    }
+
+    #[test]
+    fn test_format_array_item_object_no_known_key() {
+        let obj = serde_json::json!({"foo": "bar", "baz": 1});
+        assert_eq!(format_array_item(&obj), "{2 fields}");
+    }
+
+    #[test]
+    fn test_format_array_item_primitive() {
+        assert_eq!(format_array_item(&serde_json::json!(42)), "42");
+        assert_eq!(format_array_item(&serde_json::json!("hello")), "hello");
     }
 
     #[test]
@@ -338,6 +448,25 @@ mod tests {
         assert_eq!(obj.get("attributes.host").unwrap(), "web-1");
         assert_eq!(obj.get("attributes.status").unwrap(), "info");
         assert!(!obj.contains_key("attributes"));
+    }
+
+    #[test]
+    fn test_flatten_row_two_levels_deep() {
+        let row = serde_json::json!({
+            "id": "abc",
+            "attributes": {
+                "host": "web-1",
+                "tags": {"env": "prod", "service": "api"}
+            }
+        });
+        let flat = flatten_row(&row);
+        let obj = flat.as_object().unwrap();
+        assert_eq!(obj.get("id").unwrap(), "abc");
+        assert_eq!(obj.get("attributes.host").unwrap(), "web-1");
+        assert_eq!(obj.get("attributes.tags.env").unwrap(), "prod");
+        assert_eq!(obj.get("attributes.tags.service").unwrap(), "api");
+        assert!(!obj.contains_key("attributes"));
+        assert!(!obj.contains_key("attributes.tags"));
     }
 
     #[test]
@@ -565,6 +694,7 @@ mod tests {
 
     #[test]
     fn test_format_cell_three_item_array() {
+        // Three primitives: still shown in full (≤4 items, fits in 50 chars)
         assert_eq!(
             format_cell(Some(&serde_json::json!([1, 2, 3]))),
             "[1, 2, 3]"

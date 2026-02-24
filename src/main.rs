@@ -5751,10 +5751,10 @@ async fn main_inner() -> anyhow::Result<()> {
             }
         }
         // --- Status Pages ---
-        Commands::StatusPages { action } => {
-            cfg.validate_auth()?;
-            match action {
-                StatusPageActions::Pages { action } => match action {
+        Commands::StatusPages { action } => match action {
+            StatusPageActions::Pages { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
                     StatusPagePageActions::List => commands::status_pages::pages_list(&cfg).await?,
                     StatusPagePageActions::Get { page_id } => {
                         commands::status_pages::pages_get(&cfg, &page_id).await?;
@@ -5768,8 +5768,11 @@ async fn main_inner() -> anyhow::Result<()> {
                     StatusPagePageActions::Delete { page_id } => {
                         commands::status_pages::pages_delete(&cfg, &page_id).await?;
                     }
-                },
-                StatusPageActions::Components { action } => match action {
+                }
+            }
+            StatusPageActions::Components { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
                     StatusPageComponentActions::List { page_id } => {
                         commands::status_pages::components_list(&cfg, &page_id).await?;
                     }
@@ -5803,8 +5806,11 @@ async fn main_inner() -> anyhow::Result<()> {
                         commands::status_pages::components_delete(&cfg, &page_id, &component_id)
                             .await?;
                     }
-                },
-                StatusPageActions::Degradations { action } => match action {
+                }
+            }
+            StatusPageActions::Degradations { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
                     StatusPageDegradationActions::List => {
                         commands::status_pages::degradations_list(&cfg).await?;
                     }
@@ -5842,15 +5848,15 @@ async fn main_inner() -> anyhow::Result<()> {
                         )
                         .await?;
                     }
-                },
-                StatusPageActions::ThirdParty { action } => match action {
-                    StatusPageThirdPartyActions::List { active, search } => {
-                        commands::status_pages::third_party_list(&cfg, search.as_deref(), active)
-                            .await?;
-                    }
-                },
+                }
             }
-        }
+            StatusPageActions::ThirdParty { action } => match action {
+                StatusPageThirdPartyActions::List { active, search } => {
+                    commands::status_pages::third_party_list(&cfg, search.as_deref(), active)
+                        .await?;
+                }
+            },
+        },
         // --- Integrations ---
         Commands::Integrations { action } => {
             cfg.validate_auth()?;
