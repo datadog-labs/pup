@@ -5754,7 +5754,7 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::StatusPages { action } => {
             match action {
                 StatusPageActions::Pages { action } => {
-                    cfg.validate_api_keys()?;
+                    cfg.validate_api_and_app_keys()?;
                     match action {
                         StatusPagePageActions::List => {
                             commands::status_pages::pages_list(&cfg).await?
@@ -5774,7 +5774,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 }
                 StatusPageActions::Components { action } => {
-                    cfg.validate_api_keys()?;
+                    cfg.validate_api_and_app_keys()?;
                     match action {
                         StatusPageComponentActions::List { page_id } => {
                             commands::status_pages::components_list(&cfg, &page_id).await?;
@@ -5817,7 +5817,7 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 }
                 StatusPageActions::Degradations { action } => {
-                    cfg.validate_api_keys()?;
+                    cfg.validate_api_and_app_keys()?;
                     match action {
                         StatusPageDegradationActions::List => {
                             commands::status_pages::degradations_list(&cfg).await?;
