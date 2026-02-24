@@ -4,9 +4,9 @@ use datadog_api_client::datadogV2::api_spans::SpansAPI;
 #[cfg(not(target_arch = "wasm32"))]
 use datadog_api_client::datadogV2::model::{
     SpansAggregateData, SpansAggregateRequest, SpansAggregateRequestAttributes,
-    SpansAggregationFunction, SpansCompute, SpansGroupBy, SpansListRequest,
-    SpansListRequestAttributes, SpansListRequestData, SpansListRequestPage, SpansQueryFilter,
-    SpansSort,
+    SpansAggregateRequestType, SpansAggregationFunction, SpansCompute, SpansGroupBy,
+    SpansListRequest, SpansListRequestAttributes, SpansListRequestData, SpansListRequestPage,
+    SpansListRequestType, SpansQueryFilter, SpansSort,
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -130,7 +130,9 @@ pub async fn search(
     };
 
     let body = SpansListRequest::new().data(
-        SpansListRequestData::new().attributes(
+        SpansListRequestData::new()
+            .type_(SpansListRequestType::SEARCH_REQUEST)
+            .attributes(
             SpansListRequestAttributes::new()
                 .filter(
                     SpansQueryFilter::new()
@@ -241,7 +243,11 @@ pub async fn aggregate(
         attrs = attrs.group_by(vec![SpansGroupBy::new(facet)]);
     }
 
-    let body = SpansAggregateRequest::new().data(SpansAggregateData::new().attributes(attrs));
+    let body = SpansAggregateRequest::new().data(
+        SpansAggregateData::new()
+            .type_(SpansAggregateRequestType::AGGREGATE_REQUEST)
+            .attributes(attrs),
+    );
 
     let resp = api
         .aggregate_spans(body)
