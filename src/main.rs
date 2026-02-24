@@ -5844,8 +5844,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     }
                 },
                 StatusPageActions::ThirdParty { action } => match action {
-                    StatusPageThirdPartyActions::List { .. } => {
-                        commands::status_pages::third_party_list(&cfg).await?;
+                    StatusPageThirdPartyActions::List { active, search } => {
+                        commands::status_pages::third_party_list(&cfg, search.as_deref(), active)
+                            .await?;
                     }
                 },
             }
