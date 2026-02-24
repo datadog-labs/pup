@@ -25,7 +25,6 @@ before:
 builds:
   - builder: rust
     binary: pup
-    publish: false
     targets:
       - x86_64-unknown-linux-gnu
       - aarch64-unknown-linux-gnu
