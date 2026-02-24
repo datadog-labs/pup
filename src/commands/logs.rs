@@ -61,7 +61,7 @@ pub async fn search(
 
     let meta = if cfg.agent_mode {
         let count = resp.data.as_ref().map(|d| d.len());
-        let truncated = count.map_or(false, |c| c as i32 >= limit);
+        let truncated = count.is_some_and(|c| c as i32 >= limit);
         Some(formatter::Metadata {
             count,
             truncated,
