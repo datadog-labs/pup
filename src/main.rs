@@ -5751,126 +5751,112 @@ async fn main_inner() -> anyhow::Result<()> {
             }
         }
         // --- Status Pages ---
-        Commands::StatusPages { action } => {
-            match action {
-                StatusPageActions::Pages { action } => {
-                    cfg.validate_api_and_app_keys()?;
-                    match action {
-                        StatusPagePageActions::List => {
-                            commands::status_pages::pages_list(&cfg).await?
-                        }
-                        StatusPagePageActions::Get { page_id } => {
-                            commands::status_pages::pages_get(&cfg, &page_id).await?;
-                        }
-                        StatusPagePageActions::Create { file } => {
-                            commands::status_pages::pages_create(&cfg, &file).await?;
-                        }
-                        StatusPagePageActions::Update { page_id, file } => {
-                            commands::status_pages::pages_update(&cfg, &page_id, &file).await?;
-                        }
-                        StatusPagePageActions::Delete { page_id } => {
-                            commands::status_pages::pages_delete(&cfg, &page_id).await?;
-                        }
+        Commands::StatusPages { action } => match action {
+            StatusPageActions::Pages { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
+                    StatusPagePageActions::List => commands::status_pages::pages_list(&cfg).await?,
+                    StatusPagePageActions::Get { page_id } => {
+                        commands::status_pages::pages_get(&cfg, &page_id).await?;
+                    }
+                    StatusPagePageActions::Create { file } => {
+                        commands::status_pages::pages_create(&cfg, &file).await?;
+                    }
+                    StatusPagePageActions::Update { page_id, file } => {
+                        commands::status_pages::pages_update(&cfg, &page_id, &file).await?;
+                    }
+                    StatusPagePageActions::Delete { page_id } => {
+                        commands::status_pages::pages_delete(&cfg, &page_id).await?;
                     }
                 }
-                StatusPageActions::Components { action } => {
-                    cfg.validate_api_and_app_keys()?;
-                    match action {
-                        StatusPageComponentActions::List { page_id } => {
-                            commands::status_pages::components_list(&cfg, &page_id).await?;
-                        }
-                        StatusPageComponentActions::Get {
-                            page_id,
-                            component_id,
-                        } => {
-                            commands::status_pages::components_get(&cfg, &page_id, &component_id)
-                                .await?;
-                        }
-                        StatusPageComponentActions::Create { page_id, file } => {
-                            commands::status_pages::components_create(&cfg, &page_id, &file)
-                                .await?;
-                        }
-                        StatusPageComponentActions::Update {
-                            page_id,
-                            component_id,
-                            file,
-                        } => {
-                            commands::status_pages::components_update(
-                                &cfg,
-                                &page_id,
-                                &component_id,
-                                &file,
-                            )
-                            .await?;
-                        }
-                        StatusPageComponentActions::Delete {
-                            page_id,
-                            component_id,
-                        } => {
-                            commands::status_pages::components_delete(
-                                &cfg,
-                                &page_id,
-                                &component_id,
-                            )
-                            .await?;
-                        }
-                    }
-                }
-                StatusPageActions::Degradations { action } => {
-                    cfg.validate_api_and_app_keys()?;
-                    match action {
-                        StatusPageDegradationActions::List => {
-                            commands::status_pages::degradations_list(&cfg).await?;
-                        }
-                        StatusPageDegradationActions::Get {
-                            page_id,
-                            degradation_id,
-                        } => {
-                            commands::status_pages::degradations_get(
-                                &cfg,
-                                &page_id,
-                                &degradation_id,
-                            )
-                            .await?;
-                        }
-                        StatusPageDegradationActions::Create { page_id, file } => {
-                            commands::status_pages::degradations_create(&cfg, &page_id, &file)
-                                .await?;
-                        }
-                        StatusPageDegradationActions::Update {
-                            page_id,
-                            degradation_id,
-                            file,
-                        } => {
-                            commands::status_pages::degradations_update(
-                                &cfg,
-                                &page_id,
-                                &degradation_id,
-                                &file,
-                            )
-                            .await?;
-                        }
-                        StatusPageDegradationActions::Delete {
-                            page_id,
-                            degradation_id,
-                        } => {
-                            commands::status_pages::degradations_delete(
-                                &cfg,
-                                &page_id,
-                                &degradation_id,
-                            )
-                            .await?;
-                        }
-                    }
-                }
-                StatusPageActions::ThirdParty { action } => match action {
-                    StatusPageThirdPartyActions::List { active, search } => {
-                        commands::status_pages::third_party_list(&cfg, search.as_deref(), active)
-                            .await?;
-                    }
-                },
             }
-        }
+            StatusPageActions::Components { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
+                    StatusPageComponentActions::List { page_id } => {
+                        commands::status_pages::components_list(&cfg, &page_id).await?;
+                    }
+                    StatusPageComponentActions::Get {
+                        page_id,
+                        component_id,
+                    } => {
+                        commands::status_pages::components_get(&cfg, &page_id, &component_id)
+                            .await?;
+                    }
+                    StatusPageComponentActions::Create { page_id, file } => {
+                        commands::status_pages::components_create(&cfg, &page_id, &file).await?;
+                    }
+                    StatusPageComponentActions::Update {
+                        page_id,
+                        component_id,
+                        file,
+                    } => {
+                        commands::status_pages::components_update(
+                            &cfg,
+                            &page_id,
+                            &component_id,
+                            &file,
+                        )
+                        .await?;
+                    }
+                    StatusPageComponentActions::Delete {
+                        page_id,
+                        component_id,
+                    } => {
+                        commands::status_pages::components_delete(&cfg, &page_id, &component_id)
+                            .await?;
+                    }
+                }
+            }
+            StatusPageActions::Degradations { action } => {
+                cfg.validate_api_and_app_keys()?;
+                match action {
+                    StatusPageDegradationActions::List => {
+                        commands::status_pages::degradations_list(&cfg).await?;
+                    }
+                    StatusPageDegradationActions::Get {
+                        page_id,
+                        degradation_id,
+                    } => {
+                        commands::status_pages::degradations_get(&cfg, &page_id, &degradation_id)
+                            .await?;
+                    }
+                    StatusPageDegradationActions::Create { page_id, file } => {
+                        commands::status_pages::degradations_create(&cfg, &page_id, &file).await?;
+                    }
+                    StatusPageDegradationActions::Update {
+                        page_id,
+                        degradation_id,
+                        file,
+                    } => {
+                        commands::status_pages::degradations_update(
+                            &cfg,
+                            &page_id,
+                            &degradation_id,
+                            &file,
+                        )
+                        .await?;
+                    }
+                    StatusPageDegradationActions::Delete {
+                        page_id,
+                        degradation_id,
+                    } => {
+                        commands::status_pages::degradations_delete(
+                            &cfg,
+                            &page_id,
+                            &degradation_id,
+                        )
+                        .await?;
+                    }
+                }
+            }
+            StatusPageActions::ThirdParty { action } => match action {
+                StatusPageThirdPartyActions::List { active, search } => {
+                    commands::status_pages::third_party_list(&cfg, search.as_deref(), active)
+                        .await?;
+                }
+            },
+        },
         // --- Integrations ---
         Commands::Integrations { action } => {
             cfg.validate_auth()?;

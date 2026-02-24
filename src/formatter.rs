@@ -254,8 +254,7 @@ fn format_cell(value: Option<&serde_json::Value>) -> String {
             if arr.is_empty() {
                 return "[]".to_string();
             }
-            let mut parts: Vec<String> =
-                arr.iter().take(4).map(|v| format_array_item(v)).collect();
+            let mut parts: Vec<String> = arr.iter().take(4).map(|v| format_array_item(v)).collect();
             if arr.len() > 4 {
                 parts.push(format!("+{} more", arr.len() - 4));
             }
@@ -388,7 +387,10 @@ mod tests {
             {"name": "very-long-name-jkl"},
         ]);
         let result = format_cell(Some(&arr));
-        assert!(result.ends_with("..."), "expected truncation, got: {result}");
+        assert!(
+            result.ends_with("..."),
+            "expected truncation, got: {result}"
+        );
         assert!(result.len() == 50);
     }
 
