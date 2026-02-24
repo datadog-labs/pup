@@ -254,7 +254,7 @@ fn format_cell(value: Option<&serde_json::Value>) -> String {
             if arr.is_empty() {
                 return "[]".to_string();
             }
-            let mut parts: Vec<String> = arr.iter().take(4).map(|v| format_array_item(v)).collect();
+            let mut parts: Vec<String> = arr.iter().take(4).map(format_array_item).collect();
             if arr.len() > 4 {
                 parts.push(format!("+{} more", arr.len() - 4));
             }
