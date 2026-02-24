@@ -1634,7 +1634,31 @@ enum Commands {
     },
     /// Test connection and credentials
     Test,
-    /// Query APM traces
+    /// Search and aggregate APM traces
+    ///
+    /// Search and aggregate APM span data for distributed tracing analysis.
+    ///
+    /// The traces command provides access to individual span-level data collected by
+    /// Datadog APM. Use it to find specific spans matching a query or compute
+    /// aggregated statistics over spans.
+    ///
+    /// COMPLEMENTS THE APM COMMAND:
+    ///   - apm: Service-level aggregated data (services, operations, dependencies)
+    ///   - traces: Individual span-level data (search, aggregate)
+    ///
+    /// EXAMPLES:
+    ///   # Search for error spans in the last hour
+    ///   pup traces search --query="service:web-server @http.status_code:500"
+    ///
+    ///   # Count spans by service
+    ///   pup traces aggregate --query="*" --compute="count" --group-by="service"
+    ///
+    ///   # P99 latency by resource
+    ///   pup traces aggregate --query="service:api" --compute="percentile(@duration, 99)" --group-by="resource_name"
+    ///
+    /// AUTHENTICATION:
+    ///   Requires either OAuth2 authentication (apm_read scope) or API keys.
+    #[command(verbatim_doc_comment)]
     Traces {
         #[command(subcommand)]
         action: TracesActions,
@@ -3987,11 +4011,95 @@ enum ScorecardsActions {
     Get { scorecard_id: String },
 }
 
-// ---- Traces (placeholder) ----
+// ---- Traces ----
 #[derive(Subcommand)]
 enum TracesActions {
-    /// List traces
-    List,
+    /// Search for spans
+    ///
+    /// Search for individual spans matching a query.
+    ///
+    /// Returns span data including service, resource, duration, tags, and trace IDs.
+    ///
+    /// SPAN QUERY SYNTAX:
+    ///   - service:web-server          Match by service
+    ///   - resource_name:"GET /api"    Match by resource
+    ///   - @http.status_code:500       Match by tag
+    ///   - @duration:>1000000000       Match by duration (nanoseconds)
+    ///   - env:production              Match by environment
+    ///
+    /// EXAMPLES:
+    ///   pup traces search --query="@http.status_code:>=500"
+    ///   pup traces search --query="service:api @duration:>1000000000" --from="4h"
+    ///   pup traces search --query="env:prod" --sort="timestamp" --limit=20
+    #[command(verbatim_doc_comment)]
+    Search {
+        #[arg(long, default_value = "*", help = "Span search query")]
+        query: String,
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 30m, 7d, RFC3339, Unix timestamp, or 'now'"
+        )]
+        from: String,
+        #[arg(long, default_value = "now", help = "End time")]
+        to: String,
+        #[arg(
+            long,
+            default_value_t = 50,
+            help = "Maximum number of spans to return (1-1000)"
+        )]
+        limit: i32,
+        #[arg(
+            long,
+            default_value = "-timestamp",
+            help = "Sort order: timestamp or -timestamp"
+        )]
+        sort: String,
+    },
+    /// Compute aggregated stats over spans
+    ///
+    /// Compute aggregated statistics over spans matching a query.
+    ///
+    /// Returns computed metrics (count, avg, sum, percentiles, etc.) optionally
+    /// grouped by a facet. Unlike search, this returns statistical buckets, not
+    /// individual spans.
+    ///
+    /// COMPUTE FORMATS:
+    ///   count                        Count of matching spans
+    ///   avg(@duration)               Average of a metric
+    ///   sum(@duration)               Sum of a metric
+    ///   min(@duration) / max(@duration)
+    ///   median(@duration)            Median of a metric
+    ///   cardinality(@usr.id)         Unique count of a facet
+    ///   percentile(@duration, 99)    Percentile (75, 90, 95, 98, 99)
+    ///
+    /// EXAMPLES:
+    ///   pup traces aggregate --query="@http.status_code:>=500" --compute="count"
+    ///   pup traces aggregate --query="env:prod" --compute="avg(@duration)" --group-by="service"
+    ///   pup traces aggregate --query="service:api" --compute="percentile(@duration, 99)" --group-by="resource_name"
+    #[command(verbatim_doc_comment)]
+    Aggregate {
+        #[arg(long, default_value = "*", help = "Span search query")]
+        query: String,
+        #[arg(
+            long,
+            default_value = "1h",
+            help = "Start time: 1h, 30m, 7d, RFC3339, Unix timestamp, or 'now'"
+        )]
+        from: String,
+        #[arg(long, default_value = "now", help = "End time")]
+        to: String,
+        #[arg(
+            long,
+            help = "Aggregation: count, avg(@duration), percentile(@duration, 99), etc."
+        )]
+        compute: String,
+        #[arg(
+            long,
+            help = "Facet to group by (e.g., service, resource_name, @http.status_code)"
+        )]
+        group_by: Option<String>,
+    },
 }
 
 // ---- Agent (placeholder) ----
@@ -5979,10 +6087,30 @@ async fn main_inner() -> anyhow::Result<()> {
                 commands::scorecards::get(&scorecard_id)?;
             }
         },
-        // --- Traces (placeholder) ---
-        Commands::Traces { action } => match action {
-            TracesActions::List => commands::traces::list()?,
-        },
+        // --- Traces ---
+        Commands::Traces { action } => {
+            cfg.validate_auth()?;
+            match action {
+                TracesActions::Search {
+                    query,
+                    from,
+                    to,
+                    limit,
+                    sort,
+                } => {
+                    commands::traces::search(&cfg, query, from, to, limit, sort).await?;
+                }
+                TracesActions::Aggregate {
+                    query,
+                    from,
+                    to,
+                    compute,
+                    group_by,
+                } => {
+                    commands::traces::aggregate(&cfg, query, from, to, compute, group_by).await?;
+                }
+            }
+        }
         // --- Agent (placeholder) ---
         Commands::Agent { action } => match action {
             AgentActions::Schema { compact } => commands::agent::schema(compact)?,
