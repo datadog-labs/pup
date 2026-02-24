@@ -1089,7 +1089,7 @@ async fn test_status_pages_third_party_list() {
     let mut s = mockito::Server::new_async().await;
     let cfg = test_config(&s.url());
     mock_all(&mut s, r#"{"data": []}"#).await;
-    let _ = crate::commands::status_pages::third_party_list(&cfg).await;
+    let _ = crate::commands::status_pages::third_party_list(&cfg, None, false).await;
     cleanup_env();
 }
 
