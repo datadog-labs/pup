@@ -393,7 +393,7 @@ async fn test_logs_search_requires_api_keys() {
         result
             .unwrap_err()
             .to_string()
-            .contains("API key authentication"),
+            .contains("API+APP key authentication"),
         "error should mention API key auth"
     );
     cleanup_env();

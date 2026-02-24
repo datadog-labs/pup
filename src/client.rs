@@ -473,7 +473,6 @@ static OAUTH_EXCLUDED_ENDPOINTS: &[EndpointRequirement] = &[
 
 /// Makes an authenticated GET request directly via reqwest.
 /// Used for endpoints not covered by the typed DD API client.
-#[cfg(not(target_arch = "wasm32"))]
 pub async fn raw_get(cfg: &Config, path: &str) -> anyhow::Result<serde_json::Value> {
     let url = format!("{}{}", cfg.api_base_url(), path);
     let client = reqwest::Client::new();
@@ -500,7 +499,6 @@ pub async fn raw_get(cfg: &Config, path: &str) -> anyhow::Result<serde_json::Val
 
 /// Makes an authenticated POST request directly via reqwest.
 /// Used for endpoints not covered by the typed DD API client.
-#[cfg(not(target_arch = "wasm32"))]
 pub async fn raw_post(
     cfg: &Config,
     path: &str,
