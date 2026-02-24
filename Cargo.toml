@@ -1,6 +1,6 @@
 [package]
 name = "pup"
-version = "0.22.3"
+version = "0.22.4"
 edition = "2021"
 publish = false
 
