@@ -40,16 +40,23 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Agent tooling: schema, guide, and diagnostics for AI coding assistants
+    /// Schema and guide for the datadog-agent daemon and AI coding assistants
     ///
-    /// Commands for AI coding assistants to interact with pup efficiently.
+    /// This command group covers two distinct purposes:
+    ///
+    ///   schema  — Outputs a JSON schema of all pup commands for AI coding
+    ///             assistants (Claude, Copilot, etc.) to understand pup's API.
+    ///
+    ///   guide   — Displays an operational reference for the datadog-agent
+    ///             daemon (the Datadog host agent that collects metrics, traces,
+    ///             and logs). This is the `datadog-agent` binary, NOT an AI agent.
     ///
     /// In agent mode (auto-detected or via --agent / FORCE_AGENT_MODE=1),
     /// --help returns structured JSON schema instead of human-readable text.
     ///
     /// COMMANDS:
-    ///   schema    Output the complete command schema as JSON
-    ///   guide     Output the comprehensive steering guide
+    ///   schema    Output the complete pup command schema as JSON (for AI assistants)
+    ///   guide     Display the datadog-agent (Datadog-Agent) operational reference
     ///
     /// EXAMPLES:
     ///   # Get full JSON schema (all commands, flags, query syntax)
@@ -58,11 +65,8 @@ enum Commands {
     ///   # Get compact schema (command names and flags only, fewer tokens)
     ///   pup agent schema --compact
     ///
-    ///   # Get the steering guide
+    ///   # Get the datadog-agent operational guide
     ///   pup agent guide
-    ///
-    ///   # Get guide for a specific domain
-    ///   pup agent guide logs
     #[command(name = "agent", verbatim_doc_comment)]
     Agent {
         #[command(subcommand)]
@@ -2623,7 +2627,7 @@ enum CaseActions {
         priority: String,
         #[arg(long, help = "Case description")]
         description: Option<String>,
-        #[arg(long, help = "JSON file with request body (required)", conflicts_with_all = ["title", "type_id"])]
+        #[arg(long, help = "JSON file with request body (required)", conflicts_with_all = ["title", "type-id"])]
         file: Option<String>,
     },
     /// Archive a case
@@ -3844,9 +3848,9 @@ enum ApmServiceActions {
     Stats {
         #[arg(long, help = "Environment filter (required)")]
         env: String,
-        #[arg(long, help = "Start time")]
+        #[arg(long, default_value = "1h", help = "Start time")]
         from: String,
-        #[arg(long, help = "End time")]
+        #[arg(long, default_value = "now", help = "End time")]
         to: String,
         #[arg(long, help = "Primary tag")]
         primary_tag: Option<String>,
@@ -4114,7 +4118,7 @@ enum AgentActions {
         )]
         compact: bool,
     },
-    /// Output the comprehensive steering guide
+    /// Display the datadog-agent (Datadog-Agent) operational reference
     Guide,
 }
 
@@ -4574,6 +4578,68 @@ fn build_agent_schema(cmd: &clap::Command) -> serde_json::Value {
         let an = a.get("name").and_then(|v| v.as_str()).unwrap_or("");
         let bn = b.get("name").and_then(|v| v.as_str()).unwrap_or("");
         an.cmp(bn)
+    });
+    root.insert("commands".into(), serde_json::Value::Array(commands));
+
+    serde_json::Value::Object(root)
+}
+
+fn build_compact_agent_schema(cmd: &clap::Command) -> serde_json::Value {
+    fn compact_cmd(cmd: &clap::Command, parent_path: &str) -> serde_json::Value {
+        let name = cmd.get_name().to_string();
+        let full_path = if parent_path.is_empty() {
+            name.clone()
+        } else {
+            format!("{parent_path} {name}")
+        };
+        let mut obj = serde_json::Map::new();
+        obj.insert("name".into(), serde_json::json!(name));
+        obj.insert("full_path".into(), serde_json::json!(full_path));
+
+        let mut flags: Vec<String> = cmd
+            .get_arguments()
+            .filter(|a| {
+                let id = a.get_id().as_str();
+                id != "help" && id != "version" && !a.is_global_set() && a.get_long().is_some()
+            })
+            .map(|a| format!("--{}", a.get_long().unwrap()))
+            .collect();
+        flags.sort();
+        if !flags.is_empty() {
+            obj.insert("flags".into(), serde_json::json!(flags));
+        }
+
+        let mut subs: Vec<serde_json::Value> = cmd
+            .get_subcommands()
+            .filter(|s| s.get_name() != "help")
+            .map(|s| compact_cmd(s, &full_path))
+            .collect();
+        subs.sort_by(|a, b| {
+            a.get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .cmp(b.get("name").and_then(|v| v.as_str()).unwrap_or(""))
+        });
+        if !subs.is_empty() {
+            obj.insert("subcommands".into(), serde_json::Value::Array(subs));
+        }
+
+        serde_json::Value::Object(obj)
+    }
+
+    let mut root = serde_json::Map::new();
+    root.insert("version".into(), serde_json::json!(version::VERSION));
+
+    let mut commands: Vec<serde_json::Value> = cmd
+        .get_subcommands()
+        .filter(|s| s.get_name() != "help")
+        .map(|s| compact_cmd(s, ""))
+        .collect();
+    commands.sort_by(|a, b| {
+        a.get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .cmp(b.get("name").and_then(|v| v.as_str()).unwrap_or(""))
     });
     root.insert("commands".into(), serde_json::Value::Array(commands));
 
@@ -6118,14 +6184,22 @@ async fn main_inner() -> anyhow::Result<()> {
                 }
             }
         }
-        // --- Agent (placeholder) ---
+        // --- Agent ---
         Commands::Agent { action } => match action {
-            AgentActions::Schema { compact } => commands::agent::schema(compact)?,
+            AgentActions::Schema { compact } => {
+                let cmd = Cli::command();
+                let schema = if compact {
+                    build_compact_agent_schema(&cmd)
+                } else {
+                    build_agent_schema(&cmd)
+                };
+                println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+            }
             AgentActions::Guide => commands::agent::guide()?,
         },
         // --- Alias ---
         Commands::Alias { action } => match action {
-            AliasActions::List => commands::alias::list()?,
+            AliasActions::List => commands::alias::list(&cfg)?,
             AliasActions::Set { name, command } => commands::alias::set(name, command)?,
             AliasActions::Delete { names } => commands::alias::delete(names)?,
             AliasActions::Import { file } => commands::alias::import(&file)?,
