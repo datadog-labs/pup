@@ -94,14 +94,10 @@ pub async fn login(cfg: &Config) -> Result<()> {
     let expires_at = chrono::DateTime::from_timestamp(tokens.issued_at + tokens.expires_in, 0)
         .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
         .unwrap_or_else(|| format!("in {} hours", tokens.expires_in / 3600));
-    let display_location = if location.contains("keychain") || location.contains("Keychain") {
-        "macOS Keychain (secure)".to_string()
-    } else {
-        location
-    };
+
     eprintln!("\n✅ Login successful!");
     eprintln!("   Access token expires: {expires_at}");
-    eprintln!("   Token stored in: {display_location}");
+    eprintln!("   Token stored in: {location}");
 
     Ok(())
 }
@@ -259,15 +255,10 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
         chrono::DateTime::from_timestamp(new_tokens.issued_at + new_tokens.expires_in, 0)
             .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
             .unwrap_or_else(|| format!("in {} hours", new_tokens.expires_in / 3600));
-    let display_location = if location.contains("keychain") || location.contains("Keychain") {
-        "macOS Keychain (secure)".to_string()
-    } else {
-        location
-    };
 
     eprintln!("✅ Token refreshed successfully!");
     eprintln!("   Access token expires: {expires_at}");
-    eprintln!("   Token stored in: {display_location}");
+    eprintln!("   Token stored in: {location}");
 
     Ok(())
 }
