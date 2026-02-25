@@ -59,11 +59,16 @@ pub fn format_and_print<T: Serialize>(
     meta: Option<&Metadata>,
 ) -> Result<()> {
     if agent_mode {
-        // Sort inner data keys but preserve envelope field order (status first)
         let sorted_data = sort_json_value(serde_json::to_value(data)?);
+        // Hoist: when the API wraps its list/object in a nested "data" key,
+        // use that inner value directly so agents see .data[*] instead of .data.data[*].
+        let effective_data = match &sorted_data {
+            serde_json::Value::Object(obj) if obj.contains_key("data") => obj["data"].clone(),
+            _ => sorted_data.clone(),
+        };
         let envelope = AgentEnvelope {
             status: "success",
-            data: &sorted_data,
+            data: &effective_data,
             metadata: meta,
         };
         let json = go_html_escape(&serde_json::to_string_pretty(&envelope)?);

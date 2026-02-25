@@ -28,14 +28,25 @@ fn save_aliases(aliases: &BTreeMap<String, String>) -> Result<()> {
     Ok(())
 }
 
-pub fn list() -> Result<()> {
+pub fn list(cfg: &crate::config::Config) -> Result<()> {
     let aliases = load_aliases()?;
-    if aliases.is_empty() {
-        println!("No aliases configured.");
-        return Ok(());
-    }
-    for (name, command) in &aliases {
-        println!("{name} = {command}");
+    match cfg.output_format {
+        crate::config::OutputFormat::Table => {
+            if aliases.is_empty() {
+                println!("No aliases configured.");
+            } else {
+                for (name, command) in &aliases {
+                    println!("{name} = {command}");
+                }
+            }
+        }
+        _ => {
+            let items: Vec<serde_json::Value> = aliases
+                .iter()
+                .map(|(name, command)| serde_json::json!({"name": name, "command": command}))
+                .collect();
+            crate::formatter::format_and_print(&items, &cfg.output_format, cfg.agent_mode, None)?;
+        }
     }
     Ok(())
 }
