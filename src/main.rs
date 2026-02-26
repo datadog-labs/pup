@@ -637,6 +637,37 @@ enum Commands {
         #[command(subcommand)]
         action: DataGovActions,
     },
+    /// Query Database Monitoring (DBM) data
+    ///
+    /// Query Database Monitoring data including query explain plans.
+    ///
+    /// DBM provides deep visibility into database performance, including
+    /// query explain plans that show how the database executes queries.
+    ///
+    /// CAPABILITIES:
+    ///   • Query explain plans for slow or expensive database queries
+    ///
+    /// EXAMPLES:
+    ///   # List recent explain plans (all sources)
+    ///   pup dbm explain-plans
+    ///
+    ///   # Filter explain plans by database source
+    ///   pup dbm explain-plans --source postgres
+    ///   pup dbm explain-plans --source mysql
+    ///
+    ///   # Custom query with higher limit
+    ///   pup dbm explain-plans --query "dbm_type:plan" --limit 20
+    ///
+    ///   # Filter by source with custom limit
+    ///   pup dbm explain-plans --source postgres --limit 10
+    ///
+    /// AUTHENTICATION:
+    ///   Requires DD_API_KEY and DD_APP_KEY. OAuth2 is not supported for this endpoint.
+    #[command(verbatim_doc_comment)]
+    Dbm {
+        #[command(subcommand)]
+        action: DbmActions,
+    },
     /// Manage monitor downtimes
     ///
     /// Manage downtimes to silence monitors during maintenance windows.
@@ -2315,6 +2346,28 @@ enum EventActions {
     },
     /// Get event details
     Get { event_id: i64 },
+}
+
+// ---- DBM ----
+#[derive(Subcommand)]
+enum DbmActions {
+    /// Query explain plans for database queries
+    ///
+    /// Retrieves query explain plans from DBM, showing how the database
+    /// engine executes SQL statements.
+    #[command(name = "explain-plans", verbatim_doc_comment)]
+    ExplainPlans {
+        #[arg(
+            long,
+            default_value = "dbm_type:plan",
+            help = "Search query for filtering explain plans"
+        )]
+        query: String,
+        #[arg(long, help = "Database source to filter by (e.g., postgres, mysql)")]
+        source: Option<String>,
+        #[arg(long, default_value_t = 5, help = "Maximum number of results (1-1000)")]
+        limit: i32,
+    },
 }
 
 // ---- Downtime ----
@@ -5175,6 +5228,19 @@ async fn main_inner() -> anyhow::Result<()> {
                 }
                 EventActions::Get { event_id } => {
                     commands::events::get(&cfg, event_id).await?;
+                }
+            }
+        }
+        // --- DBM ---
+        Commands::Dbm { action } => {
+            cfg.validate_api_and_app_keys()?;
+            match action {
+                DbmActions::ExplainPlans {
+                    query,
+                    source,
+                    limit,
+                } => {
+                    commands::dbm::explain_plans(&cfg, query, source, limit).await?;
                 }
             }
         }
