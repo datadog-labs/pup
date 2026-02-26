@@ -14,7 +14,7 @@ Options:
     --no-build              Skip cargo build (use existing binary)
     --no-auth               Skip auth checks and dd-auth credential injection
     --dd-auth-domain DOMAIN dd-auth domain to use (default: app.datadoghq.com)
-    --output FILE           Path for the HTML report (default: tests/harness_report.html)
+    --output FILE           Path for the HTML report (default: /tmp/pup-dev/harness_report.html)
     --filter PATTERN        Only run tests whose label contains PATTERN
     --timeout SECS          Per-command timeout in seconds (default: 30)
 """
@@ -39,7 +39,7 @@ REPO_ROOT = Path(__file__).parent.parent.resolve()
 BINARY = REPO_ROOT / "target" / "release" / "pup"
 SNAPSHOT_DIR = REPO_ROOT / "tests" / "snapshots"
 LAST_OUTPUT_DIR = Path("/tmp/pup-dev")
-DEFAULT_REPORT = REPO_ROOT / "tests" / "harness_report.html"
+DEFAULT_REPORT = LAST_OUTPUT_DIR / "harness_report.html"
 
 # ── snapshot value normalization ──────────────────────────────────────────────
 #
