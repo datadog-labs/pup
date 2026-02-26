@@ -66,6 +66,24 @@ pub fn make_dd_config(_cfg: &Config) -> datadog_api_client::datadog::Configurati
             .server_variables
             .insert("protocol".into(), protocol.into());
         dd_cfg.server_variables.insert("name".into(), url.into());
+    } else {
+        // Server index 0 only accepts production sites (datadoghq.com, us3, us5,
+        // ap1, ap2, eu, gov). Server index 2 uses the same URL template but with
+        // no enum restriction, so it works for any site including staging
+        // (datad0g.com). Use index 2 for non-standard sites.
+        static STANDARD_SITES: &[&str] = &[
+            "datadoghq.com",
+            "us3.datadoghq.com",
+            "us5.datadoghq.com",
+            "ap1.datadoghq.com",
+            "ap2.datadoghq.com",
+            "datadoghq.eu",
+            "ddog-gov.com",
+        ];
+        let site = std::env::var("DD_SITE").unwrap_or_default();
+        if !site.is_empty() && !STANDARD_SITES.contains(&site.as_str()) {
+            dd_cfg.server_index = 2;
+        }
     }
 
     dd_cfg

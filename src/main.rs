@@ -133,35 +133,47 @@ enum Commands {
         #[command(subcommand)]
         action: ApiKeyActions,
     },
-    /// Manage app key registrations
+    /// Manage application keys
     ///
-    /// Manage Datadog app key registrations for Action Connections.
+    /// Manage Datadog application keys.
     ///
-    /// App key registrations enable application keys to be used with Action Connections
-    /// and Workflow Automation features. This is separate from standard application key
-    /// management (see 'pup api-keys' for that).
+    /// Application keys, in conjunction with your organization's API key, give you
+    /// full access to Datadog's API. Application keys are associated with the user
+    /// who created them and have the same permissions and scopes as the user.
     ///
     /// CAPABILITIES:
-    ///   • List registered app keys
-    ///   • Get app key registration details
-    ///   • Register an application key for Action Connections
-    ///   • Unregister an application key from Action Connections
+    ///   • List your application keys (or all org keys with --all)
+    ///   • Get application key details
+    ///   • Create new application keys (with optional scopes)
+    ///   • Update application key name or scopes
+    ///   • Delete application keys (requires confirmation)
     ///
     /// EXAMPLES:
-    ///   # List all registered app keys
+    ///   # List your application keys
     ///   pup app-keys list
     ///
-    ///   # Get app key registration details
+    ///   # List all application keys in the org (requires API keys)
+    ///   pup app-keys list --all
+    ///
+    ///   # Get application key details
     ///   pup app-keys get <app-key-id>
     ///
-    ///   # Register an application key
-    ///   pup app-keys register <app-key-id>
+    ///   # Create a new application key
+    ///   pup app-keys create --name="My Key"
     ///
-    ///   # Unregister an application key
-    ///   pup app-keys unregister <app-key-id>
+    ///   # Create a scoped application key
+    ///   pup app-keys create --name="Read Only" --scopes="dashboards_read,metrics_read"
+    ///
+    ///   # Update an application key name
+    ///   pup app-keys update <app-key-id> --name="New Name"
+    ///
+    ///   # Delete an application key
+    ///   pup app-keys delete <app-key-id>
     ///
     /// AUTHENTICATION:
-    ///   Requires OAuth2 (via 'pup auth login') or valid API + Application keys.
+    ///   Most commands use the current_user endpoints and support OAuth2 (via
+    ///   'pup auth login'). The 'list --all' command uses the org-wide endpoint
+    ///   and requires API + Application keys (DD_API_KEY + DD_APP_KEY).
     #[command(name = "app-keys", verbatim_doc_comment)]
     AppKeys {
         #[command(subcommand)]
@@ -2792,7 +2804,7 @@ enum ApiKeyActions {
 // ---- App Keys ----
 #[derive(Subcommand)]
 enum AppKeyActions {
-    /// List registered app keys
+    /// List application keys
     List {
         /// Results per page
         #[arg(long, default_value = "10", help = "Number of results per page")]
@@ -2804,22 +2816,62 @@ enum AppKeyActions {
             help = "Page number to retrieve (0-indexed)"
         )]
         page_number: i64,
+        /// Filter by key name
+        #[arg(long, default_value = "", help = "Filter by key name")]
+        filter: String,
+        /// Sort field (name, -name, created_at, -created_at)
+        #[arg(
+            long,
+            default_value = "",
+            help = "Sort field (name, -name, created_at, -created_at)"
+        )]
+        sort: String,
+        /// List all org keys (requires API keys, not OAuth)
+        #[arg(
+            long,
+            default_value_t = false,
+            help = "List all org keys (requires API keys, not OAuth)"
+        )]
+        all: bool,
     },
-    /// Get app key registration details
+    /// Get application key details
     Get {
         /// App key ID
         #[arg(name = "app-key-id")]
         key_id: String,
     },
-    /// Register an application key
-    Register {
-        /// App key ID to register
+    /// Create a new application key
+    Create {
+        /// Application key name (required)
+        #[arg(long, help = "Application key name (required)")]
+        name: String,
+        /// Comma-separated authorization scopes (e.g. dashboards_read,metrics_read)
+        #[arg(
+            long,
+            default_value = "",
+            help = "Comma-separated authorization scopes"
+        )]
+        scopes: String,
+    },
+    /// Update an application key
+    Update {
+        /// App key ID
         #[arg(name = "app-key-id")]
         key_id: String,
+        /// New name for the application key
+        #[arg(long, default_value = "", help = "New name for the application key")]
+        name: String,
+        /// Comma-separated authorization scopes
+        #[arg(
+            long,
+            default_value = "",
+            help = "Comma-separated authorization scopes"
+        )]
+        scopes: String,
     },
-    /// Unregister an application key
-    Unregister {
-        /// App key ID to unregister
+    /// Delete an application key (DESTRUCTIVE)
+    Delete {
+        /// App key ID to delete
         #[arg(name = "app-key-id")]
         key_id: String,
     },
@@ -5453,15 +5505,37 @@ async fn main_inner() -> anyhow::Result<()> {
                 AppKeyActions::List {
                     page_size,
                     page_number,
-                } => commands::app_keys::list(&cfg, page_size, page_number).await?,
-                AppKeyActions::Get { key_id } => commands::app_keys::get(&cfg, &key_id).await?,
-                AppKeyActions::Register { key_id } => {
-                    commands::app_keys::register(&cfg, &key_id).await?
+                    filter,
+                    sort,
+                    all,
+                } => {
+                    if all {
+                        cfg.validate_api_and_app_keys()?;
+                        commands::app_keys::list_all(&cfg, page_size, page_number, &filter, &sort)
+                            .await?
+                    } else {
+                        commands::app_keys::list(&cfg, page_size, page_number, &filter, &sort)
+                            .await?
+                    }
                 }
-                AppKeyActions::Unregister { key_id } => {
+                AppKeyActions::Get { key_id } => commands::app_keys::get(&cfg, &key_id).await?,
+                AppKeyActions::Create { name, scopes } => {
+                    commands::app_keys::create(&cfg, &name, &scopes).await?
+                }
+                AppKeyActions::Update {
+                    key_id,
+                    name,
+                    scopes,
+                } => {
+                    if name.is_empty() && scopes.is_empty() {
+                        anyhow::bail!("at least one of --name or --scopes is required for update");
+                    }
+                    commands::app_keys::update(&cfg, &key_id, &name, &scopes).await?
+                }
+                AppKeyActions::Delete { key_id } => {
                     if !cfg.auto_approve {
                         eprint!(
-                            "Unregister app key {key_id} from Action Connections? Type 'yes' to confirm: "
+                            "Permanently delete application key {key_id}? Type 'yes' to confirm: "
                         );
                         let mut input = String::new();
                         std::io::stdin().read_line(&mut input)?;
@@ -5470,7 +5544,7 @@ async fn main_inner() -> anyhow::Result<()> {
                             return Ok(());
                         }
                     }
-                    commands::app_keys::unregister(&cfg, &key_id).await?
+                    commands::app_keys::delete(&cfg, &key_id).await?
                 }
             }
         }
