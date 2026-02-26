@@ -21,7 +21,6 @@ Thumbs.db
 
 # Test harness outputs (generated artifacts)
 tests/harness_report.html
-tests/snapshots/
 scripts/__pycache__
 .env.local
 .envrc

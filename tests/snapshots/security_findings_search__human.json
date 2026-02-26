@@ -1,0 +1,18 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "str",
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": {
+      "cursor": "str",
+      "total_filtered_count": "int"
+    }
+  }
+}

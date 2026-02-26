@@ -1,0 +1,37 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": {
+            "id": "<...>",
+            "type": "<...>"
+          }
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "included": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": {
+      "current": "int",
+      "size": "int",
+      "total": "int"
+    }
+  }
+}

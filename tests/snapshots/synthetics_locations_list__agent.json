@@ -1,0 +1,12 @@
+{
+  "data": {
+    "locations": [
+      "<list>",
+      {
+        "id": "str",
+        "name": "str"
+      }
+    ]
+  },
+  "status": "str"
+}

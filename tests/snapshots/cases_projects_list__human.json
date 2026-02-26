@@ -1,0 +1,20 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "type": "str",
+      "relationships": {
+        "*": {
+          "data": {
+            "id": "<...>",
+            "type": "<...>"
+          }
+        }
+      }
+    }
+  ]
+}

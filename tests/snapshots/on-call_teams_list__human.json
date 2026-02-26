@@ -1,0 +1,39 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": [
+            "<empty_list>"
+          ],
+          "links": {
+            "related": "<...>"
+          }
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "links": {
+    "first": "<url>",
+    "last": "<url>",
+    "next": "<url>",
+    "self": "<url>"
+  },
+  "meta": {
+    "*": {
+      "first_offset": "int",
+      "last_offset": "int",
+      "limit": "int",
+      "next_offset": "int",
+      "offset": "int",
+      "total": "int",
+      "type": "str"
+    }
+  }
+}

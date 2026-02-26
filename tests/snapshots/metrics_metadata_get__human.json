@@ -1,0 +1,8 @@
+{
+  "description": "str",
+  "integration": "str",
+  "short_name": "str",
+  "statsd_interval": "int",
+  "type": "str",
+  "unit": "str"
+}

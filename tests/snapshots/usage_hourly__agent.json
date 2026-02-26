@@ -1,0 +1,13 @@
+{
+  "data": {
+    "metadata": {
+      "pagination": {
+        "next_record_id": "NoneType"
+      }
+    },
+    "usage": [
+      "<empty_list>"
+    ]
+  },
+  "status": "str"
+}

@@ -1,0 +1,23 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": [
+            "<empty_list>"
+          ],
+          "links": {
+            "related": "<...>"
+          }
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "status": "str"
+}
