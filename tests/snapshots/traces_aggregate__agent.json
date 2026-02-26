@@ -1,0 +1,16 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "type": "str"
+    }
+  ],
+  "metadata": {
+    "command": "str"
+  },
+  "status": "str"
+}

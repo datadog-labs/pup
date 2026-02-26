@@ -1,0 +1,10 @@
+{
+  "data": {
+    "attributes": {
+      "*": "<...>"
+    },
+    "id": "str",
+    "type": "str"
+  },
+  "status": "str"
+}

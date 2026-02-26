@@ -1,0 +1,16 @@
+{
+  "data": {
+    "buckets": [
+      "<list>",
+      {
+        "by": {},
+        "computes": {
+          "c0": "float"
+        }
+      }
+    ]
+  },
+  "meta": {
+    "*": "int"
+  }
+}

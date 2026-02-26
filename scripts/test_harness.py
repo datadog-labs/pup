@@ -14,7 +14,7 @@ Options:
     --no-build              Skip cargo build (use existing binary)
     --no-auth               Skip auth checks and dd-auth credential injection
     --dd-auth-domain DOMAIN dd-auth domain to use (default: app.datadoghq.com)
-    --output FILE           Path for the HTML report (default: tests/harness_report.html)
+    --output FILE           Path for the HTML report (default: /tmp/pup-dev/harness_report.html)
     --filter PATTERN        Only run tests whose label contains PATTERN
     --timeout SECS          Per-command timeout in seconds (default: 30)
 """
@@ -38,7 +38,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 BINARY = REPO_ROOT / "target" / "release" / "pup"
 SNAPSHOT_DIR = REPO_ROOT / "tests" / "snapshots"
-DEFAULT_REPORT = REPO_ROOT / "tests" / "harness_report.html"
+LAST_OUTPUT_DIR = Path("/tmp/pup-dev")
+DEFAULT_REPORT = LAST_OUTPUT_DIR / "harness_report.html"
 
 # ── snapshot value normalization ──────────────────────────────────────────────
 #
@@ -206,7 +207,7 @@ def snapshot_path(label: str, mode: str = "human") -> Path:
 def _last_output_path(label: str, mode: str) -> Path:
     """Path for the raw stdout from the previous run — used for per-row diffs."""
     safe = re.sub(r"[^a-zA-Z0-9_-]", "_", label)
-    return SNAPSHOT_DIR / f"{safe}__{mode}.last"
+    return LAST_OUTPUT_DIR / f"{safe}__{mode}.last"
 
 
 def load_last_output(label: str, mode: str) -> str | None:
@@ -220,7 +221,7 @@ def load_last_output(label: str, mode: str) -> str | None:
 
 
 def save_last_output(label: str, mode: str, text: str) -> None:
-    SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
+    LAST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     _last_output_path(label, mode).write_text(text)
 
 

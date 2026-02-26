@@ -1,0 +1,14 @@
+{
+  "data": {
+    "buckets": [
+      "<list>",
+      {
+        "by": {},
+        "computes": {
+          "c0": "float"
+        }
+      }
+    ]
+  },
+  "status": "str"
+}

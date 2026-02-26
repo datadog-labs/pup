@@ -1,0 +1,45 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": {
+            "id": "<...>",
+            "type": "<...>"
+          }
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "included": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": [
+            "<list>",
+            "<...>"
+          ]
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": {
+      "max_page_size": "int",
+      "total_count": "int",
+      "total_filtered_count": "int"
+    }
+  }
+}

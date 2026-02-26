@@ -1,0 +1,18 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "str",
+      "type": "str"
+    }
+  ],
+  "links": {
+    "next": "<url>"
+  },
+  "meta": {
+    "*": "int"
+  }
+}

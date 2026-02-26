@@ -1,0 +1,32 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": {
+            "id": "<...>",
+            "type": "<...>"
+          }
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": {
+      "first_offset": "int",
+      "last_offset": "NoneType",
+      "limit": "int",
+      "next_offset": "int",
+      "offset": "int",
+      "prev_offset": "NoneType",
+      "total": "NoneType",
+      "type": "str"
+    }
+  }
+}

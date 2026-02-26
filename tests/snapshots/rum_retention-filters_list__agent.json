@@ -1,0 +1,16 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "str",
+      "meta": {
+        "*": "str"
+      },
+      "type": "str"
+    }
+  ],
+  "status": "str"
+}

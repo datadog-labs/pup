@@ -1,0 +1,15 @@
+{
+  "data": {
+    "attributes": {
+      "*": "<...>"
+    },
+    "id": "<uuid>",
+    "type": "str"
+  },
+  "meta": {
+    "*": [
+      "<list>",
+      "str"
+    ]
+  }
+}

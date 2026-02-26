@@ -1,0 +1,26 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "<uuid>",
+      "relationships": {
+        "*": {
+          "data": [
+            "<list>",
+            "<...>"
+          ]
+        }
+      },
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": {
+      "total_count": "int",
+      "total_filtered_count": "int"
+    }
+  }
+}

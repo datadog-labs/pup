@@ -1,0 +1,63 @@
+{
+  "data": [
+    "<list>",
+    {
+      "created_at": "int",
+      "creator": {
+        "email": "str",
+        "handle": "str",
+        "name": "str"
+      },
+      "description": "str",
+      "id": "<hash>",
+      "modified_at": "int",
+      "monitor_ids": [
+        "<list>",
+        "int"
+      ],
+      "monitor_tags": [
+        "<empty_list>"
+      ],
+      "name": "str",
+      "tags": [
+        "<empty_list>"
+      ],
+      "target_threshold": "float",
+      "thresholds": [
+        "<list>",
+        {
+          "target": "float",
+          "target_display": "str",
+          "timeframe": "str"
+        }
+      ],
+      "timeframe": "str",
+      "type": "str",
+      "type_id": "int",
+      "query": {
+        "denominator": "str",
+        "numerator": "str"
+      },
+      "sli_specification": {
+        "count": {
+          "good_events_formula": {
+            "formula": "<...>"
+          },
+          "queries": [
+            "<list>",
+            "<...>"
+          ],
+          "total_events_formula": {
+            "formula": "<...>"
+          }
+        }
+      },
+      "warning_threshold": "float",
+      "groups": [
+        "<list>",
+        "str"
+      ]
+    }
+  ],
+  "status": "str"
+}

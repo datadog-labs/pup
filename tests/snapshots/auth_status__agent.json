@@ -1,0 +1,8 @@
+{
+  "authenticated": "bool",
+  "expires_at": "<timestamp>",
+  "has_refresh": "bool",
+  "site": "str",
+  "status": "str",
+  "token_type": "str"
+}

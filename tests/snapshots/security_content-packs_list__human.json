@@ -1,0 +1,15 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "str",
+      "type": "str"
+    }
+  ],
+  "meta": {
+    "*": "bool"
+  }
+}

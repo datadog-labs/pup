@@ -19,9 +19,7 @@ Thumbs.db
 # Config files with potential secrets
 .env
 
-# Test harness outputs (generated artifacts)
-tests/harness_report.html
-tests/snapshots/
+# Test harness outputs (generated artifacts — written to /tmp/pup-dev/)
 scripts/__pycache__
 .env.local
 .envrc

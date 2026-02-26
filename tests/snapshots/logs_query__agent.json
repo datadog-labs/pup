@@ -1,0 +1,19 @@
+{
+  "data": [
+    "<list>",
+    {
+      "attributes": {
+        "*": "<...>"
+      },
+      "id": "str",
+      "type": "str"
+    }
+  ],
+  "metadata": {
+    "command": "str",
+    "count": "int",
+    "next_action": "str",
+    "truncated": "bool"
+  },
+  "status": "str"
+}
