@@ -79,11 +79,18 @@ impl Storage for FileStorage {
     }
 
     fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
-        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
-        let json = serde_json::to_string_pretty(tokens)?;
+        let path = self
+            .base_dir
+            .join(format!("tokens_{}.json", sanitize(site)));
+        let mut map = match std::fs::read_to_string(&path) {
+            Ok(json) => parse_token_map(&json).unwrap_or_default(),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => OrgTokenMap::new(),
+            Err(e) => return Err(e.into()),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string_pretty(&map)?;
         std::fs::write(&path, json)
             .with_context(|| format!("failed to write tokens: {}", path.display()))?;
-        // Restrict permissions on Unix
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -93,20 +100,41 @@ impl Storage for FileStorage {
     }
 
     fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
-        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
+        let path = self
+            .base_dir
+            .join(format!("tokens_{}.json", sanitize(site)));
         match std::fs::read_to_string(&path) {
-            Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Ok(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
             Err(e) => Err(e.into()),
         }
     }
 
     fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
-        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
-        match std::fs::remove_file(&path) {
-            Ok(()) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(e) => Err(e.into()),
+        let path = self
+            .base_dir
+            .join(format!("tokens_{}.json", sanitize(site)));
+        let json = match std::fs::read_to_string(&path) {
+            Ok(j) => j,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(e.into()),
+        };
+        let mut map = parse_token_map(&json).unwrap_or_default();
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            match std::fs::remove_file(&path) {
+                Ok(()) | Err(_) => Ok(()),
+            }
+        } else {
+            let json = serde_json::to_string_pretty(&map)?;
+            std::fs::write(&path, json)
+                .with_context(|| format!("failed to write tokens: {}", path.display()))?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))?;
+            }
+            Ok(())
         }
     }
 
@@ -182,29 +210,48 @@ impl Storage for KeychainStorage {
     }
 
     fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
-        let key = token_key(site, org);
+        let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
-        let json = serde_json::to_string(tokens)?;
+        let mut map = match entry.get_password() {
+            Ok(json) => parse_token_map(&json).unwrap_or_default(),
+            Err(keyring::Error::NoEntry) => OrgTokenMap::new(),
+            Err(e) => return Err(e.into()),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string(&map)?;
         entry.set_password(&json)?;
         Ok(())
     }
 
     fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
-        let key = token_key(site, org);
+        let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
         match entry.get_password() {
-            Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Ok(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             Err(keyring::Error::NoEntry) => Ok(None),
             Err(e) => Err(e.into()),
         }
     }
 
     fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
-        let key = token_key(site, org);
+        let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
-        match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-            Err(e) => Err(e.into()),
+        let json = match entry.get_password() {
+            Ok(j) => j,
+            Err(keyring::Error::NoEntry) => return Ok(()),
+            Err(e) => return Err(e.into()),
+        };
+        let mut map = parse_token_map(&json).unwrap_or_default();
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            match entry.delete_credential() {
+                Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+                Err(e) => Err(e.into()),
+            }
+        } else {
+            let json = serde_json::to_string(&map)?;
+            entry.set_password(&json)?;
+            Ok(())
         }
     }
 
@@ -328,22 +375,37 @@ impl Storage for LocalStorageBackend {
     }
 
     fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
-        let key = format!("pup_{}", token_key(site, org));
-        let json = serde_json::to_string(tokens)?;
+        let key = format!("pup_tokens_{}", sanitize(site));
+        let mut map = match Self::get_item(&key)? {
+            Some(json) => parse_token_map(&json).unwrap_or_default(),
+            None => OrgTokenMap::new(),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string(&map)?;
         Self::set_item(&key, &json)
     }
 
     fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
-        let key = format!("pup_{}", token_key(site, org));
+        let key = format!("pup_tokens_{}", sanitize(site));
         match Self::get_item(&key)? {
-            Some(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Some(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             None => Ok(None),
         }
     }
 
     fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
-        let key = format!("pup_{}", token_key(site, org));
-        Self::remove_item(&key)
+        let key = format!("pup_tokens_{}", sanitize(site));
+        let mut map = match Self::get_item(&key)? {
+            Some(json) => parse_token_map(&json).unwrap_or_default(),
+            None => return Ok(()),
+        };
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            Self::remove_item(&key)
+        } else {
+            let json = serde_json::to_string(&map)?;
+            Self::set_item(&key, &json)
+        }
     }
 
     fn save_client_credentials(&self, site: &str, creds: &ClientCredentials) -> Result<()> {
@@ -425,14 +487,37 @@ fn sanitize(site: &str) -> String {
         .collect()
 }
 
-/// Build the storage key for a token, incorporating an optional org label.
-/// No org → backward-compatible key: `tokens_<site>`
-/// With org → `tokens_<site>_<org>`
-fn token_key(site: &str, org: Option<&str>) -> String {
+// ---------------------------------------------------------------------------
+// OrgTokenMap — one keychain/file entry per site, keyed by org label
+// ---------------------------------------------------------------------------
+
+/// All orgs for a site are stored under a single key as a JSON map.
+/// The no-org (default) session uses this sentinel as its map key.
+const DEFAULT_ORG_KEY: &str = "__default__";
+
+type OrgTokenMap = std::collections::HashMap<String, TokenSet>;
+
+fn org_map_key(org: Option<&str>) -> &str {
     match org {
-        Some(o) if !o.is_empty() => format!("tokens_{}_{}", sanitize(site), sanitize(o)),
-        _ => format!("tokens_{}", sanitize(site)),
+        Some(o) if !o.is_empty() => o,
+        _ => DEFAULT_ORG_KEY,
     }
+}
+
+/// Parse a stored blob as an OrgTokenMap, migrating the legacy single-TokenSet
+/// format (written by pup < multi-org) to {"__default__": <tokens>} transparently.
+fn parse_token_map(json: &str) -> Result<OrgTokenMap> {
+    // New format: {"__default__": {...}, "prod-child": {...}}
+    if let Ok(map) = serde_json::from_str::<OrgTokenMap>(json) {
+        return Ok(map);
+    }
+    // Old format: bare TokenSet — promote to map under __default__
+    if let Ok(tokens) = serde_json::from_str::<TokenSet>(json) {
+        let mut map = OrgTokenMap::new();
+        map.insert(DEFAULT_ORG_KEY.to_string(), tokens);
+        return Ok(map);
+    }
+    anyhow::bail!("token storage contains unrecognised format")
 }
 
 // ---------------------------------------------------------------------------
