@@ -370,9 +370,9 @@ async fn test_logs_search() {
 }
 
 #[tokio::test]
-async fn test_logs_search_requires_api_keys() {
+async fn test_logs_search_with_oauth() {
     let _lock = lock_env();
-    let server = mockito::Server::new_async().await;
+    let mut server = mockito::Server::new_async().await;
     std::env::set_var("PUP_MOCK_SERVER", &server.url());
 
     let cfg = Config {
@@ -385,17 +385,12 @@ async fn test_logs_search_requires_api_keys() {
         agent_mode: false,
     };
 
+    let _mock = mock_any(&mut server, "POST", r#"{"data": []}"#).await;
+
     let result =
         crate::commands::logs::search(&cfg, "status:error".into(), "1h".into(), "now".into(), 10)
             .await;
-    assert!(result.is_err(), "logs search should require API keys");
-    assert!(
-        result
-            .unwrap_err()
-            .to_string()
-            .contains("API+APP key authentication"),
-        "error should mention API key auth"
-    );
+    assert!(result.is_ok(), "logs search should work with OAuth");
     cleanup_env();
 }
 

@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 #[cfg(not(target_arch = "wasm32"))]
 use chrono::Utc;
 #[cfg(not(target_arch = "wasm32"))]
@@ -18,11 +18,11 @@ use crate::formatter;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
-    }
     let dd_cfg = client::make_dd_config(cfg);
-    let api = ErrorTrackingAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => ErrorTrackingAPI::with_client_and_config(dd_cfg, c),
+        None => ErrorTrackingAPI::with_config(dd_cfg),
+    };
 
     let now = Utc::now().timestamp_millis();
     let one_day_ago = now - 86_400_000; // 24 hours in millis
@@ -49,9 +49,6 @@ pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> 
 
 #[cfg(target_arch = "wasm32")]
 pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
-    }
     let now = chrono::Utc::now().timestamp_millis();
     let one_day_ago = now - 86_400_000;
     let query_str = query.unwrap_or_else(|| "*".to_string());
@@ -77,11 +74,11 @@ pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> 
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn issues_get(cfg: &Config, issue_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
-    }
     let dd_cfg = client::make_dd_config(cfg);
-    let api = ErrorTrackingAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => ErrorTrackingAPI::with_client_and_config(dd_cfg, c),
+        None => ErrorTrackingAPI::with_config(dd_cfg),
+    };
     let resp = api
         .get_issue(issue_id.to_string(), GetIssueOptionalParams::default())
         .await
@@ -91,9 +88,6 @@ pub async fn issues_get(cfg: &Config, issue_id: &str) -> Result<()> {
 
 #[cfg(target_arch = "wasm32")]
 pub async fn issues_get(cfg: &Config, issue_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
-    }
     let data = crate::api::get(
         cfg,
         &format!("/api/v2/error-tracking/issues/{issue_id}"),
