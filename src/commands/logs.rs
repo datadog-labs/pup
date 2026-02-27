@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 #[cfg(not(target_arch = "wasm32"))]
 use datadog_api_client::datadogV2::api_logs::{ListLogsOptionalParams, LogsAPI};
 #[cfg(not(target_arch = "wasm32"))]
@@ -27,17 +27,11 @@ pub async fn search(
     to: String,
     limit: i32,
 ) -> Result<()> {
-    // Logs search API doesn't support OAuth/bearer - force API keys
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs search requires API+APP key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    // Force API key auth only - do NOT use bearer middleware
-    let api = LogsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsAPI::with_config(dd_cfg),
+    };
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -123,15 +117,11 @@ pub async fn query(
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs aggregate requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsAPI::with_config(dd_cfg),
+    };
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -172,15 +162,11 @@ pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) ->
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn archives_list(cfg: &Config) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs archives list requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsArchivesAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsArchivesAPI::with_client_and_config(dd_cfg, c),
+        None => LogsArchivesAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .list_logs_archives()
@@ -199,15 +185,11 @@ pub async fn archives_list(cfg: &Config) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn archives_get(cfg: &Config, archive_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs archives get requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsArchivesAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsArchivesAPI::with_client_and_config(dd_cfg, c),
+        None => LogsArchivesAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .get_logs_archive(archive_id.to_string())
@@ -227,15 +209,11 @@ pub async fn archives_get(cfg: &Config, archive_id: &str) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn archives_delete(cfg: &Config, archive_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs archives delete requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsArchivesAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsArchivesAPI::with_client_and_config(dd_cfg, c),
+        None => LogsArchivesAPI::with_config(dd_cfg),
+    };
 
     api.delete_logs_archive(archive_id.to_string())
         .await
@@ -255,15 +233,11 @@ pub async fn archives_delete(cfg: &Config, archive_id: &str) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn custom_destinations_list(cfg: &Config) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs custom-destinations list requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsCustomDestinationsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsCustomDestinationsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsCustomDestinationsAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .list_logs_custom_destinations()
@@ -282,15 +256,11 @@ pub async fn custom_destinations_list(cfg: &Config) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn custom_destinations_get(cfg: &Config, destination_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs custom-destinations get requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsCustomDestinationsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsCustomDestinationsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsCustomDestinationsAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .get_logs_custom_destination(destination_id.to_string())
@@ -310,15 +280,11 @@ pub async fn custom_destinations_get(cfg: &Config, destination_id: &str) -> Resu
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn metrics_list(cfg: &Config) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs metrics list requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsMetricsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsMetricsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsMetricsAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .list_logs_metrics()
@@ -337,15 +303,11 @@ pub async fn metrics_list(cfg: &Config) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn metrics_get(cfg: &Config, metric_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs metrics get requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsMetricsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsMetricsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsMetricsAPI::with_config(dd_cfg),
+    };
 
     let resp = api
         .get_logs_metric(metric_id.to_string())
@@ -365,15 +327,11 @@ pub async fn metrics_get(cfg: &Config, metric_id: &str) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn metrics_delete(cfg: &Config, metric_id: &str) -> Result<()> {
-    if !cfg.has_api_keys() {
-        bail!(
-            "logs metrics delete requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
-             This endpoint does not support bearer token auth."
-        );
-    }
-
     let dd_cfg = client::make_dd_config(cfg);
-    let api = LogsMetricsAPI::with_config(dd_cfg);
+    let api = match client::make_bearer_client(cfg) {
+        Some(c) => LogsMetricsAPI::with_client_and_config(dd_cfg, c),
+        None => LogsMetricsAPI::with_config(dd_cfg),
+    };
 
     api.delete_logs_metric(metric_id.to_string())
         .await
