@@ -1,37 +1,7 @@
 #[cfg(not(target_arch = "wasm32"))]
-use async_trait::async_trait;
-#[cfg(not(target_arch = "wasm32"))]
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Middleware, Next};
-#[cfg(not(target_arch = "wasm32"))]
-use task_local_extensions::Extensions;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 
 use crate::config::Config;
-
-// ---------------------------------------------------------------------------
-// Bearer token middleware (native only)
-// ---------------------------------------------------------------------------
-
-#[cfg(not(target_arch = "wasm32"))]
-struct BearerAuthMiddleware {
-    token: String,
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-#[async_trait]
-impl Middleware for BearerAuthMiddleware {
-    async fn handle(
-        &self,
-        mut req: reqwest::Request,
-        extensions: &mut Extensions,
-        next: Next<'_>,
-    ) -> reqwest_middleware::Result<reqwest::Response> {
-        req.headers_mut().insert(
-            reqwest::header::AUTHORIZATION,
-            format!("Bearer {}", self.token).parse().unwrap(),
-        );
-        next.run(req, extensions).await
-    }
-}
 
 // ---------------------------------------------------------------------------
 // DD Configuration builder (native only)
@@ -89,20 +59,25 @@ pub fn make_dd_config(_cfg: &Config) -> datadog_api_client::datadog::Configurati
     dd_cfg
 }
 
-/// Creates a reqwest middleware client with bearer token injection.
-/// Returns None if no bearer token is configured.
+/// Creates a `ClientWithMiddleware` that injects `Authorization: Bearer <token>`
+/// when an OAuth2 access token is available in `cfg`.
+///
+/// All API structs should be constructed with `with_client_and_config(dd_cfg, make_dd_client(cfg))`
+/// so that bearer token auth works uniformly without per-command dual-path logic.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn make_bearer_client(cfg: &Config) -> Option<ClientWithMiddleware> {
-    let token = cfg.access_token.as_ref()?;
+pub fn make_dd_client(cfg: &Config) -> ClientWithMiddleware {
+    use datadog_api_client::datadog::BearerTokenMiddleware;
+
     let reqwest_client = reqwest::Client::builder()
         .build()
         .expect("failed to build reqwest client");
-    let client = ClientBuilder::new(reqwest_client)
-        .with(BearerAuthMiddleware {
+    let mut builder = ClientBuilder::new(reqwest_client);
+    if let Some(token) = &cfg.access_token {
+        builder = builder.with(BearerTokenMiddleware {
             token: token.clone(),
-        })
-        .build();
-    Some(client)
+        });
+    }
+    builder.build()
 }
 
 // ---------------------------------------------------------------------------
@@ -260,55 +235,10 @@ fn find_endpoint_requirement(method: &str, path: &str) -> Option<&'static Endpoi
 // Static tables (native only)
 // ---------------------------------------------------------------------------
 
-/// Endpoints that don't support OAuth (52 patterns across 7 API groups).
+/// Endpoints that don't support OAuth (41 patterns across 6 API groups).
 /// Trailing "/" means prefix match for ID-parameterized paths.
 #[cfg(not(target_arch = "wasm32"))]
 static OAUTH_EXCLUDED_ENDPOINTS: &[EndpointRequirement] = &[
-    // Logs API (11)
-    EndpointRequirement {
-        path: "/api/v2/logs/events",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/events/search",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/analytics/aggregate",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives/",
-        method: "DELETE",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/custom_destinations",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/custom_destinations/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics/",
-        method: "DELETE",
-    },
     // RUM API (10)
     EndpointRequirement {
         path: "/api/v2/rum/applications",
@@ -601,8 +531,9 @@ mod tests {
 
     #[test]
     fn test_requires_api_key_fallback_logs() {
-        assert!(requires_api_key_fallback("POST", "/api/v2/logs/events"));
-        assert!(requires_api_key_fallback(
+        // logs endpoints are no longer in the excluded list — they support OAuth
+        assert!(!requires_api_key_fallback("POST", "/api/v2/logs/events"));
+        assert!(!requires_api_key_fallback(
             "POST",
             "/api/v2/logs/events/search"
         ));
@@ -636,7 +567,8 @@ mod tests {
             "GET",
             "/api/v2/rum/applications/some-uuid-here"
         ));
-        assert!(requires_api_key_fallback(
+        // logs archives are no longer excluded
+        assert!(!requires_api_key_fallback(
             "DELETE",
             "/api/v2/logs/config/archives/archive-123"
         ));
@@ -655,20 +587,22 @@ mod tests {
 
     #[test]
     fn test_oauth_excluded_count() {
-        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 53);
+        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 41);
     }
 
     #[test]
-    fn test_make_bearer_client_none_without_token() {
+    fn test_make_dd_client_no_token() {
         let cfg = test_cfg();
-        assert!(make_bearer_client(&cfg).is_none());
+        // Should build successfully without a token (no middleware)
+        let _client = make_dd_client(&cfg);
     }
 
     #[test]
-    fn test_make_bearer_client_some_with_token() {
+    fn test_make_dd_client_with_token() {
         let mut cfg = test_cfg();
         cfg.access_token = Some("test-token".into());
-        assert!(make_bearer_client(&cfg).is_some());
+        // Should build successfully with a token (bearer middleware added)
+        let _client = make_dd_client(&cfg);
     }
 
     #[test]

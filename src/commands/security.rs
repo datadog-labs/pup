@@ -25,10 +25,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn rules_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_security_monitoring_rules(ListSecurityMonitoringRulesOptionalParams::default())
         .await
@@ -45,10 +43,8 @@ pub async fn rules_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn rules_get(cfg: &Config, rule_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_security_monitoring_rule(rule_id.to_string())
         .await
@@ -76,10 +72,8 @@ pub async fn signals_search(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&from)?).unwrap();
@@ -132,10 +126,8 @@ pub async fn signals_search(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn findings_search(cfg: &Config, query: Option<String>, limit: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     let mut params = ListFindingsOptionalParams::default().page_limit(limit);
     if let Some(q) = query {
         params = params.filter_tags(q);
@@ -162,10 +154,8 @@ pub async fn findings_search(cfg: &Config, query: Option<String>, limit: i64) ->
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn rules_bulk_export(cfg: &Config, rule_ids: Vec<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     let attrs = SecurityMonitoringRuleBulkExportAttributes::new(rule_ids);
     let data = SecurityMonitoringRuleBulkExportData::new(
         attrs,
@@ -203,10 +193,8 @@ pub async fn rules_bulk_export(cfg: &Config, rule_ids: Vec<String>) -> Result<()
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn content_packs_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_content_packs_states()
         .await
@@ -223,10 +211,8 @@ pub async fn content_packs_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn content_packs_activate(cfg: &Config, pack_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     api.activate_content_pack(pack_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to activate content pack: {e:?}"))?;
@@ -250,10 +236,8 @@ pub async fn content_packs_activate(cfg: &Config, pack_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn content_packs_deactivate(cfg: &Config, pack_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SecurityMonitoringAPI::with_client_and_config(dd_cfg, c),
-        None => SecurityMonitoringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SecurityMonitoringAPI::with_client_and_config(dd_cfg, dd_client);
     api.deactivate_content_pack(pack_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to deactivate content pack: {e:?}"))?;
@@ -279,10 +263,8 @@ pub async fn content_packs_deactivate(cfg: &Config, pack_id: &str) -> Result<()>
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn risk_scores_list(cfg: &Config, query: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => EntityRiskScoresAPI::with_client_and_config(dd_cfg, c),
-        None => EntityRiskScoresAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = EntityRiskScoresAPI::with_client_and_config(dd_cfg, dd_client);
     let mut params = ListEntityRiskScoresOptionalParams::default();
     if let Some(q) = query {
         params = params.filter_query(q);

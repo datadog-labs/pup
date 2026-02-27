@@ -15,10 +15,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn summary(cfg: &Config, start: String, end: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsageMeteringAPI::with_client_and_config(dd_cfg, c),
-        None => UsageMeteringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsageMeteringAPI::with_client_and_config(dd_cfg, dd_client);
 
     let start_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&start)?).unwrap();
@@ -54,10 +52,8 @@ pub async fn summary(cfg: &Config, start: String, end: Option<String>) -> Result
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn hourly(cfg: &Config, start: String, end: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsageMeteringAPI::with_client_and_config(dd_cfg, c),
-        None => UsageMeteringAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsageMeteringAPI::with_client_and_config(dd_cfg, dd_client);
 
     let start_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&start)?).unwrap();

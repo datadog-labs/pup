@@ -12,10 +12,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsersAPI::with_client_and_config(dd_cfg, c),
-        None => UsersAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsersAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_users(ListUsersOptionalParams::default())
         .await
@@ -32,10 +30,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsersAPI::with_client_and_config(dd_cfg, c),
-        None => UsersAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsersAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_user(id.to_string())
         .await
@@ -52,10 +48,8 @@ pub async fn get(cfg: &Config, id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn roles_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => RolesAPI::with_client_and_config(dd_cfg, c),
-        None => RolesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = RolesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_roles(ListRolesOptionalParams::default())
         .await

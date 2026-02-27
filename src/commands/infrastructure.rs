@@ -15,10 +15,8 @@ pub async fn hosts_list(
     count: i64,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => HostsAPI::with_client_and_config(dd_cfg, c),
-        None => HostsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = HostsAPI::with_client_and_config(dd_cfg, dd_client);
     let mut params = ListHostsOptionalParams::default()
         .count(count)
         .sort_field(sort);
@@ -52,10 +50,8 @@ pub async fn hosts_get(cfg: &Config, hostname: &str) -> Result<()> {
     // The V1 HostsAPI does not have a direct get-host method.
     // Use list_hosts with a filter to find the specific host.
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => HostsAPI::with_client_and_config(dd_cfg, c),
-        None => HostsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = HostsAPI::with_client_and_config(dd_cfg, dd_client);
     let params = ListHostsOptionalParams::default()
         .filter(hostname.to_string())
         .count(1);

@@ -12,10 +12,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceDefinitionAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceDefinitionAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceDefinitionAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_definitions(ListServiceDefinitionsOptionalParams::default())
         .await
@@ -32,10 +30,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, service_name: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceDefinitionAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceDefinitionAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceDefinitionAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_service_definition(
             service_name.to_string(),

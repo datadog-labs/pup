@@ -12,10 +12,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn ip_ranges(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => IPRangesAPI::with_client_and_config(dd_cfg, c),
-        None => IPRangesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = IPRangesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_ip_ranges()
         .await
@@ -39,10 +37,8 @@ pub async fn status(cfg: &Config) -> Result<()> {
         return formatter::output(cfg, &transformed);
     }
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => AuthenticationAPI::with_client_and_config(dd_cfg, c),
-        None => AuthenticationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = AuthenticationAPI::with_client_and_config(dd_cfg, dd_client);
     let _resp = api
         .validate()
         .await

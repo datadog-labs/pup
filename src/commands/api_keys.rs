@@ -12,10 +12,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_api_keys(ListAPIKeysOptionalParams::default())
         .await
@@ -32,10 +30,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, key_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_api_key(key_id.to_string(), GetAPIKeyOptionalParams::default())
         .await
@@ -59,10 +55,8 @@ pub async fn create(cfg: &Config, name: &str) -> Result<()> {
         APIKeysType::API_KEYS,
     ));
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_api_key(body)
         .await
@@ -87,10 +81,8 @@ pub async fn create(cfg: &Config, name: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, key_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_api_key(key_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete API key: {e:?}"))?;

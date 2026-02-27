@@ -40,10 +40,8 @@ pub async fn list(
     sort: &str,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut params = ListCurrentUserApplicationKeysOptionalParams::default();
     if page_size > 0 {
@@ -104,10 +102,8 @@ pub async fn list_all(
     sort: &str,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut params = ListApplicationKeysOptionalParams::default();
     if page_size > 0 {
@@ -162,10 +158,8 @@ pub async fn list_all(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, key_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_current_user_application_key(key_id.to_string())
         .await
@@ -211,10 +205,8 @@ pub async fn create(cfg: &Config, name: &str, scopes: &str) -> Result<()> {
     ));
 
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_current_user_application_key(body)
         .await
@@ -274,10 +266,8 @@ pub async fn update(cfg: &Config, key_id: &str, name: &str, scopes: &str) -> Res
     ));
 
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .update_current_user_application_key(key_id.to_string(), body)
         .await
@@ -322,10 +312,8 @@ pub async fn update(cfg: &Config, key_id: &str, name: &str, scopes: &str) -> Res
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, key_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => KeyManagementAPI::with_client_and_config(dd_cfg, c),
-        None => KeyManagementAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = KeyManagementAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_current_user_application_key(key_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete application key: {e:?}"))?;

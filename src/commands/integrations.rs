@@ -23,10 +23,8 @@ use datadog_api_client::datadogV2::model::{
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_accounts_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_jira_accounts()
         .await
@@ -43,10 +41,8 @@ pub async fn jira_accounts_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_templates_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_jira_issue_templates()
         .await
@@ -63,10 +59,8 @@ pub async fn jira_templates_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_templates_get(cfg: &Config, template_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     let resp = api
         .get_jira_issue_template(uuid)
@@ -90,10 +84,8 @@ pub async fn jira_templates_get(cfg: &Config, template_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_accounts_delete(cfg: &Config, account_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(account_id, "account")?;
     api.delete_jira_account(uuid)
         .await
@@ -117,10 +109,8 @@ pub async fn jira_accounts_delete(cfg: &Config, account_id: &str) -> Result<()> 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_templates_create(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let body: JiraIssueTemplateCreateRequest = crate::util::read_json_file(file)?;
     let resp = api
         .create_jira_issue_template(body)
@@ -139,10 +129,8 @@ pub async fn jira_templates_create(cfg: &Config, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_templates_update(cfg: &Config, template_id: &str, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     let body: JiraIssueTemplateUpdateRequest = crate::util::read_json_file(file)?;
     let resp = api
@@ -168,10 +156,8 @@ pub async fn jira_templates_update(cfg: &Config, template_id: &str, file: &str) 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn jira_templates_delete(cfg: &Config, template_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => JiraIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => JiraIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = JiraIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     api.delete_jira_issue_template(uuid)
         .await
@@ -197,10 +183,8 @@ pub async fn jira_templates_delete(cfg: &Config, template_id: &str) -> Result<()
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_instances_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_now_instances()
         .await
@@ -217,10 +201,8 @@ pub async fn servicenow_instances_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_templates_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_now_templates()
         .await
@@ -237,10 +219,8 @@ pub async fn servicenow_templates_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_templates_get(cfg: &Config, template_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     let resp = api
         .get_service_now_template(uuid)
@@ -264,10 +244,8 @@ pub async fn servicenow_templates_get(cfg: &Config, template_id: &str) -> Result
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_templates_create(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let body: ServiceNowTemplateCreateRequest = crate::util::read_json_file(file)?;
     let resp = api
         .create_service_now_template(body)
@@ -290,10 +268,8 @@ pub async fn servicenow_templates_update(
     file: &str,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     let body: ServiceNowTemplateUpdateRequest = crate::util::read_json_file(file)?;
     let resp = api
@@ -323,10 +299,8 @@ pub async fn servicenow_templates_update(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_templates_delete(cfg: &Config, template_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let uuid = util::parse_uuid(template_id, "template")?;
     api.delete_service_now_template(uuid)
         .await
@@ -350,10 +324,8 @@ pub async fn servicenow_templates_delete(cfg: &Config, template_id: &str) -> Res
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_users_list(cfg: &Config, instance_name: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_now_users(util::parse_uuid(instance_name, "instance")?)
         .await
@@ -376,10 +348,8 @@ pub async fn servicenow_users_list(cfg: &Config, instance_name: &str) -> Result<
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_assignment_groups_list(cfg: &Config, instance_name: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_now_assignment_groups(util::parse_uuid(instance_name, "instance")?)
         .await
@@ -402,10 +372,8 @@ pub async fn servicenow_assignment_groups_list(cfg: &Config, instance_name: &str
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn servicenow_business_services_list(cfg: &Config, instance_name: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceNowIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceNowIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_service_now_business_services(util::parse_uuid(instance_name, "instance")?)
         .await
@@ -430,10 +398,8 @@ pub async fn servicenow_business_services_list(cfg: &Config, instance_name: &str
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn slack_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SlackIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => SlackIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SlackIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_slack_integration_channels("main".to_string())
         .await
@@ -466,10 +432,8 @@ pub async fn pagerduty_list(_cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn webhooks_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => WebhooksIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => WebhooksIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = WebhooksIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_webhooks_integration("main".to_string())
         .await

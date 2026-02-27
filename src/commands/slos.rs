@@ -16,10 +16,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceLevelObjectivesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_slos(ListSLOsOptionalParams::default())
         .await
@@ -36,10 +34,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceLevelObjectivesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_slo(id.to_string(), GetSLOOptionalParams::default())
         .await
@@ -57,10 +53,8 @@ pub async fn get(cfg: &Config, id: &str) -> Result<()> {
 pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     let body: ServiceLevelObjectiveRequest = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceLevelObjectivesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_slo(body)
         .await
@@ -79,10 +73,8 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
 pub async fn update(cfg: &Config, id: &str, file: &str) -> Result<()> {
     let body: ServiceLevelObjective = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceLevelObjectivesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .update_slo(id.to_string(), body)
         .await
@@ -100,10 +92,8 @@ pub async fn update(cfg: &Config, id: &str, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, c),
-        None => ServiceLevelObjectivesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ServiceLevelObjectivesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .delete_slo(id.to_string(), DeleteSLOOptionalParams::default())
         .await
@@ -124,10 +114,8 @@ pub async fn status(cfg: &Config, id: &str, from_ts: i64, to_ts: i64) -> Result<
     };
 
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SloV2API::with_client_and_config(dd_cfg, c),
-        None => SloV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SloV2API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_slo_status(
             id.to_string(),

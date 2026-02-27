@@ -465,10 +465,10 @@ dependencies = [
 [[package]]
 name = "datadog-api-client"
 version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de48b795ea2890ef92c1318eb02c8ff1945e0a8829ed0c45b75a77d40e511fbf"
+source = "git+https://github.com/robhughadams/datadog-api-client-rust?branch=master#96f62a7fe81809a200cd9dc98450e6426ff43f9f"
 dependencies = [
  "async-stream",
+ "async-trait",
  "chrono",
  "flate2",
  "form-data-builder",
@@ -482,6 +482,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "task-local-extensions",
  "url",
  "uuid",
  "zstd",

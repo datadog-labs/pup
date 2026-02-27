@@ -19,10 +19,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config, filter: Option<String>, from: String) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV1API::with_client_and_config(dd_cfg, c),
-        None => MetricsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV1API::with_client_and_config(dd_cfg, dd_client);
 
     let from_ts = util::parse_time_to_unix(&from)?;
     let params = ListActiveMetricsOptionalParams::default();
@@ -75,10 +73,8 @@ pub async fn list(cfg: &Config, filter: Option<String>, from: String) -> Result<
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn search(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV1API::with_client_and_config(dd_cfg, c),
-        None => MetricsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV1API::with_client_and_config(dd_cfg, dd_client);
 
     let from_ts = util::parse_time_to_unix(&from)?;
     let to_ts = util::parse_time_to_unix(&to)?;
@@ -100,10 +96,8 @@ pub async fn search(cfg: &Config, query: String, from: String, to: String) -> Re
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn metadata_get(cfg: &Config, metric_name: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV1API::with_client_and_config(dd_cfg, c),
-        None => MetricsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV1API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_metric_metadata(metric_name.to_string())
         .await
@@ -121,10 +115,8 @@ pub async fn metadata_get(cfg: &Config, metric_name: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn query(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV1API::with_client_and_config(dd_cfg, c),
-        None => MetricsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV1API::with_client_and_config(dd_cfg, dd_client);
 
     let from_ts = util::parse_time_to_unix(&from)?;
     let to_ts = util::parse_time_to_unix(&to)?;
@@ -152,10 +144,8 @@ pub async fn query(cfg: &Config, query: String, from: String, to: String) -> Res
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn metadata_update(cfg: &Config, metric_name: &str, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV1API::with_client_and_config(dd_cfg, c),
-        None => MetricsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV1API::with_client_and_config(dd_cfg, dd_client);
     let body: MetricMetadata = util::read_json_file(file)?;
     let resp = api
         .update_metric_metadata(metric_name.to_string(), body)
@@ -175,10 +165,8 @@ pub async fn metadata_update(cfg: &Config, metric_name: &str, file: &str) -> Res
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn submit(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV2API::with_client_and_config(dd_cfg, c),
-        None => MetricsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV2API::with_client_and_config(dd_cfg, dd_client);
     let body: MetricPayload = util::read_json_file(file)?;
     let resp = api
         .submit_metrics(
@@ -202,10 +190,8 @@ pub async fn tags_list(cfg: &Config, metric_name: &str) -> Result<()> {
     use datadog_api_client::datadogV2::api_metrics::ListTagsByMetricNameOptionalParams;
 
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => MetricsV2API::with_client_and_config(dd_cfg, c),
-        None => MetricsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MetricsV2API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_tags_by_metric_name(
             metric_name.to_string(),

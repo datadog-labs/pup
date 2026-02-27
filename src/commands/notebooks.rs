@@ -13,10 +13,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => NotebooksAPI::with_client_and_config(dd_cfg, c),
-        None => NotebooksAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = NotebooksAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_notebooks(ListNotebooksOptionalParams::default())
         .await
@@ -33,10 +31,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, notebook_id: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => NotebooksAPI::with_client_and_config(dd_cfg, c),
-        None => NotebooksAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = NotebooksAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_notebook(notebook_id)
         .await
@@ -53,10 +49,8 @@ pub async fn get(cfg: &Config, notebook_id: i64) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, notebook_id: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => NotebooksAPI::with_client_and_config(dd_cfg, c),
-        None => NotebooksAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = NotebooksAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_notebook(notebook_id)
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete notebook: {e:?}"))?;
@@ -74,10 +68,8 @@ pub async fn delete(cfg: &Config, notebook_id: i64) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => NotebooksAPI::with_client_and_config(dd_cfg, c),
-        None => NotebooksAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = NotebooksAPI::with_client_and_config(dd_cfg, dd_client);
     let body: NotebookCreateRequest = util::read_json_file(file)?;
     let resp = api
         .create_notebook(body)
@@ -96,10 +88,8 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn update(cfg: &Config, notebook_id: i64, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => NotebooksAPI::with_client_and_config(dd_cfg, c),
-        None => NotebooksAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = NotebooksAPI::with_client_and_config(dd_cfg, dd_client);
     let body: NotebookUpdateRequest = util::read_json_file(file)?;
     let resp = api
         .update_notebook(notebook_id, body)

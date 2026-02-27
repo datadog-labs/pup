@@ -21,11 +21,8 @@ pub async fn list(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut params = ListMonitorsOptionalParams::default();
     if let Some(name) = name {
@@ -83,11 +80,8 @@ pub async fn list(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, monitor_id: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_monitor(monitor_id, GetMonitorOptionalParams::default())
         .await
@@ -111,11 +105,8 @@ pub async fn get(cfg: &Config, monitor_id: i64) -> Result<()> {
 pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     let body: Monitor = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_monitor(body)
         .await
@@ -135,11 +126,8 @@ pub async fn update(cfg: &Config, monitor_id: i64, file: &str) -> Result<()> {
     let body: datadog_api_client::datadogV1::model::MonitorUpdateRequest =
         util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .update_monitor(monitor_id, body)
         .await
@@ -157,11 +145,8 @@ pub async fn update(cfg: &Config, monitor_id: i64, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn search(cfg: &Config, query: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut params = SearchMonitorsOptionalParams::default();
     if let Some(q) = query {
@@ -188,11 +173,8 @@ pub async fn search(cfg: &Config, query: Option<String>) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, monitor_id: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = if let Some(http_client) = client::make_bearer_client(cfg) {
-        MonitorsAPI::with_client_and_config(dd_cfg, http_client)
-    } else {
-        MonitorsAPI::with_config(dd_cfg)
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = MonitorsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .delete_monitor(monitor_id, DeleteMonitorOptionalParams::default())
         .await

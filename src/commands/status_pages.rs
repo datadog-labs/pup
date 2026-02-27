@@ -25,10 +25,8 @@ use datadog_api_client::datadogV2::model::{
 #[cfg(not(target_arch = "wasm32"))]
 fn make_api(cfg: &Config) -> StatusPagesAPI {
     let dd_cfg = client::make_dd_config(cfg);
-    match client::make_bearer_client(cfg) {
-        Some(c) => StatusPagesAPI::with_client_and_config(dd_cfg, c),
-        None => StatusPagesAPI::with_config(dd_cfg),
-    }
+    let dd_client = client::make_dd_client(cfg);
+    StatusPagesAPI::with_client_and_config(dd_cfg, dd_client)
 }
 
 #[cfg(not(target_arch = "wasm32"))]

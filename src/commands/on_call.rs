@@ -19,10 +19,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn teams_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_teams(ListTeamsOptionalParams::default())
         .await
@@ -39,10 +37,8 @@ pub async fn teams_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn teams_get(cfg: &Config, team_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_team(team_id.to_string())
         .await
@@ -59,10 +55,8 @@ pub async fn teams_get(cfg: &Config, team_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn teams_delete(cfg: &Config, team_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_team(team_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to delete team: {e:?}"))?;
@@ -80,10 +74,8 @@ pub async fn teams_delete(cfg: &Config, team_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn teams_create(cfg: &Config, name: &str, handle: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let attrs = TeamCreateAttributes::new(handle.to_string(), name.to_string());
     let data = TeamCreate::new(attrs, TeamType::TEAM);
     let body = TeamCreateRequest::new(data);
@@ -112,10 +104,8 @@ pub async fn teams_create(cfg: &Config, name: &str, handle: &str) -> Result<()> 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn teams_update(cfg: &Config, team_id: &str, name: &str, handle: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let attrs = TeamUpdateAttributes::new(handle.to_string(), name.to_string());
     let data = TeamUpdate::new(attrs, TeamType::TEAM);
     let body = TeamUpdateRequest::new(data);
@@ -144,10 +134,8 @@ pub async fn teams_update(cfg: &Config, team_id: &str, name: &str, handle: &str)
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn memberships_list(cfg: &Config, team_id: &str, page_size: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let params = GetTeamMembershipsOptionalParams::default().page_size(page_size);
     let resp = api
         .get_team_memberships(team_id.to_string(), params)
@@ -171,10 +159,8 @@ pub async fn memberships_add(
     role: Option<String>,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let mut attrs = UserTeamAttributes::new();
     if let Some(r) = role {
         let team_role = match r.to_lowercase().as_str() {
@@ -236,10 +222,8 @@ pub async fn memberships_update(
     role: &str,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     let team_role = match role.to_lowercase().as_str() {
         "admin" => UserTeamRole::ADMIN,
         _ => UserTeamRole::ADMIN,
@@ -281,10 +265,8 @@ pub async fn memberships_update(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn memberships_remove(cfg: &Config, team_id: &str, user_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TeamsAPI::with_client_and_config(dd_cfg, c),
-        None => TeamsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TeamsAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_team_membership(team_id.to_string(), user_id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to remove membership: {e:?}"))?;

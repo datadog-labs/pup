@@ -14,10 +14,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn projected(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsageMeteringV2API::with_client_and_config(dd_cfg, c),
-        None => UsageMeteringV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsageMeteringV2API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_projected_cost(GetProjectedCostOptionalParams::default())
         .await
@@ -34,10 +32,8 @@ pub async fn projected(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn by_org(cfg: &Config, start_month: String, end_month: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsageMeteringV2API::with_client_and_config(dd_cfg, c),
-        None => UsageMeteringV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsageMeteringV2API::with_client_and_config(dd_cfg, dd_client);
 
     let start_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&start_month)?)
@@ -75,10 +71,8 @@ pub async fn by_org(cfg: &Config, start_month: String, end_month: Option<String>
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn attribution(cfg: &Config, start: String, fields: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => UsageMeteringV2API::with_client_and_config(dd_cfg, c),
-        None => UsageMeteringV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = UsageMeteringV2API::with_client_and_config(dd_cfg, dd_client);
 
     let start_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&start)?).unwrap();

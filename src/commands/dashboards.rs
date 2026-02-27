@@ -13,10 +13,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DashboardsAPI::with_client_and_config(dd_cfg, c),
-        None => DashboardsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DashboardsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_dashboards(ListDashboardsOptionalParams::default())
         .await
@@ -33,10 +31,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DashboardsAPI::with_client_and_config(dd_cfg, c),
-        None => DashboardsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DashboardsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_dashboard(id.to_string())
         .await
@@ -54,10 +50,8 @@ pub async fn get(cfg: &Config, id: &str) -> Result<()> {
 pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     let body: Dashboard = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DashboardsAPI::with_client_and_config(dd_cfg, c),
-        None => DashboardsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DashboardsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_dashboard(body)
         .await
@@ -76,10 +70,8 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
 pub async fn update(cfg: &Config, id: &str, file: &str) -> Result<()> {
     let body: Dashboard = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DashboardsAPI::with_client_and_config(dd_cfg, c),
-        None => DashboardsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DashboardsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .update_dashboard(id.to_string(), body)
         .await
@@ -97,10 +89,8 @@ pub async fn update(cfg: &Config, id: &str, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DashboardsAPI::with_client_and_config(dd_cfg, c),
-        None => DashboardsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DashboardsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .delete_dashboard(id.to_string())
         .await

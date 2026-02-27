@@ -13,10 +13,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn connections_get(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => HighAvailabilityMultiRegionAPI::with_client_and_config(dd_cfg, c),
-        None => HighAvailabilityMultiRegionAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = HighAvailabilityMultiRegionAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_hamr_org_connection()
         .await
@@ -34,10 +32,8 @@ pub async fn connections_get(cfg: &Config) -> Result<()> {
 pub async fn connections_create(cfg: &Config, file: &str) -> Result<()> {
     let body: HamrOrgConnectionRequest = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => HighAvailabilityMultiRegionAPI::with_client_and_config(dd_cfg, c),
-        None => HighAvailabilityMultiRegionAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = HighAvailabilityMultiRegionAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_hamr_org_connection(body)
         .await
