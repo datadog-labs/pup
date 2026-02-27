@@ -48,6 +48,7 @@ pub fn default_scopes() -> Vec<&'static str> {
         "monitors_read",
         "monitors_write",
         "monitors_downtime",
+        "audit_logs_read",
         "apm_read",
         "slos_read",
         "slos_write",
