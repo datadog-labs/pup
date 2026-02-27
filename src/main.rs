@@ -4831,7 +4831,8 @@ async fn main_inner() -> anyhow::Result<()> {
     // In agent mode, intercept --help to return a JSON schema instead of plain text.
     let args: Vec<String> = std::env::args().collect();
     let has_help = args.iter().any(|a| a == "--help" || a == "-h");
-    if has_help && useragent::is_agent_mode() {
+    let has_agent_flag = args.iter().any(|a| a == "--agent");
+    if has_help && (useragent::is_agent_mode() || has_agent_flag) {
         let cmd = Cli::command();
         // Collect subcommand path from args (skip binary name, flags, and --help/-h)
         let sub_path: Vec<&str> = args
