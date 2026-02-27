@@ -22,10 +22,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn aws_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => AWSIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => AWSIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = AWSIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_aws_accounts(ListAWSAccountsOptionalParams::default())
         .await
@@ -42,10 +40,8 @@ pub async fn aws_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn gcp_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => GCPIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => GCPIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = GCPIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_gcp_integration()
         .await
@@ -62,10 +58,8 @@ pub async fn gcp_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn azure_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => AzureIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => AzureIntegrationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = AzureIntegrationAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_azure_integration()
         .await
@@ -86,10 +80,8 @@ pub async fn azure_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 fn make_oci_api(cfg: &Config) -> OCIIntegrationAPI {
     let dd_cfg = client::make_dd_config(cfg);
-    match client::make_bearer_client(cfg) {
-        Some(c) => OCIIntegrationAPI::with_client_and_config(dd_cfg, c),
-        None => OCIIntegrationAPI::with_config(dd_cfg),
-    }
+    let dd_client = client::make_dd_client(cfg);
+    OCIIntegrationAPI::with_client_and_config(dd_cfg, dd_client)
 }
 
 #[cfg(not(target_arch = "wasm32"))]

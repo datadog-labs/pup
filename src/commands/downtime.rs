@@ -12,10 +12,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DowntimesAPI::with_client_and_config(dd_cfg, c),
-        None => DowntimesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DowntimesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_downtimes(ListDowntimesOptionalParams::default())
         .await
@@ -32,10 +30,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DowntimesAPI::with_client_and_config(dd_cfg, c),
-        None => DowntimesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DowntimesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_downtime(id.to_string(), GetDowntimeOptionalParams::default())
         .await
@@ -54,10 +50,8 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
     let body: datadog_api_client::datadogV2::model::DowntimeCreateRequest =
         crate::util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DowntimesAPI::with_client_and_config(dd_cfg, c),
-        None => DowntimesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DowntimesAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .create_downtime(body)
         .await
@@ -75,10 +69,8 @@ pub async fn create(cfg: &Config, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn cancel(cfg: &Config, id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DowntimesAPI::with_client_and_config(dd_cfg, c),
-        None => DowntimesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DowntimesAPI::with_client_and_config(dd_cfg, dd_client);
     api.cancel_downtime(id.to_string())
         .await
         .map_err(|e| anyhow::anyhow!("failed to cancel downtime: {e:?}"))?;

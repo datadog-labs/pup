@@ -21,10 +21,8 @@ use crate::util;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config, start: i64, end: i64, tags: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => EventsV1API::with_client_and_config(dd_cfg, c),
-        None => EventsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = EventsV1API::with_client_and_config(dd_cfg, dd_client);
 
     // Default to last hour if not specified
     let now = chrono::Utc::now().timestamp();
@@ -74,7 +72,8 @@ pub async fn search(
     }
 
     let dd_cfg = client::make_dd_config(cfg);
-    let api = EventsV2API::with_config(dd_cfg);
+    let dd_client = client::make_dd_client(cfg);
+    let api = EventsV2API::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -138,10 +137,8 @@ pub async fn search(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, id: i64) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => EventsV1API::with_client_and_config(dd_cfg, c),
-        None => EventsV1API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = EventsV1API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_event(id)
         .await

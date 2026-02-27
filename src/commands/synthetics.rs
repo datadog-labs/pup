@@ -21,10 +21,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn tests_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsAPI::with_client_and_config(dd_cfg, c),
-        None => SyntheticsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_tests(ListTestsOptionalParams::default())
         .await
@@ -41,10 +39,8 @@ pub async fn tests_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn tests_get(cfg: &Config, public_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsAPI::with_client_and_config(dd_cfg, c),
-        None => SyntheticsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_test(public_id.to_string())
         .await
@@ -67,10 +63,8 @@ pub async fn tests_search(
     start: i64,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsAPI::with_client_and_config(dd_cfg, c),
-        None => SyntheticsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut params = SearchTestsOptionalParams::default();
     if let Some(t) = text {
@@ -114,10 +108,8 @@ pub async fn tests_search(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn locations_list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsAPI::with_client_and_config(dd_cfg, c),
-        None => SyntheticsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_locations()
         .await
@@ -136,10 +128,8 @@ pub async fn locations_list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn suites_list(cfg: &Config, query: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsV2API::with_client_and_config(dd_cfg, c),
-        None => SyntheticsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsV2API::with_client_and_config(dd_cfg, dd_client);
     let mut params = SearchSuitesOptionalParams::default();
     if let Some(q) = query {
         params = params.query(q);
@@ -164,10 +154,8 @@ pub async fn suites_list(cfg: &Config, query: Option<String>) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn suites_get(cfg: &Config, suite_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsV2API::with_client_and_config(dd_cfg, c),
-        None => SyntheticsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsV2API::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_synthetics_suite(suite_id.to_string())
         .await
@@ -185,10 +173,8 @@ pub async fn suites_get(cfg: &Config, suite_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn suites_create(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsV2API::with_client_and_config(dd_cfg, c),
-        None => SyntheticsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsV2API::with_client_and_config(dd_cfg, dd_client);
     let body: SuiteCreateEditRequest = crate::util::read_json_file(file)?;
     let resp = api
         .create_synthetics_suite(body)
@@ -207,10 +193,8 @@ pub async fn suites_create(cfg: &Config, file: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn suites_update(cfg: &Config, suite_id: &str, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsV2API::with_client_and_config(dd_cfg, c),
-        None => SyntheticsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsV2API::with_client_and_config(dd_cfg, dd_client);
     let body: SuiteCreateEditRequest = crate::util::read_json_file(file)?;
     let resp = api
         .edit_synthetics_suite(suite_id.to_string(), body)
@@ -230,10 +214,8 @@ pub async fn suites_update(cfg: &Config, suite_id: &str, file: &str) -> Result<(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn suites_delete(cfg: &Config, suite_ids: Vec<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => SyntheticsV2API::with_client_and_config(dd_cfg, c),
-        None => SyntheticsV2API::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = SyntheticsV2API::with_client_and_config(dd_cfg, dd_client);
     let attrs = DeletedSuitesRequestDeleteAttributes::new(suite_ids);
     let data = DeletedSuitesRequestDelete::new(attrs);
     let body = DeletedSuitesRequestDeleteRequest::new(data);

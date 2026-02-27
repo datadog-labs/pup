@@ -129,3 +129,6 @@ getrandom = { version = "0.2", features = ["js"], optional = true }
 
 [dev-dependencies]
 mockito = "1"
+
+[patch.crates-io]
+datadog-api-client = { git = "https://github.com/robhughadams/datadog-api-client-rust", branch = "master" }

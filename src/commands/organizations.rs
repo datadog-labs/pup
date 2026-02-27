@@ -10,10 +10,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => OrganizationsAPI::with_client_and_config(dd_cfg, c),
-        None => OrganizationsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = OrganizationsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_orgs()
         .await
@@ -30,10 +28,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => OrganizationsAPI::with_client_and_config(dd_cfg, c),
-        None => OrganizationsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = OrganizationsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_org("current".to_string())
         .await

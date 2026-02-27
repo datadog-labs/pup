@@ -36,10 +36,8 @@ pub async fn pipelines_list(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityPipelinesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -106,10 +104,8 @@ pub async fn tests_list(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityTestsAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityTestsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityTestsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_dt =
         chrono::DateTime::from_timestamp_millis(util::parse_time_to_unix_millis(&from)?).unwrap();
@@ -168,10 +164,8 @@ pub async fn events_search(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityPipelinesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -232,10 +226,8 @@ pub async fn events_search(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn events_aggregate(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityPipelinesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -291,10 +283,8 @@ pub async fn tests_search(
     limit: i32,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityTestsAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityTestsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityTestsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -355,10 +345,8 @@ pub async fn tests_search(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn tests_aggregate(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityTestsAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityTestsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityTestsAPI::with_client_and_config(dd_cfg, dd_client);
 
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
@@ -410,10 +398,8 @@ pub async fn tests_aggregate(cfg: &Config, query: String, from: String, to: Stri
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn pipelines_get(cfg: &Config, pipeline_id: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, c),
-        None => CIVisibilityPipelinesAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = CIVisibilityPipelinesAPI::with_client_and_config(dd_cfg, dd_client);
 
     let filter = CIAppPipelinesQueryFilter::new().query(pipeline_id.to_string());
 
@@ -443,10 +429,8 @@ pub async fn pipelines_get(cfg: &Config, pipeline_id: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn dora_patch_deployment(cfg: &Config, deployment_id: &str, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => DORAMetricsAPI::with_client_and_config(dd_cfg, c),
-        None => DORAMetricsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = DORAMetricsAPI::with_client_and_config(dd_cfg, dd_client);
     let body: DORADeploymentPatchRequest = crate::util::read_json_file(file)?;
     api.patch_dora_deployment(deployment_id.to_string(), body)
         .await
@@ -469,10 +453,8 @@ pub async fn dora_patch_deployment(cfg: &Config, deployment_id: &str, file: &str
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn flaky_tests_search(cfg: &Config, query: Option<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TestOptimizationAPI::with_client_and_config(dd_cfg, c),
-        None => TestOptimizationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TestOptimizationAPI::with_client_and_config(dd_cfg, dd_client);
 
     let mut body = FlakyTestsSearchRequest::new();
     if let Some(q) = query {
@@ -518,10 +500,8 @@ pub async fn flaky_tests_search(cfg: &Config, query: Option<String>) -> Result<(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn flaky_tests_update(cfg: &Config, file: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TestOptimizationAPI::with_client_and_config(dd_cfg, c),
-        None => TestOptimizationAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TestOptimizationAPI::with_client_and_config(dd_cfg, dd_client);
     let body: UpdateFlakyTestsRequest = crate::util::read_json_file(file)?;
     let resp = api
         .update_flaky_tests(body)

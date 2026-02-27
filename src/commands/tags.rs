@@ -15,10 +15,8 @@ use crate::formatter;
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn list(cfg: &Config) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TagsAPI::with_client_and_config(dd_cfg, c),
-        None => TagsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TagsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .list_host_tags(ListHostTagsOptionalParams::default())
         .await
@@ -35,10 +33,8 @@ pub async fn list(cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn get(cfg: &Config, hostname: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TagsAPI::with_client_and_config(dd_cfg, c),
-        None => TagsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TagsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_host_tags(hostname.to_string(), GetHostTagsOptionalParams::default())
         .await
@@ -55,10 +51,8 @@ pub async fn get(cfg: &Config, hostname: &str) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn add(cfg: &Config, hostname: &str, tags: Vec<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TagsAPI::with_client_and_config(dd_cfg, c),
-        None => TagsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TagsAPI::with_client_and_config(dd_cfg, dd_client);
     let body = HostTags::new().tags(tags);
     let resp = api
         .create_host_tags(
@@ -81,10 +75,8 @@ pub async fn add(cfg: &Config, hostname: &str, tags: Vec<String>) -> Result<()> 
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn update(cfg: &Config, hostname: &str, tags: Vec<String>) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TagsAPI::with_client_and_config(dd_cfg, c),
-        None => TagsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TagsAPI::with_client_and_config(dd_cfg, dd_client);
     let body = HostTags::new().tags(tags);
     let resp = api
         .update_host_tags(
@@ -107,10 +99,8 @@ pub async fn update(cfg: &Config, hostname: &str, tags: Vec<String>) -> Result<(
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn delete(cfg: &Config, hostname: &str) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => TagsAPI::with_client_and_config(dd_cfg, c),
-        None => TagsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = TagsAPI::with_client_and_config(dd_cfg, dd_client);
     api.delete_host_tags(
         hostname.to_string(),
         DeleteHostTagsOptionalParams::default(),

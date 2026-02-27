@@ -22,7 +22,8 @@ pub async fn issues_search(cfg: &Config, query: Option<String>, _limit: i32) -> 
         bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
     }
     let dd_cfg = client::make_dd_config(cfg);
-    let api = ErrorTrackingAPI::with_config(dd_cfg);
+    let dd_client = client::make_dd_client(cfg);
+    let api = ErrorTrackingAPI::with_client_and_config(dd_cfg, dd_client);
 
     let now = Utc::now().timestamp_millis();
     let one_day_ago = now - 86_400_000; // 24 hours in millis
@@ -81,7 +82,8 @@ pub async fn issues_get(cfg: &Config, issue_id: &str) -> Result<()> {
         bail!("error tracking requires API key authentication (DD_API_KEY + DD_APP_KEY)");
     }
     let dd_cfg = client::make_dd_config(cfg);
-    let api = ErrorTrackingAPI::with_config(dd_cfg);
+    let dd_client = client::make_dd_client(cfg);
+    let api = ErrorTrackingAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .get_issue(issue_id.to_string(), GetIssueOptionalParams::default())
         .await

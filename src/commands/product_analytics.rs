@@ -14,10 +14,8 @@ use crate::util;
 pub async fn events_send(cfg: &Config, file: &str) -> Result<()> {
     let body: ProductAnalyticsServerSideEventItem = util::read_json_file(file)?;
     let dd_cfg = client::make_dd_config(cfg);
-    let api = match client::make_bearer_client(cfg) {
-        Some(c) => ProductAnalyticsAPI::with_client_and_config(dd_cfg, c),
-        None => ProductAnalyticsAPI::with_config(dd_cfg),
-    };
+    let dd_client = client::make_dd_client(cfg);
+    let api = ProductAnalyticsAPI::with_client_and_config(dd_cfg, dd_client);
     let resp = api
         .submit_product_analytics_event(body)
         .await
