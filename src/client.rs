@@ -508,6 +508,7 @@ mod tests {
             app_key: Some("test".into()),
             access_token: None,
             site: "datadoghq.com".into(),
+            org: None,
             output_format: crate::config::OutputFormat::Json,
             auto_approve: false,
             agent_mode: false,

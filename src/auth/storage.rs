@@ -4,6 +4,16 @@ use std::path::PathBuf;
 use super::types::{ClientCredentials, TokenSet};
 
 // ---------------------------------------------------------------------------
+// Session registry entry — lightweight label (no secrets)
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+pub struct SessionEntry {
+    pub site: String,
+    pub org: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
 // Storage trait
 // ---------------------------------------------------------------------------
 
@@ -12,9 +22,9 @@ pub trait Storage: Send + Sync {
     fn backend_type(&self) -> BackendType;
     fn storage_location(&self) -> String;
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()>;
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>>;
-    fn delete_tokens(&self, site: &str) -> Result<()>;
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()>;
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>>;
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()>;
 
     fn save_client_credentials(&self, site: &str, creds: &ClientCredentials) -> Result<()>;
     fn load_client_credentials(&self, site: &str) -> Result<Option<ClientCredentials>>;
@@ -68,10 +78,8 @@ impl Storage for FileStorage {
         self.base_dir.display().to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
-        let path = self
-            .base_dir
-            .join(format!("tokens_{}.json", sanitize(site)));
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
+        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
         let json = serde_json::to_string_pretty(tokens)?;
         std::fs::write(&path, json)
             .with_context(|| format!("failed to write tokens: {}", path.display()))?;
@@ -84,10 +92,8 @@ impl Storage for FileStorage {
         Ok(())
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
-        let path = self
-            .base_dir
-            .join(format!("tokens_{}.json", sanitize(site)));
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
+        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
         match std::fs::read_to_string(&path) {
             Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
@@ -95,10 +101,8 @@ impl Storage for FileStorage {
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
-        let path = self
-            .base_dir
-            .join(format!("tokens_{}.json", sanitize(site)));
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
+        let path = self.base_dir.join(format!("{}.json", token_key(site, org)));
         match std::fs::remove_file(&path) {
             Ok(()) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
@@ -177,16 +181,16 @@ impl Storage for KeychainStorage {
         "OS keychain".to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
-        let key = format!("tokens_{}", sanitize(site));
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
+        let key = token_key(site, org);
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
         let json = serde_json::to_string(tokens)?;
         entry.set_password(&json)?;
         Ok(())
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
-        let key = format!("tokens_{}", sanitize(site));
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
+        let key = token_key(site, org);
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
         match entry.get_password() {
             Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
@@ -195,8 +199,8 @@ impl Storage for KeychainStorage {
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
-        let key = format!("tokens_{}", sanitize(site));
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
+        let key = token_key(site, org);
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
         match entry.delete_credential() {
             Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
@@ -249,15 +253,15 @@ impl Storage for InMemoryStorage {
         "in-memory (WASM)".to_string()
     }
 
-    fn save_tokens(&self, _site: &str, _tokens: &TokenSet) -> Result<()> {
+    fn save_tokens(&self, _site: &str, _org: Option<&str>, _tokens: &TokenSet) -> Result<()> {
         anyhow::bail!("token storage not available in WASM — use DD_ACCESS_TOKEN env var")
     }
 
-    fn load_tokens(&self, _site: &str) -> Result<Option<TokenSet>> {
+    fn load_tokens(&self, _site: &str, _org: Option<&str>) -> Result<Option<TokenSet>> {
         Ok(None)
     }
 
-    fn delete_tokens(&self, _site: &str) -> Result<()> {
+    fn delete_tokens(&self, _site: &str, _org: Option<&str>) -> Result<()> {
         Ok(())
     }
 
@@ -323,22 +327,22 @@ impl Storage for LocalStorageBackend {
         "browser localStorage".to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
-        let key = format!("pup_tokens_{}", sanitize(site));
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
+        let key = format!("pup_{}", token_key(site, org));
         let json = serde_json::to_string(tokens)?;
         Self::set_item(&key, &json)
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
-        let key = format!("pup_tokens_{}", sanitize(site));
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
+        let key = format!("pup_{}", token_key(site, org));
         match Self::get_item(&key)? {
             Some(json) => Ok(Some(serde_json::from_str(&json)?)),
             None => Ok(None),
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
-        let key = format!("pup_tokens_{}", sanitize(site));
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
+        let key = format!("pup_{}", token_key(site, org));
         Self::remove_item(&key)
     }
 
@@ -419,4 +423,80 @@ fn sanitize(site: &str) -> String {
     site.chars()
         .map(|c| if c.is_alphanumeric() { c } else { '_' })
         .collect()
+}
+
+/// Build the storage key for a token, incorporating an optional org label.
+/// No org → backward-compatible key: `tokens_<site>`
+/// With org → `tokens_<site>_<org>`
+fn token_key(site: &str, org: Option<&str>) -> String {
+    match org {
+        Some(o) if !o.is_empty() => format!("tokens_{}_{}", sanitize(site), sanitize(o)),
+        _ => format!("tokens_{}", sanitize(site)),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Session registry — tracks named org sessions (no secrets stored here)
+// ---------------------------------------------------------------------------
+
+#[cfg(not(target_arch = "wasm32"))]
+fn sessions_path() -> Option<std::path::PathBuf> {
+    crate::config::config_dir().map(|d| d.join("sessions.json"))
+}
+
+/// List all stored sessions from the registry file.
+/// Returns an empty vec if the file does not exist.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn list_sessions() -> Result<Vec<SessionEntry>> {
+    let path = match sessions_path() {
+        Some(p) => p,
+        None => return Ok(vec![]),
+    };
+    match std::fs::read_to_string(&path) {
+        Ok(json) => Ok(serde_json::from_str(&json).unwrap_or_default()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(vec![]),
+        Err(e) => Err(e.into()),
+    }
+}
+
+/// Upsert a session entry into the registry.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn save_session(site: &str, org: Option<&str>) -> Result<()> {
+    let mut sessions = list_sessions()?;
+    let entry = SessionEntry {
+        site: site.to_string(),
+        org: org.map(String::from),
+    };
+    // Dedup: remove any existing entry with same site+org, then append
+    sessions.retain(|s| !(s.site == entry.site && s.org == entry.org));
+    sessions.push(entry);
+    write_sessions(&sessions)
+}
+
+/// Remove a session entry from the registry.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn remove_session(site: &str, org: Option<&str>) -> Result<()> {
+    let mut sessions = list_sessions()?;
+    sessions.retain(|s| !(s.site == site && s.org.as_deref() == org));
+    write_sessions(&sessions)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn write_sessions(sessions: &[SessionEntry]) -> Result<()> {
+    let path = match sessions_path() {
+        Some(p) => p,
+        None => return Ok(()),
+    };
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let json = serde_json::to_string_pretty(sessions)?;
+    std::fs::write(&path, &json)
+        .with_context(|| format!("failed to write sessions: {}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(())
 }

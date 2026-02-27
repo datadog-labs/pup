@@ -19,14 +19,17 @@ pub async fn login(cfg: &Config) -> Result<()> {
     use crate::auth::{dcr, pkce, types};
 
     let site = &cfg.site;
+    let org = cfg.org.as_deref();
 
     // 1. Start callback server
     let mut server = crate::auth::callback::CallbackServer::new().await?;
     let redirect_uri = server.redirect_uri();
-    eprintln!("\n🔐 Starting OAuth2 login for site: {site}\n");
+    let org_label = org.map(|o| format!(" (org: {o})")).unwrap_or_default();
+    eprintln!("\n🔐 Starting OAuth2 login for site: {site}{org_label}\n");
     eprintln!("📡 Callback server started on: {redirect_uri}");
 
     // 2. Load existing client credentials (lock released before any await)
+    // Client credentials are site-scoped (DCR is per-site, shared across orgs)
     let existing_creds = with_storage(|store| store.load_client_credentials(site))?;
 
     let creds = match existing_creds {
@@ -87,15 +90,18 @@ pub async fn login(cfg: &Config) -> Result<()> {
         .await?;
 
     let location = with_storage(|store| {
-        store.save_tokens(site, &tokens)?;
+        store.save_tokens(site, org, &tokens)?;
         Ok(store.storage_location())
     })?;
+
+    // Register this session in the session registry
+    storage::save_session(site, org)?;
 
     let expires_at = chrono::DateTime::from_timestamp(tokens.issued_at + tokens.expires_in, 0)
         .map(|dt| dt.with_timezone(&chrono::Local).to_rfc3339())
         .unwrap_or_else(|| format!("in {} hours", tokens.expires_in / 3600));
 
-    eprintln!("\n✅ Login successful!");
+    eprintln!("\n✅ Login successful{org_label}!");
     eprintln!("   Access token expires: {expires_at}");
     eprintln!("   Token stored in: {location}");
 
@@ -114,12 +120,19 @@ pub async fn login(_cfg: &Config) -> Result<()> {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn logout(cfg: &Config) -> Result<()> {
     let site = &cfg.site;
+    let org = cfg.org.as_deref();
     with_storage(|store| {
-        store.delete_tokens(site)?;
-        store.delete_client_credentials(site)?;
+        store.delete_tokens(site, org)?;
+        // Only delete client credentials when logging out the default (no-org) session;
+        // client credentials are site-scoped and shared across orgs
+        if org.is_none() {
+            store.delete_client_credentials(site)?;
+        }
         Ok(())
     })?;
-    eprintln!("Logged out from {site}. Tokens and client credentials removed.");
+    storage::remove_session(site, org)?;
+    let org_label = org.map(|o| format!(" (org: {o})")).unwrap_or_default();
+    eprintln!("Logged out from {site}{org_label}. Tokens removed.");
     Ok(())
 }
 
@@ -133,6 +146,7 @@ pub async fn logout(_cfg: &Config) -> Result<()> {
 
 pub fn status(cfg: &Config) -> Result<()> {
     let site = &cfg.site;
+    let org = cfg.org.as_deref();
 
     // In WASM, just report env var status
     #[cfg(target_arch = "wasm32")]
@@ -147,7 +161,7 @@ pub fn status(cfg: &Config) -> Result<()> {
 
     #[cfg(not(target_arch = "wasm32"))]
     with_storage(|store| {
-        match store.load_tokens(site)? {
+        match store.load_tokens(site, org)? {
             Some(tokens) => {
                 let expires_at_ts = tokens.issued_at + tokens.expires_in;
                 let now = chrono::Utc::now().timestamp();
@@ -161,10 +175,11 @@ pub fn status(cfg: &Config) -> Result<()> {
                     ("valid".to_string(), format!("{mins}m{secs}s"))
                 };
 
+                let org_label = org.map(|o| format!(" (org: {o})")).unwrap_or_default();
                 if tokens.is_expired() {
-                    eprintln!("⚠️  Token expired for site: {site}");
+                    eprintln!("⚠️  Token expired for site: {site}{org_label}");
                 } else {
-                    eprintln!("✅ Authenticated for site: {site}");
+                    eprintln!("✅ Authenticated for site: {site}{org_label}");
                     eprintln!("   Token expires in: {remaining_str}");
                 }
 
@@ -176,6 +191,7 @@ pub fn status(cfg: &Config) -> Result<()> {
                     "authenticated": true,
                     "expires_at": expires_at,
                     "has_refresh": !tokens.refresh_token.is_empty(),
+                    "org": org,
                     "site": site,
                     "status": status,
                     "token_type": tokens.token_type,
@@ -183,9 +199,11 @@ pub fn status(cfg: &Config) -> Result<()> {
                 println!("{}", serde_json::to_string_pretty(&json).unwrap());
             }
             None => {
-                eprintln!("❌ Not authenticated for site: {site}");
+                let org_label = org.map(|o| format!(" (org: {o})")).unwrap_or_default();
+                eprintln!("❌ Not authenticated for site: {site}{org_label}");
                 let json = serde_json::json!({
                     "authenticated": false,
+                    "org": org,
                     "site": site,
                     "status": "no token",
                 });
@@ -208,7 +226,8 @@ pub fn token(cfg: &Config) -> Result<()> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let site = &cfg.site;
-        with_storage(|store| match store.load_tokens(site)? {
+        let org = cfg.org.as_deref();
+        with_storage(|store| match store.load_tokens(site, org)? {
             Some(tokens) => {
                 if tokens.is_expired() {
                     bail!("token is expired — run 'pup auth login' to refresh");
@@ -226,8 +245,9 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
     use crate::auth::dcr;
 
     let site = &cfg.site;
+    let org = cfg.org.as_deref();
 
-    let tokens = with_storage(|store| store.load_tokens(site))?.ok_or_else(|| {
+    let tokens = with_storage(|store| store.load_tokens(site, org))?.ok_or_else(|| {
         anyhow::anyhow!("no tokens found for site {site} — run 'pup auth login' first")
     })?;
 
@@ -239,7 +259,8 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
         anyhow::anyhow!("no client credentials found for site {site} — run 'pup auth login' first")
     })?;
 
-    eprintln!("🔄 Refreshing access token for site: {site}...");
+    let org_label = org.map(|o| format!(" (org: {o})")).unwrap_or_default();
+    eprintln!("🔄 Refreshing access token for site: {site}{org_label}...");
 
     let dcr_client = dcr::DcrClient::new(site);
     let new_tokens = dcr_client
@@ -247,7 +268,7 @@ pub async fn refresh(cfg: &Config) -> Result<()> {
         .await?;
 
     let location = with_storage(|store| {
-        store.save_tokens(site, &new_tokens)?;
+        store.save_tokens(site, org, &new_tokens)?;
         Ok(store.storage_location())
     })?;
 
@@ -268,5 +289,32 @@ pub async fn refresh(_cfg: &Config) -> Result<()> {
     bail!(
         "Token refresh is not available in WASM builds.\n\
          Use DD_ACCESS_TOKEN env var for bearer token auth."
+    )
+}
+
+/// List all stored org sessions from the session registry.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn list(_cfg: &Config) -> Result<()> {
+    let sessions = storage::list_sessions()?;
+    if sessions.is_empty() {
+        eprintln!("No stored sessions. Run 'pup auth login' to authenticate.");
+        let json = serde_json::json!([]);
+        println!("{}", serde_json::to_string_pretty(&json).unwrap());
+        return Ok(());
+    }
+    for entry in &sessions {
+        let org_label = entry.org.as_deref().unwrap_or("(default)");
+        eprintln!("  {} | {}", entry.site, org_label);
+    }
+    let json = serde_json::to_string_pretty(&sessions)?;
+    println!("{json}");
+    Ok(())
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn list(_cfg: &Config) -> Result<()> {
+    bail!(
+        "pup auth list is not available in WASM builds.\n\
+         Session storage is not available — credentials are read from environment variables."
     )
 }
