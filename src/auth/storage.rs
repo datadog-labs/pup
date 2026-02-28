@@ -585,3 +585,374 @@ fn write_sessions(sessions: &[SessionEntry]) -> Result<()> {
     }
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // --- helpers ------------------------------------------------------------
+
+    fn make_token(access: &str) -> TokenSet {
+        TokenSet {
+            access_token: access.to_string(),
+            refresh_token: "refresh".into(),
+            token_type: "Bearer".into(),
+            expires_in: 9_999_999_999, // far future — never expired
+            issued_at: 0,
+            scope: String::new(),
+            client_id: String::new(),
+        }
+    }
+
+    /// Temporary directory that removes itself on drop.
+    struct TempDir(std::path::PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let nanos = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.subsec_nanos())
+                .unwrap_or(0);
+            let dir = std::env::temp_dir().join(format!("pup_test_{}_{}", label, nanos));
+            std::fs::create_dir_all(&dir).unwrap();
+            TempDir(dir)
+        }
+
+        fn path(&self) -> &std::path::PathBuf {
+            &self.0
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    // --- org_map_key --------------------------------------------------------
+
+    #[test]
+    fn test_org_map_key_none() {
+        assert_eq!(org_map_key(None), DEFAULT_ORG_KEY);
+    }
+
+    #[test]
+    fn test_org_map_key_empty_string() {
+        assert_eq!(org_map_key(Some("")), DEFAULT_ORG_KEY);
+    }
+
+    #[test]
+    fn test_org_map_key_named() {
+        assert_eq!(org_map_key(Some("prod-child")), "prod-child");
+    }
+
+    // --- parse_token_map ----------------------------------------------------
+
+    #[test]
+    fn test_parse_token_map_new_format() {
+        let map: OrgTokenMap = [(DEFAULT_ORG_KEY.to_string(), make_token("tok1"))]
+            .into_iter()
+            .collect();
+        let json = serde_json::to_string(&map).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "tok1");
+    }
+
+    #[test]
+    fn test_parse_token_map_multiple_orgs() {
+        let map: OrgTokenMap = [
+            (DEFAULT_ORG_KEY.to_string(), make_token("default_tok")),
+            ("prod".to_string(), make_token("prod_tok")),
+        ]
+        .into_iter()
+        .collect();
+        let json = serde_json::to_string(&map).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed.len(), 2);
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "default_tok");
+        assert_eq!(parsed["prod"].access_token, "prod_tok");
+    }
+
+    #[test]
+    fn test_parse_token_map_legacy_migration() {
+        // Old format: bare TokenSet at the root (written by pup before multi-org)
+        let json = serde_json::to_string(&make_token("legacy_tok")).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "legacy_tok");
+    }
+
+    #[test]
+    fn test_parse_token_map_invalid_json() {
+        assert!(parse_token_map("not json at all").is_err());
+        assert!(parse_token_map("{\"bad\": true}").is_err());
+    }
+
+    // --- FileStorage — token map behaviour ----------------------------------
+
+    #[test]
+    fn test_file_storage_save_load_default_org() {
+        let tmp = TempDir::new("fs_default");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        let loaded = store.load_tokens("datadoghq.com", None).unwrap().unwrap();
+        assert_eq!(loaded.access_token, "default_tok");
+    }
+
+    #[test]
+    fn test_file_storage_save_load_named_org() {
+        let tmp = TempDir::new("fs_named");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        store
+            .save_tokens("datadoghq.com", Some("prod-child"), &make_token("prod_tok"))
+            .unwrap();
+        let loaded = store
+            .load_tokens("datadoghq.com", Some("prod-child"))
+            .unwrap()
+            .unwrap();
+        assert_eq!(loaded.access_token, "prod_tok");
+    }
+
+    #[test]
+    fn test_file_storage_multiple_orgs_one_file() {
+        let tmp = TempDir::new("fs_multi");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("staging"), &make_token("staging_tok"))
+            .unwrap();
+
+        // Only one file on disk for this site
+        let files: Vec<_> = std::fs::read_dir(tmp.path())
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .collect();
+        assert_eq!(files.len(), 1);
+
+        // All three orgs load independently
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", None)
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "default_tok"
+        );
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", Some("prod"))
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "prod_tok"
+        );
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", Some("staging"))
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "staging_tok"
+        );
+    }
+
+    #[test]
+    fn test_file_storage_org_isolation() {
+        // Loading a different org must not return another org's token
+        let tmp = TempDir::new("fs_isolation");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        assert!(store.load_tokens("datadoghq.com", None).unwrap().is_none());
+        assert!(store
+            .load_tokens("datadoghq.com", Some("staging"))
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn test_file_storage_delete_last_org_removes_file() {
+        let tmp = TempDir::new("fs_del_last");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("tok"))
+            .unwrap();
+        store.delete_tokens("datadoghq.com", None).unwrap();
+
+        let file_path = tmp.path().join("tokens_datadoghq_com.json");
+        assert!(
+            !file_path.exists(),
+            "file should be removed when last org is deleted"
+        );
+    }
+
+    #[test]
+    fn test_file_storage_delete_one_org_keeps_others() {
+        let tmp = TempDir::new("fs_del_one");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        store.delete_tokens("datadoghq.com", Some("prod")).unwrap();
+
+        // Default session survives
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", None)
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "default_tok"
+        );
+        // Deleted org is gone
+        assert!(store
+            .load_tokens("datadoghq.com", Some("prod"))
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn test_file_storage_delete_nonexistent_is_ok() {
+        let tmp = TempDir::new("fs_del_none");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        assert!(store.delete_tokens("datadoghq.com", None).is_ok());
+    }
+
+    #[test]
+    fn test_file_storage_legacy_migration() {
+        let tmp = TempDir::new("fs_legacy");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        // Write old-format file: bare TokenSet, no map wrapper
+        let legacy_json = serde_json::to_string_pretty(&make_token("legacy_tok")).unwrap();
+        let path = tmp.path().join("tokens_datadoghq_com.json");
+        std::fs::write(&path, legacy_json).unwrap();
+
+        // Existing default session loads transparently
+        let loaded = store.load_tokens("datadoghq.com", None).unwrap().unwrap();
+        assert_eq!(loaded.access_token, "legacy_tok");
+
+        // Named org not found in the old-format file
+        assert!(store
+            .load_tokens("datadoghq.com", Some("prod"))
+            .unwrap()
+            .is_none());
+    }
+
+    // --- Session registry ---------------------------------------------------
+
+    #[test]
+    fn test_session_registry_empty() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_empty");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert!(sessions.is_empty());
+    }
+
+    #[test]
+    fn test_session_registry_save_and_list() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_save");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", None).unwrap();
+        save_session("datadoghq.com", Some("prod-child")).unwrap();
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 2);
+        assert!(sessions
+            .iter()
+            .any(|s| s.site == "datadoghq.com" && s.org.is_none()));
+        assert!(sessions
+            .iter()
+            .any(|s| s.site == "datadoghq.com" && s.org.as_deref() == Some("prod-child")));
+    }
+
+    #[test]
+    fn test_session_registry_dedup() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_dedup");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", Some("prod")).unwrap();
+        save_session("datadoghq.com", Some("prod")).unwrap(); // duplicate
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 1);
+    }
+
+    #[test]
+    fn test_session_registry_remove() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_remove");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", None).unwrap();
+        save_session("datadoghq.com", Some("prod")).unwrap();
+        remove_session("datadoghq.com", Some("prod")).unwrap();
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 1);
+        assert!(sessions[0].org.is_none());
+    }
+
+    #[test]
+    fn test_session_registry_remove_nonexistent() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_rm_none");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+        let result = remove_session("datadoghq.com", Some("nonexistent"));
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert!(result.is_ok());
+    }
+}

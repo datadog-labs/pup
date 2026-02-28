@@ -175,8 +175,14 @@ impl Config {
 }
 
 /// Config file path: ~/.config/pup/config.yaml
+/// Respects PUP_CONFIG_DIR env var for testing and custom installs.
 #[cfg(not(target_arch = "wasm32"))]
 pub fn config_dir() -> Option<PathBuf> {
+    if let Ok(dir) = std::env::var("PUP_CONFIG_DIR") {
+        if !dir.is_empty() {
+            return Some(PathBuf::from(dir));
+        }
+    }
     dirs::config_dir().map(|d| d.join("pup"))
 }
 
@@ -435,10 +441,24 @@ mod tests {
 
     #[test]
     fn test_config_dir_returns_path() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
+        std::env::remove_var("PUP_CONFIG_DIR");
         let dir = config_dir();
         // On native builds, dirs::config_dir() should return Some
         assert!(dir.is_some());
         assert!(dir.unwrap().ends_with("pup"));
+    }
+
+    #[test]
+    fn test_config_dir_respects_override() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
+        std::env::set_var("PUP_CONFIG_DIR", "/tmp/pup_test_override");
+        let dir = config_dir();
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert_eq!(
+            dir,
+            Some(std::path::PathBuf::from("/tmp/pup_test_override"))
+        );
     }
 
     #[test]
