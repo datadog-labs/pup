@@ -294,21 +294,9 @@ pub async fn refresh(_cfg: &Config) -> Result<()> {
 
 /// List all stored org sessions from the session registry.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn list(_cfg: &Config) -> Result<()> {
+pub fn list(cfg: &Config) -> Result<()> {
     let sessions = storage::list_sessions()?;
-    if sessions.is_empty() {
-        eprintln!("No stored sessions. Run 'pup auth login' to authenticate.");
-        let json = serde_json::json!([]);
-        println!("{}", serde_json::to_string_pretty(&json).unwrap());
-        return Ok(());
-    }
-    for entry in &sessions {
-        let org_label = entry.org.as_deref().unwrap_or("(default)");
-        eprintln!("  {} | {}", entry.site, org_label);
-    }
-    let json = serde_json::to_string_pretty(&sessions)?;
-    println!("{json}");
-    Ok(())
+    crate::formatter::output(cfg, &sessions)
 }
 
 #[cfg(target_arch = "wasm32")]
