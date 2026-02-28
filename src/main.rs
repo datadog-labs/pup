@@ -34,6 +34,9 @@ struct Cli {
     /// Enable agent mode
     #[arg(long, global = true)]
     agent: bool,
+    /// Named org session (see 'pup auth login --org')
+    #[arg(long, global = true)]
+    org: Option<String>,
     #[command(subcommand)]
     command: Commands,
 }
@@ -326,6 +329,20 @@ enum Commands {
     ///   # Login to different Datadog site
     ///   DD_SITE=datadoghq.eu pup auth login
     ///
+    ///   # Login to a child org (multi-org support)
+    ///   pup auth login --org prod-child
+    ///   pup auth login --org staging-child
+    ///
+    ///   # List all stored org sessions
+    ///   pup auth list
+    ///
+    ///   # Use a named org session for any command
+    ///   pup monitors list --org prod-child
+    ///   DD_ORG=prod-child pup metrics query --query "avg:system.cpu.user{*}"
+    ///
+    ///   # Logout a specific org session
+    ///   pup auth logout --org staging-child
+    ///
     /// MULTI-SITE SUPPORT:
     ///   Each Datadog site maintains separate credentials:
     ///
@@ -335,10 +352,19 @@ enum Commands {
     ///   DD_SITE=us5.datadoghq.com pup auth login # US5
     ///   DD_SITE=ap1.datadoghq.com pup auth login # AP1
     ///
+    /// MULTI-ORG SUPPORT:
+    ///   Datadog parent/child sub-organizations each get their own session:
+    ///
+    ///   pup auth login --org prod-child    # saves tokens_<site>_prod_child
+    ///   pup auth login --org staging-child # saves tokens_<site>_staging_child
+    ///   pup monitors list --org prod-child # uses prod-child session
+    ///
     /// TOKEN STORAGE:
     ///   Credentials are stored in:
-    ///   • ~/.config/pup/tokens_<site>.json - OAuth2 tokens
-    ///   • ~/.config/pup/client_<site>.json - DCR client credentials
+    ///   • ~/.config/pup/tokens_<site>.json          - default OAuth2 tokens
+    ///   • ~/.config/pup/tokens_<site>_<org>.json    - named org tokens
+    ///   • ~/.config/pup/client_<site>.json          - DCR client credentials (shared)
+    ///   • ~/.config/pup/sessions.json               - session registry (no secrets)
     ///
     ///   File permissions are set to 0600 (read/write owner only).
     ///
@@ -4348,6 +4374,8 @@ enum AuthActions {
     Token,
     /// Refresh access token
     Refresh,
+    /// List all stored org sessions
+    List,
 }
 
 // ---- Agent-mode JSON schema for --help ----
@@ -4398,6 +4426,12 @@ fn build_agent_schema_scoped(
                 "type": "bool",
                 "default": "false",
                 "description": "Enable agent mode (auto-detected for AI coding assistants)"
+            },
+            {
+                "name": "--org",
+                "type": "string",
+                "default": null,
+                "description": "Named org session for multi-org support (see 'pup auth login --org')"
             },
             {
                 "name": "--output",
@@ -4512,6 +4546,12 @@ fn build_agent_schema(cmd: &clap::Command) -> serde_json::Value {
                 "type": "bool",
                 "default": "false",
                 "description": "Enable agent mode (auto-detected for AI coding assistants)"
+            },
+            {
+                "name": "--org",
+                "type": "string",
+                "default": null,
+                "description": "Named org session for multi-org support (see 'pup auth login --org')"
             },
             {
                 "name": "--output",
@@ -4867,6 +4907,19 @@ async fn main_inner() -> anyhow::Result<()> {
     cfg.agent_mode = cli.agent || useragent::is_agent_mode();
     if cfg.agent_mode {
         cfg.auto_approve = true;
+    }
+    // Apply --org flag (higher priority than DD_ORG env var / config file)
+    if let Some(org) = cli.org {
+        cfg.org = Some(org);
+        // Reload token from storage for this org, unless DD_ACCESS_TOKEN was explicitly set
+        #[cfg(all(not(feature = "browser"), not(target_arch = "wasm32")))]
+        if std::env::var("DD_ACCESS_TOKEN")
+            .ok()
+            .filter(|s| !s.is_empty())
+            .is_none()
+        {
+            cfg.access_token = config::load_token_from_storage(&cfg.site, cfg.org.as_deref());
+        }
     }
 
     match cli.command {
@@ -6336,6 +6389,7 @@ async fn main_inner() -> anyhow::Result<()> {
             AuthActions::Status => commands::auth::status(&cfg)?,
             AuthActions::Token => commands::auth::token(&cfg)?,
             AuthActions::Refresh => commands::auth::refresh(&cfg).await?,
+            AuthActions::List => commands::auth::list(&cfg)?,
         },
         // --- Utility ---
         Commands::Completions { shell } => {
