@@ -80,6 +80,20 @@ signs:
       - "${artifact}"
       - "--yes"
 
+brews:
+  - repository:
+      owner: datadog-labs
+      name: homebrew-pack
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/datadog-labs/pup"
+    description: "CLI companion for AI agents with 200+ commands across 33+ Datadog products"
+    license: "Apache-2.0"
+    install: |
+      bin.install "pup"
+    test: |
+      system "#{bin}/pup", "--version"
+
 changelog:
   use: github
   sort: asc
