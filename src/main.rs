@@ -6,6 +6,7 @@ mod commands;
 mod config;
 mod formatter;
 mod useragent;
+mod ops;
 mod util;
 mod version;
 
@@ -1757,8 +1758,54 @@ enum Commands {
         #[command(subcommand)]
         action: UserActions,
     },
+    /// Observability health checks for your Datadog setup
+    ///
+    /// Surfaces universally broken or misconfigured Datadog configurations — things that
+    /// are broken regardless of how your org has chosen to structure Datadog.
+    ///
+    /// CHECKS:
+    ///   silent-monitors   Monitors with no notification channels (alerts fire into the void)
+    ///   stale-monitors    Monitors in "No Data" state (abandoned or misconfigured data source)
+    ///   muted-forgotten   Monitors muted indefinitely or for >30 days
+    ///
+    /// EXAMPLES:
+    ///   # Run all checks
+    ///   pup vet
+    ///
+    ///   # Scope to a specific team
+    ///   pup vet --tags=team:platform
+    ///
+    ///   # Run a single check
+    ///   pup vet --check=silent-monitors
+    ///
+    ///   # Only show critical findings
+    ///   pup vet --severity=critical
+    ///
+    ///   # List all available checks
+    ///   pup vet list
+    #[command(verbatim_doc_comment)]
+    Vet {
+        #[command(subcommand)]
+        action: Option<VetActions>,
+        /// Filter monitors by tags (comma-separated, e.g., team:platform,env:prod)
+        #[arg(long, global = true)]
+        tags: Option<String>,
+        /// Run a single check by name
+        #[arg(long, global = true)]
+        check: Option<String>,
+        /// Minimum severity to report (critical, warning, info)
+        #[arg(long, global = true)]
+        severity: Option<String>,
+    },
     /// Print version information
     Version,
+}
+
+// ---- Vet ----
+#[derive(Subcommand)]
+enum VetActions {
+    /// List all available checks with descriptions
+    List,
 }
 
 // ---- Monitors ----
@@ -6396,6 +6443,10 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Completions { shell } => {
             clap_complete::generate(shell, &mut Cli::command(), "pup", &mut std::io::stdout());
         }
+        Commands::Vet { action, tags, check, severity } => match action {
+            Some(VetActions::List) => commands::vet::list_checks(),
+            None => commands::vet::run(&cfg, tags, check, severity).await?,
+        },
         Commands::Version => println!("{}", version::build_info()),
         Commands::Test => commands::test::run(&cfg)?,
     }

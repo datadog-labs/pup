@@ -44,3 +44,4 @@ pub mod test;
 pub mod traces;
 pub mod usage;
 pub mod users;
+pub mod vet;

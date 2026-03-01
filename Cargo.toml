@@ -129,3 +129,10 @@ getrandom = { version = "0.2", features = ["js"], optional = true }
 
 [dev-dependencies]
 mockito = "1"
+
+[patch.crates-io]
+# Fix: MonitorThresholds deserializer crashes on empty-string threshold values
+# returned by the Datadog API for some monitor types (e.g. service checks).
+# Upstream PR: https://github.com/DataDog/datadog-api-client-rust/pull/1292
+# TODO: remove this patch once the fix is released in a new crate version
+datadog-api-client = { path = "../datadog-api-client-rust" }
