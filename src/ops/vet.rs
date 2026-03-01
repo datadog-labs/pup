@@ -59,7 +59,8 @@ const CHECK_STALE: &str = "stale-monitors";
 const CHECK_MUTED: &str = "muted-forgotten";
 const CHECK_UNTAGGED: &str = "untagged-monitors";
 const CHECK_NO_RECOVERY: &str = "no-recovery-threshold";
-const CHECK_ON_CALL: &str = "on-call-health";
+const CHECK_FAST_RENOTIFY: &str = "fast-renotify-interval";
+const CHECK_PAGER_BURDEN: &str = "pager-burden";
 
 const ALL_CHECKS: &[&str] = &[
     CHECK_SILENT,
@@ -67,8 +68,82 @@ const ALL_CHECKS: &[&str] = &[
     CHECK_MUTED,
     CHECK_UNTAGGED,
     CHECK_NO_RECOVERY,
-    CHECK_ON_CALL,
+    CHECK_FAST_RENOTIFY,
+    CHECK_PAGER_BURDEN,
 ];
+
+// ---- Notification handle helpers ----
+
+/// Classification of a Datadog notification @-handle by impact level.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum HandleKind {
+    /// Datadog On-Call (@oncall-<schedule>)
+    DdOnCall,
+    /// PagerDuty (@pagerduty or @pagerduty-<service>)
+    PagerDuty,
+    /// OpsGenie (@opsgenie-<team>)
+    OpsGenie,
+    /// VictorOps / Splunk On-Call (@victorops-<team>)
+    VictorOps,
+    /// Everything else: Slack, email, webhook, etc.
+    Other,
+}
+
+impl HandleKind {
+    fn is_pager(self) -> bool {
+        !matches!(self, HandleKind::Other)
+    }
+
+    fn display(self) -> &'static str {
+        match self {
+            HandleKind::DdOnCall => "Datadog On-Call",
+            HandleKind::PagerDuty => "PagerDuty",
+            HandleKind::OpsGenie => "OpsGenie",
+            HandleKind::VictorOps => "VictorOps",
+            HandleKind::Other => "other",
+        }
+    }
+}
+
+/// Classify a bare handle name (without the leading `@`).
+fn classify_handle(handle: &str) -> HandleKind {
+    if handle.starts_with("oncall-") {
+        HandleKind::DdOnCall
+    } else if handle.starts_with("pagerduty") {
+        HandleKind::PagerDuty
+    } else if handle.starts_with("opsgenie-") {
+        HandleKind::OpsGenie
+    } else if handle.starts_with("victorops-") {
+        HandleKind::VictorOps
+    } else {
+        HandleKind::Other
+    }
+}
+
+/// Extract all `@handle` tokens from a monitor message.
+/// A handle is `[a-zA-Z0-9_-]+` immediately following `@`.
+/// Stops at whitespace, punctuation, or end-of-string.
+fn extract_handles(msg: &str) -> Vec<&str> {
+    let mut handles = Vec::new();
+    let bytes = msg.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'@' {
+            let start = i + 1;
+            let len = bytes[start..]
+                .iter()
+                .take_while(|&&b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+                .count();
+            if len > 0 {
+                handles.push(&msg[start..start + len]);
+            }
+            i = start + len;
+        } else {
+            i += 1;
+        }
+    }
+    handles
+}
 
 // ---- Check implementations ----
 
@@ -181,11 +256,12 @@ fn check_untagged_monitors(monitors: &[Monitor]) -> Finding {
         severity: Severity::Warning,
         count: resources.len(),
         resources,
-        recommendation: "Add tags (e.g. team:, service:, env:) so monitors can be filtered, routed, and grouped",
+        recommendation:
+            "Add tags (e.g. team:, service:, env:) so monitors can be filtered, routed, and grouped",
     }
 }
 
-/// Monitors that have a critical threshold but no critical recovery threshold — flapping risk.
+/// Monitors with a critical threshold but no critical recovery threshold — flapping risk.
 fn check_no_recovery_threshold(monitors: &[Monitor]) -> Finding {
     let resources: Vec<Resource> = monitors
         .iter()
@@ -215,42 +291,118 @@ fn check_no_recovery_threshold(monitors: &[Monitor]) -> Finding {
         severity: Severity::Info,
         count: resources.len(),
         resources,
-        recommendation: "Set a critical_recovery threshold to add hysteresis and prevent alert flapping",
+        recommendation:
+            "Set a critical_recovery threshold to add hysteresis and prevent alert flapping",
     }
 }
 
-/// Monitors currently alerting with a short renotify interval — actively burning out on-call.
-fn check_on_call_health(monitors: &[Monitor]) -> Finding {
+/// Monitors configured with a renotify interval ≤60 min — will spam on-call if they fire.
+/// This is a configuration audit regardless of current alert state.
+fn check_fast_renotify_interval(monitors: &[Monitor]) -> Finding {
     let resources: Vec<Resource> = monitors
         .iter()
         .filter_map(|m| {
-            if !matches!(m.overall_state, Some(MonitorOverallStates::ALERT)) {
-                return None;
-            }
-            // renotify_interval is Option<Option<i64>>; flatten to get the inner value
-            let renotify = m
-                .options
-                .as_ref()?
-                .renotify_interval
-                .flatten()
-                .unwrap_or(0);
+            // renotify_interval is Option<Option<i64>>
+            let renotify = m.options.as_ref()?.renotify_interval.flatten()?;
             if renotify <= 0 || renotify > 60 {
                 return None;
             }
             Some(Resource {
                 id: m.id.unwrap_or(0),
                 name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
-                detail: format!("currently alerting, re-notifying every {renotify} min"),
+                detail: format!("renotify_interval = {renotify} min"),
             })
         })
         .collect();
 
     Finding {
-        check: CHECK_ON_CALL,
+        check: CHECK_FAST_RENOTIFY,
+        severity: Severity::Info,
+        count: resources.len(),
+        resources,
+        recommendation:
+            "Consider raising renotify_interval (>60 min) to avoid notification storms if this monitor fires",
+    }
+}
+
+/// Monitors currently in ALERT that are actively paging through high-impact tools
+/// (Datadog On-Call, PagerDuty, OpsGenie, VictorOps) or re-notifying via any channel.
+/// Pager-tool entries are sorted first.
+fn check_pager_burden(monitors: &[Monitor]) -> Finding {
+    // Collect (is_pager, Resource) so we can sort before flattening.
+    let mut tagged: Vec<(bool, Resource)> = monitors
+        .iter()
+        .filter(|m| matches!(m.overall_state, Some(MonitorOverallStates::ALERT)))
+        .filter_map(|m| {
+            let message = m.message.as_deref().unwrap_or("");
+            let handles = extract_handles(message);
+            if handles.is_empty() {
+                return None; // silent-monitors catches no-notification monitors
+            }
+
+            let classified: Vec<(&str, HandleKind)> = handles
+                .iter()
+                .map(|&h| (h, classify_handle(h)))
+                .collect();
+
+            let pager_entries: Vec<_> = classified
+                .iter()
+                .filter(|(_, k)| k.is_pager())
+                .collect();
+
+            let renotify = m
+                .options
+                .as_ref()
+                .and_then(|o| o.renotify_interval)
+                .flatten()
+                .unwrap_or(0);
+
+            // Only include if actively paging via pager tool OR re-notifying frequently
+            let is_pager = !pager_entries.is_empty();
+            if !is_pager && (renotify <= 0 || renotify > 60) {
+                return None;
+            }
+
+            let detail = if is_pager {
+                // Deduplicate by tool name and build "Tool (@handle)" list
+                let mut seen_tools = std::collections::HashSet::new();
+                let tools: Vec<String> = pager_entries
+                    .iter()
+                    .filter(|(_, k)| seen_tools.insert(k.display()))
+                    .map(|(h, k)| format!("{} (@{})", k.display(), h))
+                    .collect();
+                let mut s = format!("paging via {}", tools.join(", "));
+                if renotify > 0 {
+                    s.push_str(&format!("; re-notifying every {renotify} min"));
+                }
+                s
+            } else {
+                // Non-pager handles with short renotify
+                let shown: Vec<_> = handles.iter().take(2).map(|h| format!("@{h}")).collect();
+                format!("notifying {} every {renotify} min", shown.join(", "))
+            };
+
+            Some((
+                is_pager,
+                Resource {
+                    id: m.id.unwrap_or(0),
+                    name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
+                    detail,
+                },
+            ))
+        })
+        .collect();
+
+    // Pager-tool monitors first, then Slack/webhook re-notifiers
+    tagged.sort_by_key(|(is_pager, _)| if *is_pager { 0u8 } else { 1u8 });
+    let resources: Vec<Resource> = tagged.into_iter().map(|(_, r)| r).collect();
+
+    Finding {
+        check: CHECK_PAGER_BURDEN,
         severity: Severity::Warning,
         count: resources.len(),
         resources,
-        recommendation: "Resolve the alert or raise renotify_interval to reduce on-call notification fatigue",
+        recommendation: "Resolve active alerts — Datadog On-Call and PagerDuty pages are waking up on-call responders",
     }
 }
 
@@ -310,7 +462,8 @@ pub async fn run(
             CHECK_MUTED => check_muted_forgotten(&monitors),
             CHECK_UNTAGGED => check_untagged_monitors(&monitors),
             CHECK_NO_RECOVERY => check_no_recovery_threshold(&monitors),
-            CHECK_ON_CALL => check_on_call_health(&monitors),
+            CHECK_FAST_RENOTIFY => check_fast_renotify_interval(&monitors),
+            CHECK_PAGER_BURDEN => check_pager_burden(&monitors),
             _ => unreachable!(),
         };
 
@@ -384,9 +537,59 @@ pub fn list_checks() -> Vec<(&'static str, Severity, &'static str)> {
             "Monitors with no critical_recovery threshold — flapping risk",
         ),
         (
-            CHECK_ON_CALL,
+            CHECK_FAST_RENOTIFY,
+            Severity::Info,
+            "Monitors configured with renotify_interval ≤60 min — will spam on-call if they fire",
+        ),
+        (
+            CHECK_PAGER_BURDEN,
             Severity::Warning,
-            "Currently alerting monitors with renotify ≤60 min — actively burning out on-call",
+            "Monitors currently alerting via pager tools (DD On-Call, PagerDuty, OpsGenie, VictorOps)",
         ),
     ]
+}
+
+// ---- Tests ----
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extract_handles_basic() {
+        let handles = extract_handles("Alert! @pagerduty-prod @slack-alerts and @oncall-platform");
+        assert_eq!(handles, vec!["pagerduty-prod", "slack-alerts", "oncall-platform"]);
+    }
+
+    #[test]
+    fn extract_handles_no_handles() {
+        assert!(extract_handles("no notifications here").is_empty());
+    }
+
+    #[test]
+    fn extract_handles_email_like() {
+        // Emails produce two tokens; neither will match pager prefixes
+        let handles = extract_handles("notify user@example.com and @pagerduty-svc");
+        assert!(handles.contains(&"pagerduty-svc"));
+    }
+
+    #[test]
+    fn classify_pager_handles() {
+        assert!(classify_handle("oncall-platform").is_pager());
+        assert!(classify_handle("pagerduty-prod").is_pager());
+        assert!(classify_handle("pagerduty").is_pager());
+        assert!(classify_handle("opsgenie-sre").is_pager());
+        assert!(classify_handle("victorops-team").is_pager());
+        assert!(!classify_handle("slack-alerts").is_pager());
+        assert!(!classify_handle("webhook-myapp").is_pager());
+    }
+
+    #[test]
+    fn classify_handle_display_names() {
+        assert_eq!(classify_handle("oncall-x").display(), "Datadog On-Call");
+        assert_eq!(classify_handle("pagerduty-x").display(), "PagerDuty");
+        assert_eq!(classify_handle("opsgenie-x").display(), "OpsGenie");
+        assert_eq!(classify_handle("victorops-x").display(), "VictorOps");
+        assert_eq!(classify_handle("slack-x").display(), "other");
+    }
 }
