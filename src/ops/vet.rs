@@ -2,8 +2,10 @@ use anyhow::Result;
 use datadog_api_client::datadogV1::api_monitors::{ListMonitorsOptionalParams, MonitorsAPI};
 use datadog_api_client::datadogV1::model::{Monitor, MonitorOverallStates};
 use serde::Serialize;
+use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::api;
 use crate::client;
 use crate::config::Config;
 
@@ -61,6 +63,8 @@ const CHECK_UNTAGGED: &str = "untagged-monitors";
 const CHECK_NO_RECOVERY: &str = "no-recovery-threshold";
 const CHECK_FAST_RENOTIFY: &str = "fast-renotify-interval";
 const CHECK_PAGER_BURDEN: &str = "pager-burden";
+
+const PAGER_LOOKBACK_DAYS: u32 = 30;
 
 const ALL_CHECKS: &[&str] = &[
     CHECK_SILENT,
@@ -325,30 +329,106 @@ fn check_fast_renotify_interval(monitors: &[Monitor]) -> Finding {
     }
 }
 
-/// Monitors currently in ALERT that are actively paging through high-impact tools
-/// (Datadog On-Call, PagerDuty, OpsGenie, VictorOps) or re-notifying via any channel.
-/// Pager-tool entries are sorted first.
-fn check_pager_burden(monitors: &[Monitor]) -> Finding {
-    // Collect (is_pager, Resource) so we can sort before flattening.
-    let mut tagged: Vec<(bool, Resource)> = monitors
+/// Fetch monitor alert-triggered event counts over the last `days` days.
+/// Returns monitor_id → trigger count. Silently returns empty map on API failure
+/// (missing permissions, etc.) so the check degrades gracefully.
+///
+/// Note: the typed Event model omits `monitor_id` (it lands in additional_properties),
+/// so we use the raw JSON API path here.
+async fn fetch_alert_event_counts(
+    cfg: &Config,
+    tags: Option<&str>,
+    days: u32,
+) -> HashMap<i64, u32> {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    let start = now - (days as i64 * 86400);
+
+    let mut query: Vec<(&str, String)> = vec![
+        ("start", start.to_string()),
+        ("end", now.to_string()),
+    ];
+    if let Some(t) = tags {
+        query.push(("tags", t.to_string()));
+    }
+
+    let data = match api::get(cfg, "/api/v1/events", &query).await {
+        Ok(d) => d,
+        Err(_) => return HashMap::new(),
+    };
+
+    let mut counts: HashMap<i64, u32> = HashMap::new();
+    if let Some(events) = data["events"].as_array() {
+        for event in events {
+            // Count alert-triggered events only; skip recoveries ("success") and info.
+            let alert_type = event["alert_type"].as_str().unwrap_or("");
+            if alert_type != "error" && alert_type != "warning" {
+                continue;
+            }
+            // monitor_id is not in the typed model — present in the raw JSON payload.
+            if let Some(monitor_id) = event["monitor_id"].as_i64() {
+                *counts.entry(monitor_id).or_insert(0) += 1;
+            }
+        }
+    }
+
+    counts
+}
+
+/// Build a deduplicated pager-tool description string for a set of handles.
+/// e.g. "Datadog On-Call (@oncall-platform), PagerDuty (@pagerduty-prod)"
+fn pager_tools_str(handles: &[&str]) -> String {
+    let mut seen = std::collections::HashSet::new();
+    handles
         .iter()
-        .filter(|m| matches!(m.overall_state, Some(MonitorOverallStates::ALERT)))
+        .map(|&h| (h, classify_handle(h)))
+        .filter(|(_, k)| k.is_pager() && seen.insert(k.display()))
+        .map(|(h, k)| format!("{} (@{})", k.display(), h))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// Top paging monitors by alert history over the last PAGER_LOOKBACK_DAYS days.
+/// Sorted by page count descending; currently-alerting monitors float to the top
+/// within the same count. Uses a secondary Events API call for history.
+fn check_pager_burden(
+    monitors: &[Monitor],
+    alert_counts: &HashMap<i64, u32>,
+) -> Finding {
+    // (sort_key, Resource) so we can sort before stripping the key.
+    let mut entries: Vec<(u32, Resource)> = monitors
+        .iter()
         .filter_map(|m| {
+            let id = m.id.unwrap_or(0);
             let message = m.message.as_deref().unwrap_or("");
             let handles = extract_handles(message);
-            if handles.is_empty() {
-                return None; // silent-monitors catches no-notification monitors
+            let pager_handles: Vec<&str> = handles
+                .iter()
+                .copied()
+                .filter(|&h| classify_handle(h).is_pager())
+                .collect();
+
+            if pager_handles.is_empty() {
+                return None;
             }
 
-            let classified: Vec<(&str, HandleKind)> = handles
-                .iter()
-                .map(|&h| (h, classify_handle(h)))
-                .collect();
+            let page_count = *alert_counts.get(&id).unwrap_or(&0);
+            let is_active = matches!(m.overall_state, Some(MonitorOverallStates::ALERT));
 
-            let pager_entries: Vec<_> = classified
-                .iter()
-                .filter(|(_, k)| k.is_pager())
-                .collect();
+            // Skip monitors with pager handles that haven't fired recently and aren't active.
+            if page_count == 0 && !is_active {
+                return None;
+            }
+
+            let tools = pager_tools_str(&pager_handles);
+            let team = m
+                .tags
+                .as_ref()
+                .and_then(|t| t.iter().find(|s| s.starts_with("team:")))
+                .map(|s| format!(" [{s}]"))
+                .unwrap_or_default();
 
             let renotify = m
                 .options
@@ -357,52 +437,39 @@ fn check_pager_burden(monitors: &[Monitor]) -> Finding {
                 .flatten()
                 .unwrap_or(0);
 
-            // Only include if actively paging via pager tool OR re-notifying frequently
-            let is_pager = !pager_entries.is_empty();
-            if !is_pager && (renotify <= 0 || renotify > 60) {
-                return None;
-            }
-
-            let detail = if is_pager {
-                // Deduplicate by tool name and build "Tool (@handle)" list
-                let mut seen_tools = std::collections::HashSet::new();
-                let tools: Vec<String> = pager_entries
-                    .iter()
-                    .filter(|(_, k)| seen_tools.insert(k.display()))
-                    .map(|(h, k)| format!("{} (@{})", k.display(), h))
-                    .collect();
-                let mut s = format!("paging via {}", tools.join(", "));
-                if renotify > 0 {
-                    s.push_str(&format!("; re-notifying every {renotify} min"));
-                }
-                s
+            let renotify_str = if renotify > 0 {
+                format!(", re-notifying every {renotify} min")
             } else {
-                // Non-pager handles with short renotify
-                let shown: Vec<_> = handles.iter().take(2).map(|h| format!("@{h}")).collect();
-                format!("notifying {} every {renotify} min", shown.join(", "))
+                String::new()
             };
 
-            Some((
-                is_pager,
-                Resource {
-                    id: m.id.unwrap_or(0),
-                    name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
-                    detail,
-                },
-            ))
+            let detail = match (page_count, is_active) {
+                (0, true) => format!("currently alerting via {tools}{renotify_str}{team}"),
+                (n, true) => format!(
+                    "{n} pages ({PAGER_LOOKBACK_DAYS}d), currently alerting via {tools}{renotify_str}{team}"
+                ),
+                (n, false) => {
+                    format!("{n} pages ({PAGER_LOOKBACK_DAYS}d) via {tools}{renotify_str}{team}")
+                }
+            };
+
+            // Sort key: currently-alerting monitors get a bonus so they float up within same count.
+            let sort_key = page_count * 2 + if is_active { 1 } else { 0 };
+
+            Some((sort_key, Resource { id, name: m.name.as_deref().unwrap_or("(unnamed)").to_string(), detail }))
         })
         .collect();
 
-    // Pager-tool monitors first, then Slack/webhook re-notifiers
-    tagged.sort_by_key(|(is_pager, _)| if *is_pager { 0u8 } else { 1u8 });
-    let resources: Vec<Resource> = tagged.into_iter().map(|(_, r)| r).collect();
+    // Highest sort key first (most pages + currently alerting).
+    entries.sort_by(|a, b| b.0.cmp(&a.0));
+    let resources: Vec<Resource> = entries.into_iter().map(|(_, r)| r).collect();
 
     Finding {
         check: CHECK_PAGER_BURDEN,
         severity: Severity::Warning,
         count: resources.len(),
         resources,
-        recommendation: "Resolve active alerts — Datadog On-Call and PagerDuty pages are waking up on-call responders",
+        recommendation: "Investigate top contributors — Datadog On-Call and PagerDuty pages wake up on-call responders",
     }
 }
 
@@ -428,7 +495,7 @@ pub async fn run(
         None => ALL_CHECKS.to_vec(),
     };
 
-    // Single API call for all checks
+    // Fetch monitors (single API call shared by all checks)
     let dd_cfg = client::make_dd_config(cfg);
     let api = if let Some(http_client) = client::make_bearer_client(cfg) {
         MonitorsAPI::with_client_and_config(dd_cfg, http_client)
@@ -437,14 +504,22 @@ pub async fn run(
     };
 
     let mut params = ListMonitorsOptionalParams::default().page_size(1000).page(0);
-    if let Some(t) = tags {
-        params = params.monitor_tags(t);
+    if let Some(ref t) = tags {
+        params = params.monitor_tags(t.clone());
     }
 
     let monitors = api
         .list_monitors(params)
         .await
         .map_err(|e| anyhow::anyhow!("failed to list monitors: {:?}", e))?;
+
+    // Fetch paging history only when the pager-burden check is actually running.
+    // Silently degrades if the Events API is unavailable (missing perms, etc.).
+    let alert_counts = if checks_to_run.contains(&CHECK_PAGER_BURDEN) {
+        fetch_alert_event_counts(cfg, tags.as_deref(), PAGER_LOOKBACK_DAYS).await
+    } else {
+        HashMap::new()
+    };
 
     let min_severity: Option<Severity> = severity_filter.as_deref().map(|s| match s {
         "critical" => Severity::Critical,
@@ -463,7 +538,7 @@ pub async fn run(
             CHECK_UNTAGGED => check_untagged_monitors(&monitors),
             CHECK_NO_RECOVERY => check_no_recovery_threshold(&monitors),
             CHECK_FAST_RENOTIFY => check_fast_renotify_interval(&monitors),
-            CHECK_PAGER_BURDEN => check_pager_burden(&monitors),
+            CHECK_PAGER_BURDEN => check_pager_burden(&monitors, &alert_counts),
             _ => unreachable!(),
         };
 
@@ -544,7 +619,7 @@ pub fn list_checks() -> Vec<(&'static str, Severity, &'static str)> {
         (
             CHECK_PAGER_BURDEN,
             Severity::Warning,
-            "Monitors currently alerting via pager tools (DD On-Call, PagerDuty, OpsGenie, VictorOps)",
+            "Top paging monitors by alert history (30d) — DD On-Call, PagerDuty, OpsGenie, VictorOps",
         ),
     ]
 }
