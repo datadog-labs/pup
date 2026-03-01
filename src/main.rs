@@ -5,8 +5,8 @@ mod client;
 mod commands;
 mod config;
 mod formatter;
-mod useragent;
 mod ops;
+mod useragent;
 mod util;
 mod version;
 
@@ -6443,7 +6443,12 @@ async fn main_inner() -> anyhow::Result<()> {
         Commands::Completions { shell } => {
             clap_complete::generate(shell, &mut Cli::command(), "pup", &mut std::io::stdout());
         }
-        Commands::Vet { action, tags, check, severity } => match action {
+        Commands::Vet {
+            action,
+            tags,
+            check,
+            severity,
+        } => match action {
             Some(VetActions::List) => commands::vet::list_checks(),
             None => commands::vet::run(&cfg, tags, check, severity).await?,
         },

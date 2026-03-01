@@ -346,10 +346,8 @@ async fn fetch_alert_event_counts(
         .unwrap_or(0);
     let start = now - (days as i64 * 86400);
 
-    let mut query: Vec<(&str, String)> = vec![
-        ("start", start.to_string()),
-        ("end", now.to_string()),
-    ];
+    let mut query: Vec<(&str, String)> =
+        vec![("start", start.to_string()), ("end", now.to_string())];
     if let Some(t) = tags {
         query.push(("tags", t.to_string()));
     }
@@ -393,10 +391,7 @@ fn pager_tools_str(handles: &[&str]) -> String {
 /// Top paging monitors by alert history over the last PAGER_LOOKBACK_DAYS days.
 /// Sorted by page count descending; currently-alerting monitors float to the top
 /// within the same count. Uses a secondary Events API call for history.
-fn check_pager_burden(
-    monitors: &[Monitor],
-    alert_counts: &HashMap<i64, u32>,
-) -> Finding {
+fn check_pager_burden(monitors: &[Monitor], alert_counts: &HashMap<i64, u32>) -> Finding {
     // (sort_key, Resource) so we can sort before stripping the key.
     let mut entries: Vec<(u32, Resource)> = monitors
         .iter()
@@ -503,7 +498,9 @@ pub async fn run(
         MonitorsAPI::with_config(dd_cfg)
     };
 
-    let mut params = ListMonitorsOptionalParams::default().page_size(1000).page(0);
+    let mut params = ListMonitorsOptionalParams::default()
+        .page_size(1000)
+        .page(0);
     if let Some(ref t) = tags {
         params = params.monitor_tags(t.clone());
     }
@@ -633,7 +630,10 @@ mod tests {
     #[test]
     fn extract_handles_basic() {
         let handles = extract_handles("Alert! @pagerduty-prod @slack-alerts and @oncall-platform");
-        assert_eq!(handles, vec!["pagerduty-prod", "slack-alerts", "oncall-platform"]);
+        assert_eq!(
+            handles,
+            vec!["pagerduty-prod", "slack-alerts", "oncall-platform"]
+        );
     }
 
     #[test]
