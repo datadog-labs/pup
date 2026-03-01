@@ -260,55 +260,10 @@ fn find_endpoint_requirement(method: &str, path: &str) -> Option<&'static Endpoi
 // Static tables (native only)
 // ---------------------------------------------------------------------------
 
-/// Endpoints that don't support OAuth (52 patterns across 7 API groups).
+/// Endpoints that don't support OAuth.
 /// Trailing "/" means prefix match for ID-parameterized paths.
 #[cfg(not(target_arch = "wasm32"))]
 static OAUTH_EXCLUDED_ENDPOINTS: &[EndpointRequirement] = &[
-    // Logs API (11)
-    EndpointRequirement {
-        path: "/api/v2/logs/events",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/events/search",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/analytics/aggregate",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/archives/",
-        method: "DELETE",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/custom_destinations",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/custom_destinations/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics/",
-        method: "GET",
-    },
-    EndpointRequirement {
-        path: "/api/v2/logs/config/metrics/",
-        method: "DELETE",
-    },
     // RUM API (10)
     EndpointRequirement {
         path: "/api/v2/rum/applications",
@@ -391,15 +346,6 @@ static OAUTH_EXCLUDED_ENDPOINTS: &[EndpointRequirement] = &[
     EndpointRequirement {
         path: "/api/v2/events/search",
         method: "POST",
-    },
-    // Error Tracking (2)
-    EndpointRequirement {
-        path: "/api/v2/error_tracking/issues/search",
-        method: "POST",
-    },
-    EndpointRequirement {
-        path: "/api/v2/error_tracking/issues/",
-        method: "GET",
     },
     // Fleet Automation (15)
     EndpointRequirement {
@@ -562,6 +508,7 @@ mod tests {
             app_key: Some("test".into()),
             access_token: None,
             site: "datadoghq.com".into(),
+            org: None,
             output_format: crate::config::OutputFormat::Json,
             auto_approve: false,
             agent_mode: false,
@@ -600,9 +547,9 @@ mod tests {
     }
 
     #[test]
-    fn test_requires_api_key_fallback_logs() {
-        assert!(requires_api_key_fallback("POST", "/api/v2/logs/events"));
-        assert!(requires_api_key_fallback(
+    fn test_no_fallback_for_logs() {
+        assert!(!requires_api_key_fallback("POST", "/api/v2/logs/events"));
+        assert!(!requires_api_key_fallback(
             "POST",
             "/api/v2/logs/events/search"
         ));
@@ -638,14 +585,17 @@ mod tests {
         ));
         assert!(requires_api_key_fallback(
             "DELETE",
-            "/api/v2/logs/config/archives/archive-123"
+            "/api/v2/api_keys/key-123"
         ));
     }
 
     #[test]
     fn test_method_must_match() {
-        // Logs events is POST-excluded, but GET should not match
-        assert!(!requires_api_key_fallback("GET", "/api/v2/logs/events"));
+        // RUM events/search is POST-excluded, but GET should not match
+        assert!(!requires_api_key_fallback(
+            "GET",
+            "/api/v2/rum/events/search"
+        ));
     }
 
     #[test]
@@ -655,7 +605,7 @@ mod tests {
 
     #[test]
     fn test_oauth_excluded_count() {
-        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 53);
+        assert_eq!(OAUTH_EXCLUDED_ENDPOINTS.len(), 40);
     }
 
     #[test]
@@ -750,8 +700,8 @@ mod tests {
     }
 
     #[test]
-    fn test_requires_api_key_fallback_error_tracking() {
-        assert!(requires_api_key_fallback(
+    fn test_no_fallback_for_error_tracking() {
+        assert!(!requires_api_key_fallback(
             "POST",
             "/api/v2/error_tracking/issues/search"
         ));

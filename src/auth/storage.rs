@@ -4,6 +4,16 @@ use std::path::PathBuf;
 use super::types::{ClientCredentials, TokenSet};
 
 // ---------------------------------------------------------------------------
+// Session registry entry — lightweight label (no secrets)
+// ---------------------------------------------------------------------------
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+pub struct SessionEntry {
+    pub site: String,
+    pub org: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
 // Storage trait
 // ---------------------------------------------------------------------------
 
@@ -12,9 +22,9 @@ pub trait Storage: Send + Sync {
     fn backend_type(&self) -> BackendType;
     fn storage_location(&self) -> String;
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()>;
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>>;
-    fn delete_tokens(&self, site: &str) -> Result<()>;
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()>;
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>>;
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()>;
 
     fn save_client_credentials(&self, site: &str, creds: &ClientCredentials) -> Result<()>;
     fn load_client_credentials(&self, site: &str) -> Result<Option<ClientCredentials>>;
@@ -68,14 +78,19 @@ impl Storage for FileStorage {
         self.base_dir.display().to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
         let path = self
             .base_dir
             .join(format!("tokens_{}.json", sanitize(site)));
-        let json = serde_json::to_string_pretty(tokens)?;
+        let mut map = match std::fs::read_to_string(&path) {
+            Ok(json) => parse_token_map(&json).unwrap_or_default(),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => OrgTokenMap::new(),
+            Err(e) => return Err(e.into()),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string_pretty(&map)?;
         std::fs::write(&path, json)
             .with_context(|| format!("failed to write tokens: {}", path.display()))?;
-        // Restrict permissions on Unix
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -84,25 +99,42 @@ impl Storage for FileStorage {
         Ok(())
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
         let path = self
             .base_dir
             .join(format!("tokens_{}.json", sanitize(site)));
         match std::fs::read_to_string(&path) {
-            Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Ok(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
             Err(e) => Err(e.into()),
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
         let path = self
             .base_dir
             .join(format!("tokens_{}.json", sanitize(site)));
-        match std::fs::remove_file(&path) {
-            Ok(()) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(e) => Err(e.into()),
+        let json = match std::fs::read_to_string(&path) {
+            Ok(j) => j,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(e.into()),
+        };
+        let mut map = parse_token_map(&json).unwrap_or_default();
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            match std::fs::remove_file(&path) {
+                Ok(()) | Err(_) => Ok(()),
+            }
+        } else {
+            let json = serde_json::to_string_pretty(&map)?;
+            std::fs::write(&path, json)
+                .with_context(|| format!("failed to write tokens: {}", path.display()))?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))?;
+            }
+            Ok(())
         }
     }
 
@@ -177,30 +209,49 @@ impl Storage for KeychainStorage {
         "OS keychain".to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
         let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
-        let json = serde_json::to_string(tokens)?;
+        let mut map = match entry.get_password() {
+            Ok(json) => parse_token_map(&json).unwrap_or_default(),
+            Err(keyring::Error::NoEntry) => OrgTokenMap::new(),
+            Err(e) => return Err(e.into()),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string(&map)?;
         entry.set_password(&json)?;
         Ok(())
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
         let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
         match entry.get_password() {
-            Ok(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Ok(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             Err(keyring::Error::NoEntry) => Ok(None),
             Err(e) => Err(e.into()),
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
         let key = format!("tokens_{}", sanitize(site));
         let entry = keyring::Entry::new(SERVICE_NAME, &key)?;
-        match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-            Err(e) => Err(e.into()),
+        let json = match entry.get_password() {
+            Ok(j) => j,
+            Err(keyring::Error::NoEntry) => return Ok(()),
+            Err(e) => return Err(e.into()),
+        };
+        let mut map = parse_token_map(&json).unwrap_or_default();
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            match entry.delete_credential() {
+                Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+                Err(e) => Err(e.into()),
+            }
+        } else {
+            let json = serde_json::to_string(&map)?;
+            entry.set_password(&json)?;
+            Ok(())
         }
     }
 
@@ -249,15 +300,15 @@ impl Storage for InMemoryStorage {
         "in-memory (WASM)".to_string()
     }
 
-    fn save_tokens(&self, _site: &str, _tokens: &TokenSet) -> Result<()> {
+    fn save_tokens(&self, _site: &str, _org: Option<&str>, _tokens: &TokenSet) -> Result<()> {
         anyhow::bail!("token storage not available in WASM — use DD_ACCESS_TOKEN env var")
     }
 
-    fn load_tokens(&self, _site: &str) -> Result<Option<TokenSet>> {
+    fn load_tokens(&self, _site: &str, _org: Option<&str>) -> Result<Option<TokenSet>> {
         Ok(None)
     }
 
-    fn delete_tokens(&self, _site: &str) -> Result<()> {
+    fn delete_tokens(&self, _site: &str, _org: Option<&str>) -> Result<()> {
         Ok(())
     }
 
@@ -323,23 +374,38 @@ impl Storage for LocalStorageBackend {
         "browser localStorage".to_string()
     }
 
-    fn save_tokens(&self, site: &str, tokens: &TokenSet) -> Result<()> {
+    fn save_tokens(&self, site: &str, org: Option<&str>, tokens: &TokenSet) -> Result<()> {
         let key = format!("pup_tokens_{}", sanitize(site));
-        let json = serde_json::to_string(tokens)?;
+        let mut map = match Self::get_item(&key)? {
+            Some(json) => parse_token_map(&json).unwrap_or_default(),
+            None => OrgTokenMap::new(),
+        };
+        map.insert(org_map_key(org).to_string(), tokens.clone());
+        let json = serde_json::to_string(&map)?;
         Self::set_item(&key, &json)
     }
 
-    fn load_tokens(&self, site: &str) -> Result<Option<TokenSet>> {
+    fn load_tokens(&self, site: &str, org: Option<&str>) -> Result<Option<TokenSet>> {
         let key = format!("pup_tokens_{}", sanitize(site));
         match Self::get_item(&key)? {
-            Some(json) => Ok(Some(serde_json::from_str(&json)?)),
+            Some(json) => Ok(parse_token_map(&json)?.remove(org_map_key(org))),
             None => Ok(None),
         }
     }
 
-    fn delete_tokens(&self, site: &str) -> Result<()> {
+    fn delete_tokens(&self, site: &str, org: Option<&str>) -> Result<()> {
         let key = format!("pup_tokens_{}", sanitize(site));
-        Self::remove_item(&key)
+        let mut map = match Self::get_item(&key)? {
+            Some(json) => parse_token_map(&json).unwrap_or_default(),
+            None => return Ok(()),
+        };
+        map.remove(org_map_key(org));
+        if map.is_empty() {
+            Self::remove_item(&key)
+        } else {
+            let json = serde_json::to_string(&map)?;
+            Self::set_item(&key, &json)
+        }
     }
 
     fn save_client_credentials(&self, site: &str, creds: &ClientCredentials) -> Result<()> {
@@ -419,4 +485,474 @@ fn sanitize(site: &str) -> String {
     site.chars()
         .map(|c| if c.is_alphanumeric() { c } else { '_' })
         .collect()
+}
+
+// ---------------------------------------------------------------------------
+// OrgTokenMap — one keychain/file entry per site, keyed by org label
+// ---------------------------------------------------------------------------
+
+/// All orgs for a site are stored under a single key as a JSON map.
+/// The no-org (default) session uses this sentinel as its map key.
+const DEFAULT_ORG_KEY: &str = "__default__";
+
+type OrgTokenMap = std::collections::HashMap<String, TokenSet>;
+
+fn org_map_key(org: Option<&str>) -> &str {
+    match org {
+        Some(o) if !o.is_empty() => o,
+        _ => DEFAULT_ORG_KEY,
+    }
+}
+
+/// Parse a stored blob as an OrgTokenMap, migrating the legacy single-TokenSet
+/// format (written by pup < multi-org) to {"__default__": <tokens>} transparently.
+fn parse_token_map(json: &str) -> Result<OrgTokenMap> {
+    // New format: {"__default__": {...}, "prod-child": {...}}
+    if let Ok(map) = serde_json::from_str::<OrgTokenMap>(json) {
+        return Ok(map);
+    }
+    // Old format: bare TokenSet — promote to map under __default__
+    if let Ok(tokens) = serde_json::from_str::<TokenSet>(json) {
+        let mut map = OrgTokenMap::new();
+        map.insert(DEFAULT_ORG_KEY.to_string(), tokens);
+        return Ok(map);
+    }
+    anyhow::bail!("token storage contains unrecognised format")
+}
+
+// ---------------------------------------------------------------------------
+// Session registry — tracks named org sessions (no secrets stored here)
+// ---------------------------------------------------------------------------
+
+#[cfg(not(target_arch = "wasm32"))]
+fn sessions_path() -> Option<std::path::PathBuf> {
+    crate::config::config_dir().map(|d| d.join("sessions.json"))
+}
+
+/// List all stored sessions from the registry file.
+/// Returns an empty vec if the file does not exist.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn list_sessions() -> Result<Vec<SessionEntry>> {
+    let path = match sessions_path() {
+        Some(p) => p,
+        None => return Ok(vec![]),
+    };
+    match std::fs::read_to_string(&path) {
+        Ok(json) => Ok(serde_json::from_str(&json).unwrap_or_default()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(vec![]),
+        Err(e) => Err(e.into()),
+    }
+}
+
+/// Upsert a session entry into the registry.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn save_session(site: &str, org: Option<&str>) -> Result<()> {
+    let mut sessions = list_sessions()?;
+    let entry = SessionEntry {
+        site: site.to_string(),
+        org: org.map(String::from),
+    };
+    // Dedup: remove any existing entry with same site+org, then append
+    sessions.retain(|s| !(s.site == entry.site && s.org == entry.org));
+    sessions.push(entry);
+    write_sessions(&sessions)
+}
+
+/// Remove a session entry from the registry.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn remove_session(site: &str, org: Option<&str>) -> Result<()> {
+    let mut sessions = list_sessions()?;
+    sessions.retain(|s| !(s.site == site && s.org.as_deref() == org));
+    write_sessions(&sessions)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn write_sessions(sessions: &[SessionEntry]) -> Result<()> {
+    let path = match sessions_path() {
+        Some(p) => p,
+        None => return Ok(()),
+    };
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let json = serde_json::to_string_pretty(sessions)?;
+    std::fs::write(&path, &json)
+        .with_context(|| format!("failed to write sessions: {}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // --- helpers ------------------------------------------------------------
+
+    fn make_token(access: &str) -> TokenSet {
+        TokenSet {
+            access_token: access.to_string(),
+            refresh_token: "refresh".into(),
+            token_type: "Bearer".into(),
+            expires_in: 9_999_999_999, // far future — never expired
+            issued_at: 0,
+            scope: String::new(),
+            client_id: String::new(),
+        }
+    }
+
+    /// Temporary directory that removes itself on drop.
+    struct TempDir(std::path::PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let nanos = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.subsec_nanos())
+                .unwrap_or(0);
+            let dir = std::env::temp_dir().join(format!("pup_test_{}_{}", label, nanos));
+            std::fs::create_dir_all(&dir).unwrap();
+            TempDir(dir)
+        }
+
+        fn path(&self) -> &std::path::PathBuf {
+            &self.0
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    // --- org_map_key --------------------------------------------------------
+
+    #[test]
+    fn test_org_map_key_none() {
+        assert_eq!(org_map_key(None), DEFAULT_ORG_KEY);
+    }
+
+    #[test]
+    fn test_org_map_key_empty_string() {
+        assert_eq!(org_map_key(Some("")), DEFAULT_ORG_KEY);
+    }
+
+    #[test]
+    fn test_org_map_key_named() {
+        assert_eq!(org_map_key(Some("prod-child")), "prod-child");
+    }
+
+    // --- parse_token_map ----------------------------------------------------
+
+    #[test]
+    fn test_parse_token_map_new_format() {
+        let map: OrgTokenMap = [(DEFAULT_ORG_KEY.to_string(), make_token("tok1"))]
+            .into_iter()
+            .collect();
+        let json = serde_json::to_string(&map).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "tok1");
+    }
+
+    #[test]
+    fn test_parse_token_map_multiple_orgs() {
+        let map: OrgTokenMap = [
+            (DEFAULT_ORG_KEY.to_string(), make_token("default_tok")),
+            ("prod".to_string(), make_token("prod_tok")),
+        ]
+        .into_iter()
+        .collect();
+        let json = serde_json::to_string(&map).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed.len(), 2);
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "default_tok");
+        assert_eq!(parsed["prod"].access_token, "prod_tok");
+    }
+
+    #[test]
+    fn test_parse_token_map_legacy_migration() {
+        // Old format: bare TokenSet at the root (written by pup before multi-org)
+        let json = serde_json::to_string(&make_token("legacy_tok")).unwrap();
+        let parsed = parse_token_map(&json).unwrap();
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[DEFAULT_ORG_KEY].access_token, "legacy_tok");
+    }
+
+    #[test]
+    fn test_parse_token_map_invalid_json() {
+        assert!(parse_token_map("not json at all").is_err());
+        assert!(parse_token_map("{\"bad\": true}").is_err());
+    }
+
+    // --- FileStorage — token map behaviour ----------------------------------
+
+    #[test]
+    fn test_file_storage_save_load_default_org() {
+        let tmp = TempDir::new("fs_default");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        let loaded = store.load_tokens("datadoghq.com", None).unwrap().unwrap();
+        assert_eq!(loaded.access_token, "default_tok");
+    }
+
+    #[test]
+    fn test_file_storage_save_load_named_org() {
+        let tmp = TempDir::new("fs_named");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        store
+            .save_tokens("datadoghq.com", Some("prod-child"), &make_token("prod_tok"))
+            .unwrap();
+        let loaded = store
+            .load_tokens("datadoghq.com", Some("prod-child"))
+            .unwrap()
+            .unwrap();
+        assert_eq!(loaded.access_token, "prod_tok");
+    }
+
+    #[test]
+    fn test_file_storage_multiple_orgs_one_file() {
+        let tmp = TempDir::new("fs_multi");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("staging"), &make_token("staging_tok"))
+            .unwrap();
+
+        // Only one file on disk for this site
+        let files: Vec<_> = std::fs::read_dir(tmp.path())
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .collect();
+        assert_eq!(files.len(), 1);
+
+        // All three orgs load independently
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", None)
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "default_tok"
+        );
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", Some("prod"))
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "prod_tok"
+        );
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", Some("staging"))
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "staging_tok"
+        );
+    }
+
+    #[test]
+    fn test_file_storage_org_isolation() {
+        // Loading a different org must not return another org's token
+        let tmp = TempDir::new("fs_isolation");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        assert!(store.load_tokens("datadoghq.com", None).unwrap().is_none());
+        assert!(store
+            .load_tokens("datadoghq.com", Some("staging"))
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn test_file_storage_delete_last_org_removes_file() {
+        let tmp = TempDir::new("fs_del_last");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("tok"))
+            .unwrap();
+        store.delete_tokens("datadoghq.com", None).unwrap();
+
+        let file_path = tmp.path().join("tokens_datadoghq_com.json");
+        assert!(
+            !file_path.exists(),
+            "file should be removed when last org is deleted"
+        );
+    }
+
+    #[test]
+    fn test_file_storage_delete_one_org_keeps_others() {
+        let tmp = TempDir::new("fs_del_one");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        store
+            .save_tokens("datadoghq.com", None, &make_token("default_tok"))
+            .unwrap();
+        store
+            .save_tokens("datadoghq.com", Some("prod"), &make_token("prod_tok"))
+            .unwrap();
+        store.delete_tokens("datadoghq.com", Some("prod")).unwrap();
+
+        // Default session survives
+        assert_eq!(
+            store
+                .load_tokens("datadoghq.com", None)
+                .unwrap()
+                .unwrap()
+                .access_token,
+            "default_tok"
+        );
+        // Deleted org is gone
+        assert!(store
+            .load_tokens("datadoghq.com", Some("prod"))
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn test_file_storage_delete_nonexistent_is_ok() {
+        let tmp = TempDir::new("fs_del_none");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+        assert!(store.delete_tokens("datadoghq.com", None).is_ok());
+    }
+
+    #[test]
+    fn test_file_storage_legacy_migration() {
+        let tmp = TempDir::new("fs_legacy");
+        let store = FileStorage {
+            base_dir: tmp.path().clone(),
+        };
+
+        // Write old-format file: bare TokenSet, no map wrapper
+        let legacy_json = serde_json::to_string_pretty(&make_token("legacy_tok")).unwrap();
+        let path = tmp.path().join("tokens_datadoghq_com.json");
+        std::fs::write(&path, legacy_json).unwrap();
+
+        // Existing default session loads transparently
+        let loaded = store.load_tokens("datadoghq.com", None).unwrap().unwrap();
+        assert_eq!(loaded.access_token, "legacy_tok");
+
+        // Named org not found in the old-format file
+        assert!(store
+            .load_tokens("datadoghq.com", Some("prod"))
+            .unwrap()
+            .is_none());
+    }
+
+    // --- Session registry ---------------------------------------------------
+
+    #[test]
+    fn test_session_registry_empty() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_empty");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert!(sessions.is_empty());
+    }
+
+    #[test]
+    fn test_session_registry_save_and_list() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_save");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", None).unwrap();
+        save_session("datadoghq.com", Some("prod-child")).unwrap();
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 2);
+        assert!(sessions
+            .iter()
+            .any(|s| s.site == "datadoghq.com" && s.org.is_none()));
+        assert!(sessions
+            .iter()
+            .any(|s| s.site == "datadoghq.com" && s.org.as_deref() == Some("prod-child")));
+    }
+
+    #[test]
+    fn test_session_registry_dedup() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_dedup");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", Some("prod")).unwrap();
+        save_session("datadoghq.com", Some("prod")).unwrap(); // duplicate
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 1);
+    }
+
+    #[test]
+    fn test_session_registry_remove() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_remove");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+
+        save_session("datadoghq.com", None).unwrap();
+        save_session("datadoghq.com", Some("prod")).unwrap();
+        remove_session("datadoghq.com", Some("prod")).unwrap();
+        let sessions = list_sessions().unwrap();
+        std::env::remove_var("PUP_CONFIG_DIR");
+
+        assert_eq!(sessions.len(), 1);
+        assert!(sessions[0].org.is_none());
+    }
+
+    #[test]
+    fn test_session_registry_remove_nonexistent() {
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let tmp = TempDir::new("sess_rm_none");
+        std::env::set_var("PUP_CONFIG_DIR", tmp.path());
+        let result = remove_session("datadoghq.com", Some("nonexistent"));
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert!(result.is_ok());
+    }
 }

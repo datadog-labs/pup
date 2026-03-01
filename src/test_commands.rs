@@ -28,6 +28,7 @@ fn test_config(mock_url: &str) -> Config {
         app_key: Some("test-app-key".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -376,9 +377,9 @@ async fn test_logs_search() {
 }
 
 #[tokio::test]
-async fn test_logs_search_requires_api_keys() {
+async fn test_logs_search_with_oauth() {
     let _lock = lock_env();
-    let server = mockito::Server::new_async().await;
+    let mut server = mockito::Server::new_async().await;
     std::env::set_var("PUP_MOCK_SERVER", &server.url());
 
     let cfg = Config {
@@ -386,10 +387,13 @@ async fn test_logs_search_requires_api_keys() {
         app_key: None,
         access_token: Some("token".into()),
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
     };
+
+    let _mock = mock_any(&mut server, "POST", r#"{"data": []}"#).await;
 
     let result = crate::commands::logs::search(
         &cfg,
@@ -400,14 +404,7 @@ async fn test_logs_search_requires_api_keys() {
         None,
     )
     .await;
-    assert!(result.is_err(), "logs search should require API keys");
-    assert!(
-        result
-            .unwrap_err()
-            .to_string()
-            .contains("API+APP key authentication"),
-        "error should mention API key auth"
-    );
+    assert!(result.is_ok(), "logs search should work with OAuth");
     cleanup_env();
 }
 
@@ -691,6 +688,7 @@ async fn test_events_search_requires_api_keys() {
         app_key: None,
         access_token: Some("token".into()),
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -719,6 +717,7 @@ async fn test_api_get() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -751,6 +750,7 @@ async fn test_api_get_with_query() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -787,6 +787,7 @@ async fn test_api_post() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -818,6 +819,7 @@ async fn test_api_put() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -849,6 +851,7 @@ async fn test_api_patch() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -880,6 +883,7 @@ async fn test_api_delete() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -910,6 +914,7 @@ async fn test_api_error_response() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -941,6 +946,7 @@ async fn test_api_bearer_auth() {
         app_key: None,
         access_token: Some("test-bearer-token".into()),
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -970,6 +976,7 @@ async fn test_api_no_auth() {
         app_key: None,
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -995,6 +1002,7 @@ async fn test_api_empty_response() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,
@@ -1026,6 +1034,7 @@ async fn test_api_server_error() {
         app_key: Some("test-app".into()),
         access_token: None,
         site: "datadoghq.com".into(),
+        org: None,
         output_format: OutputFormat::Json,
         auto_approve: false,
         agent_mode: false,

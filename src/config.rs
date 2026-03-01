@@ -9,6 +9,7 @@ pub struct Config {
     pub app_key: Option<String>,
     pub access_token: Option<String>,
     pub site: String,
+    pub org: Option<String>,
     pub output_format: OutputFormat,
     pub auto_approve: bool,
     pub agent_mode: bool,
@@ -51,6 +52,7 @@ struct FileConfig {
     app_key: Option<String>,
     access_token: Option<String>,
     site: Option<String>,
+    org: Option<String>,
     output: Option<String>,
     auto_approve: Option<bool>,
 }
@@ -64,16 +66,18 @@ impl Config {
 
         let access_token = env_or("DD_ACCESS_TOKEN", file_cfg.access_token);
         let site = env_or("DD_SITE", file_cfg.site).unwrap_or_else(|| "datadoghq.com".into());
+        let org = env_or("DD_ORG", file_cfg.org); // flag override applied in main_inner
 
         // If no token from env/file, try loading from keychain/storage (where `pup auth login` saves)
         #[cfg(not(target_arch = "wasm32"))]
-        let access_token = access_token.or_else(|| load_token_from_storage(&site));
+        let access_token = access_token.or_else(|| load_token_from_storage(&site, org.as_deref()));
 
         let cfg = Config {
             api_key: env_or("DD_API_KEY", file_cfg.api_key),
             app_key: env_or("DD_APP_KEY", file_cfg.app_key),
             access_token,
             site,
+            org,
             output_format: env_or("DD_OUTPUT", file_cfg.output)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(OutputFormat::Json),
@@ -100,6 +104,7 @@ impl Config {
             app_key,
             access_token,
             site,
+            org: None,
             output_format: OutputFormat::Json,
             auto_approve: false,
             agent_mode: false,
@@ -170,8 +175,14 @@ impl Config {
 }
 
 /// Config file path: ~/.config/pup/config.yaml
+/// Respects PUP_CONFIG_DIR env var for testing and custom installs.
 #[cfg(not(target_arch = "wasm32"))]
 pub fn config_dir() -> Option<PathBuf> {
+    if let Ok(dir) = std::env::var("PUP_CONFIG_DIR") {
+        if !dir.is_empty() {
+            return Some(PathBuf::from(dir));
+        }
+    }
     dirs::config_dir().map(|d| d.join("pup"))
 }
 
@@ -197,11 +208,11 @@ fn load_config_file() -> Option<FileConfig> {
 /// Try to load a valid (non-expired) access token from keychain/file storage.
 /// Returns None silently on any error — callers fall through to other auth methods.
 #[cfg(all(not(feature = "browser"), not(target_arch = "wasm32")))]
-fn load_token_from_storage(site: &str) -> Option<String> {
+pub fn load_token_from_storage(site: &str, org: Option<&str>) -> Option<String> {
     let guard = crate::auth::storage::get_storage().ok()?;
     let lock = guard.lock().ok()?;
     let store = lock.as_ref()?;
-    let tokens = store.load_tokens(site).ok()??;
+    let tokens = store.load_tokens(site, org).ok()??;
     if tokens.is_expired() {
         return None;
     }
@@ -238,6 +249,7 @@ mod tests {
             app_key: app_key.map(String::from),
             access_token: token.map(String::from),
             site: "datadoghq.com".into(),
+            org: None,
             output_format: OutputFormat::Json,
             auto_approve: false,
             agent_mode: false,
@@ -429,10 +441,24 @@ mod tests {
 
     #[test]
     fn test_config_dir_returns_path() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
+        std::env::remove_var("PUP_CONFIG_DIR");
         let dir = config_dir();
         // On native builds, dirs::config_dir() should return Some
         assert!(dir.is_some());
         assert!(dir.unwrap().ends_with("pup"));
+    }
+
+    #[test]
+    fn test_config_dir_respects_override() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
+        std::env::set_var("PUP_CONFIG_DIR", "/tmp/pup_test_override");
+        let dir = config_dir();
+        std::env::remove_var("PUP_CONFIG_DIR");
+        assert_eq!(
+            dir,
+            Some(std::path::PathBuf::from("/tmp/pup_test_override"))
+        );
     }
 
     #[test]
