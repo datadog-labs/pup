@@ -9,8 +9,8 @@
 #   3. Creates a release branch (chore/release-vX.Y.Z)
 #   4. Updates Cargo.toml + Cargo.lock
 #   5. Creates a signed commit and pushes the branch
-#   6. Waits for you to merge the PR
-#   7. Pulls main, creates an annotated tag, and pushes it
+#   6. Opens a GitHub PR with release description, asks y/N to proceed
+#   7. Merges the PR, pulls main, creates an annotated tag, and pushes it
 
 set -euo pipefail
 
@@ -36,6 +36,7 @@ require git
 require git-semver
 require cargo
 require sed
+require gh
 
 # ── validate repo state ───────────────────────────────────────────────────────
 
@@ -109,11 +110,44 @@ echo "committed version bump"
 git push -u origin "$BRANCH"
 echo "pushed: $BRANCH"
 
-# ── wait for PR merge ─────────────────────────────────────────────────────────
+# ── create GitHub PR ──────────────────────────────────────────────────────────
 
 echo ""
-echo "open a PR for '$BRANCH', merge it into main, then press Enter to continue..."
-read -r
+echo "creating PR..."
+PR_URL=$(gh pr create \
+    --title "chore(release): bump version to ${NEW_TAG}" \
+    --base main \
+    --body "$(cat <<EOF
+## Summary
+Release ${NEW_TAG}: version bump from ${CURRENT_TAG} to ${NEW_TAG}.
+
+## Changes
+- Update \`Cargo.toml\` package version ${CURRENT_TAG#v} → ${NEW_VERSION}
+- Refresh \`Cargo.lock\`
+
+## Testing
+- CI will run \`cargo test\`, \`cargo clippy\`, and \`cargo fmt --check\`
+- Cross-compilation verified for all 4 targets
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)")
+echo "PR: $PR_URL"
+
+# ── ask to proceed ────────────────────────────────────────────────────────────
+
+echo ""
+read -r -p "Merge PR and tag ${NEW_TAG}? [y/N] " CONFIRM
+case "$CONFIRM" in
+    y|Y) ;;
+    *) echo "aborted — PR left open at $PR_URL"; exit 0 ;;
+esac
+
+# ── merge the PR ──────────────────────────────────────────────────────────────
+
+gh pr merge "$PR_URL" --merge --delete-branch
+echo "PR merged"
 
 # ── pull main and verify the version bump landed ─────────────────────────────
 
