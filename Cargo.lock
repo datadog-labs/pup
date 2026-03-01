@@ -465,8 +465,6 @@ dependencies = [
 [[package]]
 name = "datadog-api-client"
 version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de48b795ea2890ef92c1318eb02c8ff1945e0a8829ed0c45b75a77d40e511fbf"
 dependencies = [
  "async-stream",
  "chrono",
