@@ -4958,9 +4958,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     limit,
                     sort: _,
                     index: _,
-                    storage: _,
+                    storage,
                 } => {
-                    commands::logs::search(&cfg, query, from, to, limit).await?;
+                    commands::logs::search(&cfg, query, from, to, limit, storage).await?;
                 }
                 LogActions::List {
                     query,
@@ -4968,9 +4968,9 @@ async fn main_inner() -> anyhow::Result<()> {
                     to,
                     limit,
                     sort: _,
-                    storage: _,
+                    storage,
                 } => {
-                    commands::logs::list(&cfg, query, from, to, limit).await?;
+                    commands::logs::list(&cfg, query, from, to, limit, storage).await?;
                 }
                 LogActions::Query {
                     query,
@@ -4978,10 +4978,10 @@ async fn main_inner() -> anyhow::Result<()> {
                     to,
                     limit,
                     sort: _,
-                    storage: _,
+                    storage,
                     timezone: _,
                 } => {
-                    commands::logs::query(&cfg, query, from, to, limit).await?;
+                    commands::logs::query(&cfg, query, from, to, limit, storage).await?;
                 }
                 LogActions::Aggregate {
                     query,
@@ -4990,9 +4990,10 @@ async fn main_inner() -> anyhow::Result<()> {
                     compute: _,
                     group_by: _,
                     limit: _,
-                    storage: _,
+                    storage,
                 } => {
-                    commands::logs::aggregate(&cfg, query.unwrap_or_default(), from, to).await?;
+                    commands::logs::aggregate(&cfg, query.unwrap_or_default(), from, to, storage)
+                        .await?;
                 }
                 LogActions::Archives { action } => match action {
                     LogArchiveActions::List => commands::logs::archives_list(&cfg).await?,

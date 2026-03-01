@@ -10,7 +10,7 @@ use datadog_api_client::datadogV2::api_logs_metrics::LogsMetricsAPI;
 #[cfg(not(target_arch = "wasm32"))]
 use datadog_api_client::datadogV2::model::{
     LogsAggregateRequest, LogsAggregationFunction, LogsCompute, LogsListRequest,
-    LogsListRequestPage, LogsQueryFilter, LogsSort,
+    LogsListRequestPage, LogsQueryFilter, LogsSort, LogsStorageTier,
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -19,6 +19,24 @@ use crate::config::Config;
 use crate::formatter;
 use crate::util;
 
+/// Parse a storage tier string into a `LogsStorageTier` enum value.
+/// Returns `None` if the input is `None`; returns an error for unrecognised values.
+#[cfg(not(target_arch = "wasm32"))]
+fn parse_storage_tier(storage: Option<String>) -> Result<Option<LogsStorageTier>> {
+    match storage {
+        None => Ok(None),
+        Some(s) => match s.to_lowercase().as_str() {
+            "indexes" => Ok(Some(LogsStorageTier::INDEXES)),
+            "online-archives" | "online_archives" => Ok(Some(LogsStorageTier::ONLINE_ARCHIVES)),
+            "flex" => Ok(Some(LogsStorageTier::FLEX)),
+            other => anyhow::bail!(
+                "unknown storage tier {:?}; valid values are: indexes, online-archives, flex",
+                other
+            ),
+        },
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn search(
     cfg: &Config,
@@ -26,6 +44,7 @@ pub async fn search(
     from: String,
     to: String,
     limit: i32,
+    storage: Option<String>,
 ) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
     let api = match client::make_bearer_client(cfg) {
@@ -36,13 +55,18 @@ pub async fn search(
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
 
+    let storage_tier = parse_storage_tier(storage)?;
+
+    let mut filter = LogsQueryFilter::new()
+        .query(query)
+        .from(from_ms.to_string())
+        .to(to_ms.to_string());
+    if let Some(tier) = storage_tier {
+        filter = filter.storage_tier(tier);
+    }
+
     let body = LogsListRequest::new()
-        .filter(
-            LogsQueryFilter::new()
-                .query(query)
-                .from(from_ms.to_string())
-                .to(to_ms.to_string()),
-        )
+        .filter(filter)
         .page(LogsListRequestPage::new().limit(limit))
         .sort(LogsSort::TIMESTAMP_DESCENDING);
 
@@ -83,15 +107,20 @@ pub async fn search(
     from: String,
     to: String,
     limit: i32,
+    storage: Option<String>,
 ) -> Result<()> {
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
+    let mut filter = serde_json::json!({
+        "query": query,
+        "from": from_ms.to_string(),
+        "to": to_ms.to_string()
+    });
+    if let Some(tier) = storage {
+        filter["storage_tier"] = serde_json::Value::String(tier);
+    }
     let body = serde_json::json!({
-        "filter": {
-            "query": query,
-            "from": from_ms.to_string(),
-            "to": to_ms.to_string()
-        },
+        "filter": filter,
         "page": { "limit": limit },
         "sort": "-timestamp"
     });
@@ -100,8 +129,15 @@ pub async fn search(
 }
 
 /// Alias for `search` with the same interface.
-pub async fn list(cfg: &Config, query: String, from: String, to: String, limit: i32) -> Result<()> {
-    search(cfg, query, from, to, limit).await
+pub async fn list(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    limit: i32,
+    storage: Option<String>,
+) -> Result<()> {
+    search(cfg, query, from, to, limit, storage).await
 }
 
 /// Alias for `search` with the same interface.
@@ -111,12 +147,19 @@ pub async fn query(
     from: String,
     to: String,
     limit: i32,
+    storage: Option<String>,
 ) -> Result<()> {
-    search(cfg, query, from, to, limit).await
+    search(cfg, query, from, to, limit, storage).await
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
+pub async fn aggregate(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    storage: Option<String>,
+) -> Result<()> {
     let dd_cfg = client::make_dd_config(cfg);
     let api = match client::make_bearer_client(cfg) {
         Some(c) => LogsAPI::with_client_and_config(dd_cfg, c),
@@ -126,13 +169,18 @@ pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) ->
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
 
+    let storage_tier = parse_storage_tier(storage)?;
+
+    let mut filter = LogsQueryFilter::new()
+        .query(query)
+        .from(from_ms.to_string())
+        .to(to_ms.to_string());
+    if let Some(tier) = storage_tier {
+        filter = filter.storage_tier(tier);
+    }
+
     let body = LogsAggregateRequest::new()
-        .filter(
-            LogsQueryFilter::new()
-                .query(query)
-                .from(from_ms.to_string())
-                .to(to_ms.to_string()),
-        )
+        .filter(filter)
         .compute(vec![LogsCompute::new(LogsAggregationFunction::COUNT)]);
 
     let resp = api
@@ -145,15 +193,25 @@ pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) ->
 }
 
 #[cfg(target_arch = "wasm32")]
-pub async fn aggregate(cfg: &Config, query: String, from: String, to: String) -> Result<()> {
+pub async fn aggregate(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    storage: Option<String>,
+) -> Result<()> {
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
+    let mut filter = serde_json::json!({
+        "query": query,
+        "from": from_ms.to_string(),
+        "to": to_ms.to_string()
+    });
+    if let Some(tier) = storage {
+        filter["storage_tier"] = serde_json::Value::String(tier);
+    }
     let body = serde_json::json!({
-        "filter": {
-            "query": query,
-            "from": from_ms.to_string(),
-            "to": to_ms.to_string()
-        },
+        "filter": filter,
         "compute": [{ "type": "count" }]
     });
     let data = crate::api::post(cfg, "/api/v2/logs/analytics/aggregate", &body).await?;

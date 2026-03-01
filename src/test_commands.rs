@@ -363,9 +363,15 @@ async fn test_logs_search() {
     let cfg = test_config(&server.url());
     let _mock = mock_any(&mut server, "POST", r#"{"data": [], "meta": {"page": {}}}"#).await;
 
-    let result =
-        crate::commands::logs::search(&cfg, "status:error".into(), "1h".into(), "now".into(), 10)
-            .await;
+    let result = crate::commands::logs::search(
+        &cfg,
+        "status:error".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        None,
+    )
+    .await;
     assert!(result.is_ok(), "logs search failed: {:?}", result.err());
     cleanup_env();
 }
@@ -389,9 +395,15 @@ async fn test_logs_search_with_oauth() {
 
     let _mock = mock_any(&mut server, "POST", r#"{"data": []}"#).await;
 
-    let result =
-        crate::commands::logs::search(&cfg, "status:error".into(), "1h".into(), "now".into(), 10)
-            .await;
+    let result = crate::commands::logs::search(
+        &cfg,
+        "status:error".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        None,
+    )
+    .await;
     assert!(result.is_ok(), "logs search should work with OAuth");
     cleanup_env();
 }
@@ -404,8 +416,108 @@ async fn test_logs_aggregate() {
     let _mock = mock_any(&mut server, "POST", r#"{"data": {"buckets": []}}"#).await;
 
     let result =
-        crate::commands::logs::aggregate(&cfg, "*".into(), "1h".into(), "now".into()).await;
+        crate::commands::logs::aggregate(&cfg, "*".into(), "1h".into(), "now".into(), None).await;
     assert!(result.is_ok(), "logs aggregate failed: {:?}", result.err());
+    cleanup_env();
+}
+
+#[tokio::test]
+async fn test_logs_search_with_flex_storage() {
+    let _lock = lock_env();
+    let mut server = mockito::Server::new_async().await;
+    let cfg = test_config(&server.url());
+    let _mock = mock_any(&mut server, "POST", r#"{"data": [], "meta": {"page": {}}}"#).await;
+
+    let result = crate::commands::logs::search(
+        &cfg,
+        "*".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        Some("flex".into()),
+    )
+    .await;
+    assert!(
+        result.is_ok(),
+        "logs search with flex failed: {:?}",
+        result.err()
+    );
+    cleanup_env();
+}
+
+#[tokio::test]
+async fn test_logs_search_with_online_archives_storage() {
+    let _lock = lock_env();
+    let mut server = mockito::Server::new_async().await;
+    let cfg = test_config(&server.url());
+    let _mock = mock_any(&mut server, "POST", r#"{"data": [], "meta": {"page": {}}}"#).await;
+
+    let result = crate::commands::logs::search(
+        &cfg,
+        "*".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        Some("online-archives".into()),
+    )
+    .await;
+    assert!(
+        result.is_ok(),
+        "logs search with online-archives failed: {:?}",
+        result.err()
+    );
+    cleanup_env();
+}
+
+#[tokio::test]
+async fn test_logs_search_with_invalid_storage_tier() {
+    let _lock = lock_env();
+    let server = mockito::Server::new_async().await;
+    let cfg = test_config(&server.url());
+
+    let result = crate::commands::logs::search(
+        &cfg,
+        "*".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        Some("invalid-tier".into()),
+    )
+    .await;
+    assert!(
+        result.is_err(),
+        "logs search with invalid storage tier should fail"
+    );
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .contains("unknown storage tier"),
+        "error should mention unknown storage tier"
+    );
+    cleanup_env();
+}
+
+#[tokio::test]
+async fn test_logs_aggregate_with_flex_storage() {
+    let _lock = lock_env();
+    let mut server = mockito::Server::new_async().await;
+    let cfg = test_config(&server.url());
+    let _mock = mock_any(&mut server, "POST", r#"{"data": {"buckets": []}}"#).await;
+
+    let result = crate::commands::logs::aggregate(
+        &cfg,
+        "*".into(),
+        "1h".into(),
+        "now".into(),
+        Some("flex".into()),
+    )
+    .await;
+    assert!(
+        result.is_ok(),
+        "logs aggregate with flex failed: {:?}",
+        result.err()
+    );
     cleanup_env();
 }
 
