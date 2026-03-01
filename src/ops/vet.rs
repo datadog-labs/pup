@@ -57,8 +57,18 @@ pub struct VetResult {
 const CHECK_SILENT: &str = "silent-monitors";
 const CHECK_STALE: &str = "stale-monitors";
 const CHECK_MUTED: &str = "muted-forgotten";
+const CHECK_UNTAGGED: &str = "untagged-monitors";
+const CHECK_NO_RECOVERY: &str = "no-recovery-threshold";
+const CHECK_ON_CALL: &str = "on-call-health";
 
-const ALL_CHECKS: &[&str] = &[CHECK_SILENT, CHECK_STALE, CHECK_MUTED];
+const ALL_CHECKS: &[&str] = &[
+    CHECK_SILENT,
+    CHECK_STALE,
+    CHECK_MUTED,
+    CHECK_UNTAGGED,
+    CHECK_NO_RECOVERY,
+    CHECK_ON_CALL,
+];
 
 // ---- Check implementations ----
 
@@ -154,6 +164,96 @@ fn check_muted_forgotten(monitors: &[Monitor]) -> Finding {
     }
 }
 
+/// Monitors with no tags — can't be filtered, routed, or grouped.
+fn check_untagged_monitors(monitors: &[Monitor]) -> Finding {
+    let resources: Vec<Resource> = monitors
+        .iter()
+        .filter(|m| m.tags.as_ref().map(|t| t.is_empty()).unwrap_or(true))
+        .map(|m| Resource {
+            id: m.id.unwrap_or(0),
+            name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
+            detail: "no tags set".to_string(),
+        })
+        .collect();
+
+    Finding {
+        check: CHECK_UNTAGGED,
+        severity: Severity::Warning,
+        count: resources.len(),
+        resources,
+        recommendation: "Add tags (e.g. team:, service:, env:) so monitors can be filtered, routed, and grouped",
+    }
+}
+
+/// Monitors that have a critical threshold but no critical recovery threshold — flapping risk.
+fn check_no_recovery_threshold(monitors: &[Monitor]) -> Finding {
+    let resources: Vec<Resource> = monitors
+        .iter()
+        .filter_map(|m| {
+            let thresholds = m.options.as_ref()?.thresholds.as_ref()?;
+            let has_critical = thresholds.critical.is_some();
+            // critical_recovery is Option<Option<f64>>: outer None = absent, inner None = explicit null
+            let has_critical_recovery = thresholds
+                .critical_recovery
+                .as_ref()
+                .and_then(|r| r.as_ref())
+                .is_some();
+            if has_critical && !has_critical_recovery {
+                Some(Resource {
+                    id: m.id.unwrap_or(0),
+                    name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
+                    detail: "critical threshold set but no critical_recovery threshold".to_string(),
+                })
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Finding {
+        check: CHECK_NO_RECOVERY,
+        severity: Severity::Info,
+        count: resources.len(),
+        resources,
+        recommendation: "Set a critical_recovery threshold to add hysteresis and prevent alert flapping",
+    }
+}
+
+/// Monitors currently alerting with a short renotify interval — actively burning out on-call.
+fn check_on_call_health(monitors: &[Monitor]) -> Finding {
+    let resources: Vec<Resource> = monitors
+        .iter()
+        .filter_map(|m| {
+            if !matches!(m.overall_state, Some(MonitorOverallStates::ALERT)) {
+                return None;
+            }
+            // renotify_interval is Option<Option<i64>>; flatten to get the inner value
+            let renotify = m
+                .options
+                .as_ref()?
+                .renotify_interval
+                .flatten()
+                .unwrap_or(0);
+            if renotify <= 0 || renotify > 60 {
+                return None;
+            }
+            Some(Resource {
+                id: m.id.unwrap_or(0),
+                name: m.name.as_deref().unwrap_or("(unnamed)").to_string(),
+                detail: format!("currently alerting, re-notifying every {renotify} min"),
+            })
+        })
+        .collect();
+
+    Finding {
+        check: CHECK_ON_CALL,
+        severity: Severity::Warning,
+        count: resources.len(),
+        resources,
+        recommendation: "Resolve the alert or raise renotify_interval to reduce on-call notification fatigue",
+    }
+}
+
 // ---- Entry point ----
 
 pub async fn run(
@@ -208,6 +308,9 @@ pub async fn run(
             CHECK_SILENT => check_silent_monitors(&monitors),
             CHECK_STALE => check_stale_monitors(&monitors),
             CHECK_MUTED => check_muted_forgotten(&monitors),
+            CHECK_UNTAGGED => check_untagged_monitors(&monitors),
+            CHECK_NO_RECOVERY => check_no_recovery_threshold(&monitors),
+            CHECK_ON_CALL => check_on_call_health(&monitors),
             _ => unreachable!(),
         };
 
@@ -269,6 +372,21 @@ pub fn list_checks() -> Vec<(&'static str, Severity, &'static str)> {
             CHECK_MUTED,
             Severity::Warning,
             "Monitors muted indefinitely or for >30 days — meant to be temporary",
+        ),
+        (
+            CHECK_UNTAGGED,
+            Severity::Warning,
+            "Monitors without any tags — can't be filtered, routed, or grouped",
+        ),
+        (
+            CHECK_NO_RECOVERY,
+            Severity::Info,
+            "Monitors with no critical_recovery threshold — flapping risk",
+        ),
+        (
+            CHECK_ON_CALL,
+            Severity::Warning,
+            "Currently alerting monitors with renotify ≤60 min — actively burning out on-call",
         ),
     ]
 }
