@@ -135,7 +135,14 @@ pub async fn search(
 }
 
 /// Alias for `search` with the same interface.
-pub async fn list(cfg: &Config, query: String, from: String, to: String, limit: i32, storage: Option<String>) -> Result<()> {
+pub async fn list(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    limit: i32,
+    storage: Option<String>,
+) -> Result<()> {
     search(cfg, query, from, to, limit, storage).await
 }
 
@@ -152,7 +159,13 @@ pub async fn query(
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub async fn aggregate(cfg: &Config, query: String, from: String, to: String, storage: Option<String>) -> Result<()> {
+pub async fn aggregate(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    storage: Option<String>,
+) -> Result<()> {
     if !cfg.has_api_keys() {
         bail!(
             "logs aggregate requires API key authentication (DD_API_KEY + DD_APP_KEY).\n\
@@ -190,7 +203,13 @@ pub async fn aggregate(cfg: &Config, query: String, from: String, to: String, st
 }
 
 #[cfg(target_arch = "wasm32")]
-pub async fn aggregate(cfg: &Config, query: String, from: String, to: String, storage: Option<String>) -> Result<()> {
+pub async fn aggregate(
+    cfg: &Config,
+    query: String,
+    from: String,
+    to: String,
+    storage: Option<String>,
+) -> Result<()> {
     let from_ms = util::parse_time_to_unix_millis(&from)?;
     let to_ms = util::parse_time_to_unix_millis(&to)?;
     let mut filter = serde_json::json!({

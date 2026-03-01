@@ -362,9 +362,15 @@ async fn test_logs_search() {
     let cfg = test_config(&server.url());
     let _mock = mock_any(&mut server, "POST", r#"{"data": [], "meta": {"page": {}}}"#).await;
 
-    let result =
-        crate::commands::logs::search(&cfg, "status:error".into(), "1h".into(), "now".into(), 10, None)
-            .await;
+    let result = crate::commands::logs::search(
+        &cfg,
+        "status:error".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        None,
+    )
+    .await;
     assert!(result.is_ok(), "logs search failed: {:?}", result.err());
     cleanup_env();
 }
@@ -385,9 +391,15 @@ async fn test_logs_search_requires_api_keys() {
         agent_mode: false,
     };
 
-    let result =
-        crate::commands::logs::search(&cfg, "status:error".into(), "1h".into(), "now".into(), 10, None)
-            .await;
+    let result = crate::commands::logs::search(
+        &cfg,
+        "status:error".into(),
+        "1h".into(),
+        "now".into(),
+        10,
+        None,
+    )
+    .await;
     assert!(result.is_err(), "logs search should require API keys");
     assert!(
         result
@@ -428,7 +440,11 @@ async fn test_logs_search_with_flex_storage() {
         Some("flex".into()),
     )
     .await;
-    assert!(result.is_ok(), "logs search with flex failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "logs search with flex failed: {:?}",
+        result.err()
+    );
     cleanup_env();
 }
 
@@ -448,7 +464,11 @@ async fn test_logs_search_with_online_archives_storage() {
         Some("online-archives".into()),
     )
     .await;
-    assert!(result.is_ok(), "logs search with online-archives failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "logs search with online-archives failed: {:?}",
+        result.err()
+    );
     cleanup_env();
 }
 
@@ -467,9 +487,15 @@ async fn test_logs_search_with_invalid_storage_tier() {
         Some("invalid-tier".into()),
     )
     .await;
-    assert!(result.is_err(), "logs search with invalid storage tier should fail");
     assert!(
-        result.unwrap_err().to_string().contains("unknown storage tier"),
+        result.is_err(),
+        "logs search with invalid storage tier should fail"
+    );
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .contains("unknown storage tier"),
         "error should mention unknown storage tier"
     );
     cleanup_env();
@@ -490,7 +516,11 @@ async fn test_logs_aggregate_with_flex_storage() {
         Some("flex".into()),
     )
     .await;
-    assert!(result.is_ok(), "logs aggregate with flex failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "logs aggregate with flex failed: {:?}",
+        result.err()
+    );
     cleanup_env();
 }
 
