@@ -146,7 +146,7 @@ esac
 
 # ── merge the PR ──────────────────────────────────────────────────────────────
 
-gh pr merge "$PR_URL" --merge --delete-branch
+gh pr merge "$PR_URL" --merge --delete-branch --admin
 echo "PR merged"
 
 # ── pull main and verify the version bump landed ─────────────────────────────
